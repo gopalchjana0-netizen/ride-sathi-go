@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RIDE SATHI GO - LIVE DRIVER</title>
+<style>
+body{margin:0;font-family:system-ui;background:#f0fdf4}
+.h{background:#111827;color:#4ade80;padding:14px;text-align:center;font-weight:bold;position:sticky;top:0;z-index:10}
+.c{background:white;margin:12px;padding:16px;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);border-left:6px solid #16a34a}
+.b{width:100%;padding:13px;border:none;border-radius:10px;font-weight:bold;margin-top:8px;cursor:pointer;font-size:15px}
+.new{border-left-color:#f59e0b} .accepted{border-left-color:#16a34a;background:#f0fdf4}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="h">🟢 RIDE SATHI GO - DRIVER<br><small id="cnt" style="color:#9ca3af">Live</small></div>
+<div id="list"></div>
+<audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+<script>
+firebase.initializeApp({databaseURL:"https://ride-sathi-go-default-rtdb.asia-southeast1.firebasedatabase.app"});
+const db=firebase.database();
+let lastCount=0;
+db.ref('rides').on('value', snap=>{
+  const data=snap.val();
+  const box=document.getElementById('list');
+  if(!data){ document.getElementById('cnt').innerText="0 টা Ride"; box.innerHTML="<p style='text-align:center;padding:60px'>কোনো নতুন Ride নেই ✅</p>"; lastCount=0; return; }
+  // শুধু NEW এবং ACCEPTED গুলো দেখাবে, COMPLETED / REJECTED গুলো Auto Hide হয়ে যাবে
+  let rides=Object.entries(data).map(([k,v])=>({...v, fbKey:k})).filter(r=>r.status!=='COMPLETED' && r.status!=='REJECTED').reverse();
+  
+  if(rides.length > lastCount && lastCount!==0){ document.getElementById('beep').play().catch(()=>{}); }
+  lastCount=rides.length;
+  document.getElementById('cnt').innerText=rides.length+" টা Active Ride";
+  box.innerHTML="";
+  rides.forEach(r=>{
+    const isAccepted = r.status === 'ACCEPTED';
+    box.innerHTML+=`
+    <div class="c ${isAccepted?'accepted':'new'}">
+      <div style="display:flex;justify-content:space-between"><b>👤 ${r.name||'Customer'}</b><span style="background:${isAccepted?'#bbf7d0':'#fef3c7'};padding:3px 10px;border-radius:12px;font-size:12px">${r.status||'NEW'}</span></div>
+      <div style="margin-top:10px;line-height:1.7">
+        📞 <b>${r.mobile||''}</b><br>📍 ${r.pickup||r.from||''} → 🏁 ${r.drop||''}<br>💰 <b style="color:green;font-size:20px">₹${r.fare||0}</b>
+      </div>
+      ${!isAccepted ? `
+        <button onclick="db.ref('rides/${r.fbKey}').update({status:'ACCEPTED', acceptedAt: Date.now()})" class="b" style="background:#16a34a;color:white">✅ ACCEPT</button>
+        <button onclick="if(confirm('Reject করবেন?')) db.ref('rides/${r.fbKey}').update({status:'REJECTED'})" class="b" style="background:#fee2e2;color:#b91c1c">❌ REJECT</button>
+      ` : `
+        <button onclick="location.href='tel:${r.mobile}'" class="b" style="background:#111827;color:white">📞 Call ${r.name}</button>
+        <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}','_blank')" class="b" style="background:#0284c7;color:white">🗺️ Map</button>
+        <button onclick="if(confirm('Ride Complete? Customer থেকে টাকা নিয়েছেন?')) db.ref('rides/${r.fbKey}').update({status:'COMPLETED', completedAt: Date.now()})" class="b" style="background:#15803d;color:white">🏁 BOOKING COMPLETE - সরিয়ে দিন</button>
+      `}
+    </div>`;
+  });
+});
+</script>
+</body>
+</html>

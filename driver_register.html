@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Driver Register - RIDE SATHI GO</title>
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;font-family:system-ui;padding:12px}
+.card{background:#fff;width:100%;max-width:420px;padding:24px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+h2{text-align:center;margin:0 0 10px;color:#0f172a;font-size:20px;line-height:1.3}
+label{font-size:13px;font-weight:bold;margin-top:12px;display:block;color:#334155}
+input,select{width:100%;padding:12px;margin:6px 0;border:1.5px solid #ddd;border-radius:10px;font-size:15px;box-sizing:border-box}
+.btn{width:100%;padding:14px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-weight:bold;font-size:16px;margin-top:18px;cursor:pointer}
+.btn:disabled{background:#94a3b8}
+.link{display:block;text-align:center;margin-top:14px;color:#0284c7;text-decoration:none;font-weight:bold}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="card">
+<h2>RIDE SATHI GO<br>DRIVER REGISTRATION</h2>
+
+<label>আপনার নাম *</label>
+<input id="name" placeholder="আপনার নাম লিখুন">
+
+<label>মোবাইল নম্বর *</label>
+<input id="mobile" placeholder="10 Digit Number" type="number">
+
+<label>গাড়ির ধরণ *</label>
+<select id="vehicle"><option>Bike</option><option>Auto</option><option>Toto</option><option>Car</option></select>
+
+<label>গাড়ির নম্বর *</label>
+<input id="vehNo" placeholder="যেমন - WB26 AB 1234">
+
+<label>👤 আপনার ছবি (Selfie) *</label>
+<input type="file" id="photoSelf" accept="image/*">
+
+<label>🏍️ গাড়ি + License / Aadhaar ছবি *</label>
+<input type="file" id="photoDoc" accept="image/*">
+
+<button class="btn" id="btn" onclick="register()">✅ রেজিস্টার করুন</button>
+<a class="link" href="driver.html">আগে থেকে রেজিস্টার আছেন? Driver App খুলুন</a>
+</div>
+
+<script>
+firebase.initializeApp({databaseURL:"https://ride-sathi-go-default-rtdb.asia-southeast1.firebasedatabase.app"});
+const db=firebase.database();
+
+function toBase64(file){
+  return new Promise((res,rej)=>{
+    let r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  })
+}
+
+async function register(){
+  let n = document.getElementById('name').value.trim();
+  let m = document.getElementById('mobile').value.trim();
+  let v = document.getElementById('vehicle').value;
+  let vn = document.getElementById('vehNo').value.trim();
+  let p1 = document.getElementById('photoSelf').files[0];
+  let p2 = document.getElementById('photoDoc').files[0];
+  let btn = document.getElementById('btn');
+
+  if(!n || m.length!=10 ||!vn ||!p1 ||!p2){
+    return alert('দাদা সব ঘর + 2 টো ছবি দিতেই হবে *');
+  }
+  if(p1.size > 1024*1024 || p2.size > 1024*1024){
+    return alert('ছবি 1MB এর কম দিন');
+  }
+
+  btn.innerText='⏳ আপলোড হচ্ছে...';
+  btn.disabled=true;
+
+  try{
+    let photoSelfBase64 = await toBase64(p1);
+    let photoDocBase64 = await toBase64(p2);
+
+    let data = {
+      name: n, mobile: m, vehicle: v, vehNo: vn,
+      photoSelf: photoSelfBase64,
+      photoDoc: photoDocBase64,
+      status: 'PENDING',
+      createdAt: Date.now()
+    };
+
+    await db.ref('driver_requests/'+m).set(data);
+    await db.ref('drivers/'+m).set(data);
+    localStorage.setItem('driver_mobile', m);
+
+    alert('✅ রেজিস্টার হয়ে গেছে! Admin Approve করলেই Ride পাবেন।');
+    location.href='driver.html';
+
+  }catch(e){
+    alert('Error: ' + e.message);
+    btn.innerText='✅ রেজিস্টার করুন';
+    btn.disabled=false;
+  }
+}
+</script>
+</body>
+</html>

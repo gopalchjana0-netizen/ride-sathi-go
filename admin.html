@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RIDE SATHI GO - SUPER ADMIN</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+body{margin:0;background:#f1f5f9;font-family:system-ui}
+.header{background:#0f172a;color:#fff;padding:14px;display:flex;justify-content:space-between;position:sticky;top:0;z-index:10}
+.tabs{display:flex;background:#fff;position:sticky;top:52px;z-index:9;box-shadow:0 2px 6px rgba(0,0,0,.1);overflow-x:auto}
+.tab{flex:1;padding:12px 4px;text-align:center;font-weight:bold;font-size:11px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.active{border-color:#16a34a;color:#0f172a}
+.container{padding:12px;max-width:900px;margin:auto}
+.card{background:#fff;border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card img{width:100%;border-radius:10px;margin-top:8px;max-height:200px;object-fit:contain;background:#f8fafc}
+.btn{padding:10px 12px;border:none;border-radius:10px;font-weight:bold;cursor:pointer}
+.approve{background:#16a34a;color:#fff}.reject{background:#ef4444;color:#fff}.blue{background:#0f172a;color:#fff}
+.badge{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:bold}
+.PENDING{background:#fef3c7;color:#92400e}.APPROVED{background:#dcfce7;color:#166534}.SOS{background:#fee2e2;color:#991b1b;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+#map{height:70vh;border-radius:14px}
+input{width:100%;padding:11px;border:1.5px solid #ddd;border-radius:10px;margin:6px 0;box-sizing:border-box}
+.small{font-size:12px;color:#64748b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font-size:20px;font-weight:bold;color:#16a34a}
+.otp{font-size:28px;letter-spacing:5px;font-weight:bold;text-align:center;background:#f1f5f9;padding:10px;border-radius:10px}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="header"><b>RIDE SATHI GO ADMIN</b><span id="pendingCount" class="badge PENDING">0 Pending</span></div>
+<div class="tabs">
+<div class="tab active" onclick="openTab('pending',this)">REQUEST</div>
+<div class="tab" onclick="openTab('all',this)">DRIVERS</div>
+<div class="tab" onclick="openTab('live',this)">LIVE MAP</div>
+<div class="tab" onclick="openTab('rides',this)">RIDES + OTP</div>
+<div class="tab" onclick="openTab('sos',this)" id="sosTab">🆘 SOS</div>
+<div class="tab" onclick="openTab('wallet',this)">WALLET</div>
+<div class="tab" onclick="openTab('setting',this)">RATE</div>
+</div>
+
+<div class="container">
+<div id="pendingDiv"></div>
+<div id="allDiv" style="display:none"></div>
+<div id="liveDiv" style="display:none"><div id="map"></div></div>
+<div id="ridesDiv" style="display:none"></div>
+<div id="sosDiv" style="display:none"></div>
+<div id="walletDiv" style="display:none"></div>
+<div id="settingDiv" style="display:none">
+<div class="card">
+<h3>💰 Rate & Commission Control</h3>
+<div class="grid">
+<div><label>Base Fare ₹</label><input id="baseFare" type="number" value="30"></div>
+<div><label>Per KM ₹</label><input id="perKm" type="number" value="10"></div>
+<div><label>Per Min ₹</label><input id="perMin" type="number" value="1"></div>
+<div><label>আপনার Commission %</label><input id="commission" type="number" value="18"></div>
+</div>
+<button class="btn approve" style="width:100%;margin-top:10px;padding:14px" onclick="saveRate()">✅ Save</button>
+</div>
+<div class="card">
+<h3>📊 Business Report</h3>
+<div class="grid">
+<div><p class="small">Total Rides</p><p id="totalRides" class="big">0</p></div>
+<div><p class="small">Total Collection</p><p id="totalCollection" class="big">₹0</p></div>
+<div><p class="small">আপনার Commission</p><p id="myCommission" class="big" style="color:#0f172a">₹0</p></div>
+<div><p class="small">Driver পাবে</p><p id="driverPay" class="big" style="color:#64748b">₹0</p></div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+firebase.initializeApp({databaseURL:"https://ride-sathi-go-default-rtdb.asia-southeast1.firebasedatabase.app"});
+const db=firebase.database();
+let map, markers={};
+function openTab(name, el){
+ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+ ['pending','all','live','rides','sos','wallet','setting'].forEach(n=>document.getElementById(n+'Div').style.display=n==name?'block':'none');
+ if(name=='live' &&!map) initMap();
+}
+function initMap(){
+ map=L.map('map').setView([22.57,88.36],11);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+ db.ref('drivers').on('value',snap=>{
+   let data=snap.val()||{};
+   for(let m in data){
+     let d=data[m]; if(!d.lat) continue;
+     if(markers[m]) markers[m].setLatLng([d.lat,d.lng]);
+     else markers[m]=L.marker([d.lat,d.lng]).addTo(map).bindPopup(`${d.name} - ${d.vehNo} <br>Wallet: ₹${d.wallet||0}`);
+   }
+ });
+}
+db.ref('driver_requests').on('value',snap=>{
+ pendingDiv.innerHTML=''; let count=0; let data=snap.val()||{};
+ for(let k in data){
+  let d=data[k]; if(d.status!='PENDING') continue; count++;
+  pendingDiv.innerHTML+=`<div class="card"><b>${d.name}</b> - ${d.mobile} | ${d.vehicle}<br><span class="small">${d.vehNo}</span><br><b>Selfie:</b><img src="${d.photoSelf}"><b>Doc:</b><img src="${d.photoDoc}"><div style="display:flex;gap:8px;margin-top:8px"><button class="btn approve" style="flex:1" onclick="approve('${k}')">Approve</button><button class="btn reject" style="flex:1" onclick="reject('${k}')">Reject</button></div></div>`;
+ }
+ document.getElementById('pendingCount').innerText=count+' Pending';
+ if(!count) pendingDiv.innerHTML='<div class="card">কোনো Request নেই</div>';
+});
+db.ref('drivers').on('value',snap=>{
+ allDiv.innerHTML=''; let data=snap.val()||{};
+ for(let k in data){
+  let d=data[k];
+  allDiv.innerHTML+=`<div class="card"><b>${d.name}</b> <span class="badge ${d.status}">${d.status}</span><br><span class="small">${d.mobile} | ${d.vehicle} - ${d.vehNo} | Wallet: ₹${d.wallet||0} | Rides: ${d.totalRides||0}</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn blue" onclick="addMoney('${k}',100)">+₹100</button><button class="btn reject" onclick="addMoney('${k}',-100)">-₹100</button><button class="btn gray" style="flex:1" onclick="toggleBlock('${k}',${d.isBlocked})">${d.isBlocked?'Unblock':'Block'}</button></div></div>`;
+ }
+});
+function approve(m){ db.ref('driver_requests/'+m+'/status').set('APPROVED'); db.ref('drivers/'+m+'/status').set('APPROVED'); }
+function reject(m){ if(confirm('Delete?')){ db.ref('driver_requests/'+m).remove(); db.ref('drivers/'+m).remove(); } }
+function addMoney(m, amt){ db.ref('drivers/'+m+'/wallet').transaction(c=
