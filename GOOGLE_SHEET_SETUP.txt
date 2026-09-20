@@ -1,0 +1,96 @@
+================================================================================
+RIDE SATHI GO - GOOGLE SHEET BACKUP & 7-DAY AUTO-CLEAN SETUP GUIDE
+================================================================================
+Project: ride-sathi-go
+Admin Owner Email: support.ridesathi@gmail.com
+Scheduled Cloud Function: deleteOldRidesAndBackup (Daily at 2:00 AM IST)
+
+--------------------------------------------------------------------------------
+STEP 1: CREATE THE GOOGLE SHEET IN support.ridesathi@gmail.com
+--------------------------------------------------------------------------------
+1. Log into Google Drive / Google Sheets using: support.ridesathi@gmail.com
+2. Create a new Google Sheet.
+3. Rename the Spreadsheet to:
+   "RIDE SATHI GO - Ride Database Backup"
+4. Inside the Google Sheet, create 4 Tabs (Sheets at the bottom) named EXACTLY:
+   - rides
+   - completed_rides
+   - ride_requests
+   - accepted_rides
+
+5. In Row 1 of EACH tab, add these 8 Column Headers (from Column A to H):
+   A: date
+   B: time
+   C: city
+   D: customer_mobile
+   E: driver_mobile
+   F: fare
+   G: status
+   H: ride_id
+
+   IMPORTANT: All entries must be in ENGLISH ONLY (No Bengali text in Sheet).
+
+--------------------------------------------------------------------------------
+STEP 2: GET YOUR GOOGLE SHEET ID
+--------------------------------------------------------------------------------
+1. Look at your Google Sheet browser address bar:
+   https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   The long string between "/d/" and "/edit" is your SHEET ID.
+2. Copy this SHEET ID.
+
+--------------------------------------------------------------------------------
+STEP 3: SHARE SHEET WITH SERVICE ACCOUNT (EDITOR ACCESS)
+--------------------------------------------------------------------------------
+1. Download Service Account Private Key:
+   - Go to Firebase Console: https://console.firebase.google.com/project/ride-sathi-go/settings/serviceaccounts/adminsdk
+   - Click "Generate new private key".
+   - Save the downloaded JSON file as:
+     functions/service-account.json
+   - Open this JSON and note the "client_email", for example:
+     firebase-adminsdk-xxxxx@ride-sathi-go.iam.gserviceaccount.com
+
+2. Share the Google Sheet:
+   - In your Google Sheet, click the green "Share" button (top-right).
+   - In the "Add people and groups" box, paste the service account email:
+     firebase-adminsdk-xxxxx@ride-sathi-go.iam.gserviceaccount.com
+   - Permission: Select "Editor".
+   - (Uncheck "Notify people")
+   - Click "Share".
+   - Confirm support.ridesathi@gmail.com remains the Owner of the Sheet.
+
+--------------------------------------------------------------------------------
+STEP 4: ENABLE GOOGLE SHEETS API IN GOOGLE CLOUD
+--------------------------------------------------------------------------------
+1. Open this link in your browser:
+   https://console.cloud.google.com/apis/library/sheets.googleapis.com?project=ride-sathi-go
+2. Click the blue "ENABLE" button.
+
+--------------------------------------------------------------------------------
+STEP 5: CONFIGURE SHEET ID IN YOUR APP & FUNCTIONS
+--------------------------------------------------------------------------------
+Method A (From Admin Panel - Easiest):
+1. Open admin.html -> Go to "📊 Google Sheet Reports" section.
+2. Paste your Google Sheet ID in the input box and click "💾 Save Sheet ID".
+3. Click "📊 Open Google Sheet Report" to verify it opens directly!
+
+Method B (Via Firebase CLI):
+Run in terminal:
+firebase functions:config:set sheets.id="YOUR_GOOGLE_SHEET_ID"
+
+--------------------------------------------------------------------------------
+STEP 6: DEPLOY CLOUD FUNCTIONS
+--------------------------------------------------------------------------------
+To deploy the scheduled 2:00 AM backup function:
+1. Open PowerShell / Command Prompt in your project folder.
+2. Run:
+   firebase deploy --only functions
+
+Once deployed, Google Cloud Scheduler will automatically trigger:
+"deleteOldRidesAndBackup" every single night at 2:00 AM IST!
+It will:
+1. Find rides older than 7 days from rides, completed_rides, ride_requests, accepted_rides.
+2. Copy them into the corresponding tabs of your Google Sheet.
+3. Automatically delete completed rides (status=completed) from Firebase Realtime Database.
+
+================================================================================

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>RIDE SATHI GO - Complete Features & Documentation</title>
+<style>
+@page {
+  size: A4;
+  margin: 14mm 12mm 14mm 12mm;
+  @bottom-right {
+    content: counter(page);
+  }
+}
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  font-family: 'Segoe UI', 'Nirmala UI', system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+  background: #fff;
+  line-height: 1.5;
+  font-size: 13px;
+  margin: 0;
+  padding: 0;
+}
+
+.rainbow-banner {
+  background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff88, #00cfff, #8a2be2);
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.doc-header {
+  background: #0f172a;
+  color: #fff;
+  padding: 20px 24px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #16a34a;
+}
+.doc-title { font-size: 26px; font-weight: 900; margin: 0; color: #fff; letter-spacing: 0.5px; }
+.doc-subtitle { font-size: 13px; color: #fde047; font-weight: 700; margin-top: 4px; }
+.doc-badge { background: #16a34a; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 12px; text-align: right; }
+
+.section-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  page-break-inside: avoid;
+  background: #ffffff;
+}
+
+.sec-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #f1f5f9;
+}
+.sec-title span.tag {
+  font-size: 11px;
+  background: #dcfce7;
+  color: #166534;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.feature-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.feature-box b {
+  color: #1e293b;
+  font-size: 13px;
+  display: block;
+  margin-bottom: 3px;
+}
+.feature-box p {
+  margin: 0;
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.highlight-green {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+.highlight-green b { color: #166534; font-size: 13px; }
+
+.highlight-blue {
+  background: #f0f9ff;
+  border: 1.5px solid #7dd3fc;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+.highlight-blue b { color: #0369a1; font-size: 13px; }
+
+.highlight-red {
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 10px 0;
+}
+.highlight-red b { color: #b91c1c; font-size: 13px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 12px;
+}
+th, td {
+  border: 1px solid #cbd5e1;
+  padding: 7px 10px;
+  text-align: left;
+}
+th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="rainbow-banner"></div>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div>
+    <h1 class="doc-title">🏍️ RIDE SATHI GO</h1>
+    <div class="doc-subtitle">গ্রামের পথে, শহরের গতিতে 🚀 | Complete Features & Technical Overview</div>
+  </div>
+  <div class="doc-badge">
+    <div>Official Documentation</div>
+    <div style="font-size:10px;opacity:.9">Version 2.5 • Bilingual Edition</div>
+  </div>
+</div>
+
+<!-- SECTION 1: ARCHITECTURE OVERVIEW -->
+<div class="section-card">
+  <div class="sec-title">
+    🌐 1. প্রজেক্ট পরিচিতি ও স্থাপত্য (Project Architecture Overview)
+    <span class="tag">4-in-1 Ecosystem</span>
+  </div>
+  <p style="margin-top:0">
+    <b>RIDE SATHI GO</b> হলো একটি আধুনিক, দ্রুতগতির এবং সাশ্রয়ী দেশীয় রাইড-শেয়ারিং ইকোসিস্টেম। এটি ৪টি সম্পূর্ণ আলাদা ও সমন্বিত প্রগ্রেসিভ ওয়েব অ্যাপ্লিকেশন (PWA), গুগল ফায়ারবেস রিয়েলটাইম ডেটাবেস এবং ওপেন-সোর্স জিপিএস ও ম্যাপ ইঞ্জিনের সমন্বয়ে তৈরি।
+  </p>
+  <div class="grid-2">
+    <div class="feature-box">
+      <b>📱 ১. যাত্রী অ্যাপ (Customer Web App):</b>
+      <p>ফাইল: <code>index.html</code><br>যাত্রীদের জন্য ৩-ধাপের বুকিং, রিয়েল-টাইম ভাড়া হিসাব, লাইভ ড্রাইভার ট্র্যাকিং, সিক্রেট ওটিপি এবং এসওএস অ্যালার্ম।</p>
+    </div>
+    <div class="feature-box">
+      <b>🚖 ২. চালক অ্যাপ (Driver Partner App):</b>
+      <p>ফাইল: <code>driver.html</code><br>চালকদের জন্য লাইভ রাইড রাডার, ভয়েস নোটিফিকেশন, গুগল ম্যাপস টার্ন-বাই-টার্ন নেভিগেশন, কঠোর ওটিপি যাচাই ও আয় হিসাব।</p>
+    </div>
+    <div class="feature-box">
+      <b>📝 ৩. চালক রেজিস্ট্রেশন (Driver Onboarding):</b>
+      <p>ফাইল: <code>driver-registration.html</code><br>নতুন চালকদের লাইসেন্স, আধার, গাড়ির কাগজ ও ছবি দিয়ে সেলফ-রেজিস্ট্রেশন এবং পেমেন্ট ডিটেইলস জমা দেওয়ার পোর্টাল।</p>
+    </div>
+    <div class="feature-box">
+      <b>💻 ৪. অ্যাডমিন কন্ট্রোল প্যানেল (Super Admin):</b>
+      <p>ফাইল: <code>admin.html</code><br>সম্পূর্ণ ফ্লিট ম্যানেজমেন্ট, ড্রাইভার অ্যাপ্রুভাল, লাইভ ডিসপ্যাচ, ভাড়া রেট সেটিং, এসওএস অ্যালার্ম কন্ট্রোল ও আয় রিপোর্ট।</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: CUSTOMER APP -->
+<div class="section-card">
+  <div class="sec-title">
+    👤 2. যাত্রী প্যানেলের সম্পূর্ণ সুবিধাসমূহ (Customer App - index.html)
+    <span class="tag">Passenger Features</span>
+  </div>
+
+  <div class="highlight-green">
+    <b>✨ ৩-ধাপের সহজ ও স্পষ্ট বুকিং প্রক্রিয়া (3-Step Booking Flow):</b>
+    <ul style="margin:4px 0 0 0;padding-left:18px;font-size:12px">
+      <li><b>Step 1 (Welcome / স্বাগতম):</b> যাত্রীর নাম, ১০ সংখ্যার বৈধ মোবাইল নম্বর এবং প্রমো কুপন কোড (যেমন <code>RIDE50</code>) ইনপুট। লগইন করা থাকলে তথ্য নিজে থেকেই মনে রাখে।</li>
+      <li><b>Step 2 (Booking / ভাড়া ও লোকেশন):</b> বাহন নির্বাচন (Bike / Toto / Car), ১-ক্লিক জিপিএস বর্তমান অবস্থান, সারা পশ্চিমবঙ্গ ও ভারতের যেকোনো স্থানের নাম স্বয়ংক্রিয় সার্চ, দূরত্ব (KM), সময় ও ভাড়ার লাইভ হিসাব এবং ক্যাশ / ওয়ালেট / ইউপিআই পেমেন্ট চয়েস।</li>
+      <li><b>Step 3 (Confirm / পর্যালোচনা):</b> নাম, ফোন, পিকআপ, ড্রপ, বাহন, দূরত্ব, সময়, পেমেন্ট ও মোট ভাড়ার স্পষ্ট রিভিউ এবং কনফার্ম বুকিং বাটন।</li>
+    </ul>
+  </div>
+
+  <div class="grid-2">
+    <div class="feature-box">
+      <b>📍 আনরেসট্রিক্টেড লোকেশন সার্চ (Global OSM Search):</b>
+      <p>কোনো নির্দিষ্ট এলাকায় সীমাবদ্ধ নয়। ওপেনস্ট্রিটম্যাপ ও নোমিনাটিম এপিআই দ্বারা সারা পশ্চিমবঙ্গ ও ভারতের যেকোনো রাস্তা, বাজার ও ল্যান্ডমার্ক নিখুঁতভাবে সার্চ করা যায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>🔐 ৪-ডিজিটের সিক্রেট ওটিপি (Secret Ride OTP):</b>
+      <p>বুকিং হওয়ামাত্রই ৪ সংখ্যার একটি র‍্যান্ডম ওটিপি জেনারেট হয়ে স্ক্রিনে ফুটে ওঠে। চালক না আসা পর্যন্ত কাউকে এই কোড দিতে হয় না, যা যাত্রীর পূর্ণ নিরাপত্তা দেয়।</p>
+    </div>
+    <div class="feature-box">
+      <b>🗺️ রিয়েল-টাইম ড্রাইভার ট্র্যাকিং (Live Leaflet Map):</b>
+      <p>চালক বুকিং গ্রহণ করলেই স্ক্রিনে চালকের নাম, মোবাইল নম্বর ও গাড়ির বিবরণ চলে আসে। লিফলেট ম্যাপে চালক কত দূরে আছেন এবং গাড়ির লাইভ নড়াচড়া দেখা যায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>🚨 নিখুঁত জিপিএস এসওএস (Accurate Emergency SOS):</b>
+      <p>যাত্রীর মোবাইলের আসল লাইভ জিপিএস স্থানাঙ্ক (Latitude/Longitude) নিয়ে অ্যাডমিন প্যানেলে জরুরি সংকেত পাঠায় এবং হোয়াটসঅ্যাপে গুগল ম্যাপস লিংকসহ সরাসরি বার্তা পাঠায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>💰 ডিজিটাল ওয়ালেট ও ইউপিআই রিচার্জ (In-App Wallet):</b>
+      <p>যাত্রীরা সহজেই গুগল পে, ফোনপে বা পেটিএম-এর মাধ্যমে সরাসরি অফিশিয়াল ইউপিআই (<code>8768447312@pthdfc</code>) দিয়ে ওয়ালেট রিচার্জ করে ক্যাশলেস রাইড নিতে পারেন।</p>
+    </div>
+    <div class="feature-box">
+      <b>🎁 রেফার ও আয় (Refer & Earn):</b>
+      <p>প্রতিটি যাত্রীর ইউনিক রেফারেল কোড থাকে (যেমন <code>RSGO-XXXX</code>)। বন্ধুকে শেয়ার করলে এবং বন্ধু প্রথম রাইড সম্পন্ন করলে যাত্রী ওয়ালেটে ₹৩০ ক্যাশব্যাক পান।</p>
+    </div>
+    <div class="feature-box">
+      <b>📜 রাইড ইতিহাস (Ride History Log):</b>
+      <p>যাত্রীর মোবাইল নম্বরের ভিত্তিতে অতীতের সমস্ত সম্পন্ন ও চলমান রাইডের ভাড়া, তারিখ ও বিস্তারিত তালিকা দেখার সুবিধা।</p>
+    </div>
+    <div class="feature-box">
+      <b>⭐ ৫-স্টার রেটিং ও মতামত (Feedback System):</b>
+      <p>রাইড শেষে যাত্রীরা ১ থেকে ৫ স্টার রেটিং ও মন্তব্য জমা দিতে পারেন, যা সরাসরি ফায়ারবেস ডেটাবেসে সংরক্ষিত হয়।</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: DRIVER PARTNER APP -->
+<div class="section-card">
+  <div class="sec-title">
+    🛺 3. চালক/পার্টনার প্যানেলের সুবিধাসমূহ (Driver App - driver.html)
+    <span class="tag">Driver Features</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="feature-box">
+      <b>🟢 অনলাইন/অফলাইন ডিউটি সুইচ (Duty Toggle):</b>
+      <p>চালক সুবিধামতো ডিউটি অন বা অফ করতে পারেন। ডিউটি অন থাকাকালীন চালকের লাইভ জিপিএস লোকেশন ফায়ারবেস ডেটাবেসে ব্রডকাস্ট হয়।</p>
+    </div>
+    <div class="feature-box">
+      <b>🔊 বহুভাষিক অডিও নোটিফিকেশন (Voice Dispatch):</b>
+      <p>নতুন রাইড রিকোয়েস্ট আসামাত্রই অ্যালার্মের পাশাপাশি বাংলা, হিন্দি ও ইংরেজিতে গ্রাহকের নাম ও পিকআপ লোকেশন স্বয়ংক্রিয়ভাবে পড়ে শোনায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>✅ গ্রহণ ও ❌ প্রত্যাখ্যান উইথ কারণ (Accept/Reject):</b>
+      <p>চালক চাইলে রাইড গ্রহণ করতে পারেন অথবা নির্দিষ্ট কারণ (অনেক দূর, গাড়িতে সমস্যা, ব্যস্ত) সিলেক্ট করে প্রত্যাখ্যান করতে পারেন। গ্রাহক তাৎক্ষণিক কারণটি দেখতে পান।</p>
+    </div>
+    <div class="feature-box">
+      <b>🗺️ গুগল ম্যাপস টার্ন-বাই-টার্ন নেভিগেশন (GPS Navigation):</b>
+      <p>১-ক্লিকে গ্রাহকের পিকআপ লোকেশন এবং ট্রিপ শুরু হলে গ্রাহকের ড্রপ গন্তব্যের গুগল ম্যাপস ড্রাইভিং রুট খুলে যায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>🔒 কঠোর ওটিপি যাচাইকরণ (Strict OTP Lock):</b>
+      <p>যাত্রী থেকে ৪ ডিজিটের সঠিক ওটিপি ইনপুট না করা পর্যন্ত ট্রিপ শুরু করা যায় না। কোনো ভুল বা ফেক ট্রিপ করার সুযোগ নেই।</p>
+    </div>
+    <div class="feature-box">
+      <b>💵 দৈনিক আয় ও কমিশন হিসাব (Earnings HUD & Dues):</b>
+      <p>আজকের মোট আয়, সম্পন্ন ট্রিপের সংখ্যা এবং প্ল্যাটফর্মের বকেয়া কমিশন রিয়েলটাইমে দেখা যায়। বকেয়া বেশি হলে স্বয়ংক্রিয় নোটিশ ও টাইমার চালু হয়।</p>
+    </div>
+    <div class="feature-box">
+      <b>📸 দৈনিক সেলফি যাচাই (Daily Selfie Attendance):</b>
+      <p>ডিউটি শুরু করার পূর্বে চালকের পরিচয় নিশ্চিত করতে প্রতিদিনের সেলফি ভেরিফিকেশন সিস্টেম।</p>
+    </div>
+    <div class="feature-box">
+      <b>🆘 চালক জরুরি এসওএস (Driver Emergency SOS):</b>
+      <p>রাস্তায় কোনো বিপদ বা দুর্ঘটনার সম্মুখীন হলে চালকের জন্য ওয়ান-ট্যাপ এসওএস অ্যালার্ম, যা সরাসরি অ্যাডমিনের কাছে তাৎক্ষণিক সতর্কবার্তা পাঠায়।</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: DRIVER REGISTRATION APP -->
+<div class="section-card">
+  <div class="sec-title">
+    📝 4. চালক সেলফ-রেজিস্ট্রেশন পোর্টাল (driver-registration.html)
+    <span class="tag">Driver Onboarding</span>
+  </div>
+  <p style="margin-top:0">
+    যেকোনো বাইক, টোটো, অটো বা কার চালক ঘরে বসেই স্মার্টফোনের মাধ্যমে রাইড সাথী গো-তে যুক্ত হতে পারেন:
+  </p>
+  <div class="grid-2">
+    <div class="feature-box">
+      <b>📋 ব্যক্তিগত ও গাড়ির বিস্তারিত তথ্য:</b>
+      <p>চালকের পুরো নাম, মোবাইল নম্বর, হোয়াটসঅ্যাপ নম্বর, বাড়ির ঠিকানা, গাড়ির ধরন (Bike/Toto/Car), মডেল ও রেজিস্ট্রেশন নম্বর সংগ্রহ।</p>
+    </div>
+    <div class="feature-box">
+      <b>📄 ডিজিটাল ডকুমেন্টস সাবমিশন:</b>
+      <p>ড্রাইভিং লাইসেন্স নম্বর, আধার নম্বর এবং জরুরি পারিবারিক মোবাইল নম্বর নথিভুক্তকরণ।</p>
+    </div>
+    <div class="feature-box">
+      <b>💳 পেমেন্ট ব্যাংক / ইউপিআই তথ্য:</b>
+      <p>চালকের নিজস্ব ইউপিআই আইডি এবং ব্যাংক অ্যাকাউন্ট যাতে প্রতিদিনের উপার্জিত টাকা স্বচ্ছভাবে পৌঁছায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>⚡ ট্রিপল নোড সিঙ্ক্রোনাইজেশন:</b>
+      <p>রেজিস্ট্রেশন ফর্ম সাবমিট হওয়ামাত্রই ফায়ারবেসের <code>driver_requests</code>, <code>pending_drivers</code> এবং <code>driver_registrations</code>-এ স্বয়ংক্রিয়ভাবে জমা হয়।</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 5: ADMIN DASHBOARD -->
+<div class="section-card">
+  <div class="sec-title">
+    💻 5. সুপার অ্যাডমিন কন্ট্রোল প্যানেল (Admin Panel - admin.html)
+    <span class="tag">Master Control</span>
+  </div>
+
+  <div class="grid-2">
+    <div class="feature-box">
+      <b>📊 মাস্টার লাইভ ড্যাশবোর্ড (Fleet Analytics):</b>
+      <p>মোট চালক, অনলাইন চালক, আজকের মোট রাইড সংখ্যা, মোট ট্রানজেকশন ভ্যালু (GMV), অর্জিত কমিশন এবং বকেয়া টাকার লাইভ কাউন্টার ও গ্রাফ।</p>
+    </div>
+    <div class="feature-box">
+      <b>✔️ চালক অনুমোদন ও ব্লক কন্ট্রোল (KYC & Driver Ban):</b>
+      <p>নতুন চালকদের ১-ক্লিকে অনুমোদন (Approve) বা বাতিল করা। যেকোনো নিয়ম লঙ্ঘনকারী চালককে তৎক্ষণাৎ ব্লক (Ban) করার সুপার-অ্যাডমিন ক্ষমতা।</p>
+    </div>
+    <div class="feature-box">
+      <b>🗺️ লাইভ ফ্লিট ও ট্রিপ ট্র্যাকিং ম্যাপ (Live Fleet Radar):</b>
+      <p>একটি পূর্ণাঙ্গ ডিজিটাল ম্যাপে সমস্ত অনলাইন চালকদের অবস্থান এবং চলমান সমস্ত ট্রিপের পিকআপ ও ড্রপ লাইভ মনিটর করার সুবিধা।</p>
+    </div>
+    <div class="feature-box">
+      <b>📞 কল-ইন ম্যানুয়াল ডিসপ্যাচার (Manual Ride Booking):</b>
+      <p>কোনো যাত্রী ফোনে কল করে গাড়ি চাইলে অ্যাডমিন নিজে কম্পিউটার থেকে পিকআপ ও ড্রপ দিয়ে নিকটস্থ চালকের কাছে সরাসরি ট্রিপ পাঠিয়ে দিতে পারেন।</p>
+    </div>
+    <div class="feature-box">
+      <b>🚨 সেন্ট্রাল এসওএস কন্ট্রোল কমান্ড (SOS Command Center):</b>
+      <p>যাত্রী বা চালক এসওএস বাটন চাপামাত্রই অ্যাডমিন প্যানেলে বিকট লাল এলার্ম ও সাইরেন বাজে। সঠিক জিপিএস ম্যাপ দেখে সঙ্গে সঙ্গে পুলিশ বা সহায়তা পাঠানো যায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>⚙️ ডায়নামিক রেট ও ভাড়া নিয়ন্ত্রণ (Rate Card Setting):</b>
+      <p>কোডিং পরিবর্তন ছাড়াই বাইক, টোটো ও গাড়ির প্রতি কিমি ভাড়া, ন্যূনতম ভাড়া এবং প্ল্যাটফর্ম কমিশন শতাংশ অ্যাডমিন প্যানেল থেকে যেকোনো সময় পরিবর্তন করা যায়।</p>
+    </div>
+    <div class="feature-box">
+      <b>🎟️ প্রোমো কোড ও নোটিশ ব্রডকাস্ট (CMS & Promo):</b>
+      <p>নতুন কুপন কোড তৈরি এবং সমস্ত যাত্রী ও চালকদের অ্যাপে একযোগে নোটিশ বা অফার প্রচার করার সম্পূর্ণ সুবিধা।</p>
+    </div>
+    <div class="feature-box">
+      <b>🧹 ফায়ারবেস অটোমেটেড ক্লিনার (Free Tier Optimizer):</b>
+      <p>৩০ দিনের পুরোনো রাইড ও লগ স্বয়ংক্রিয়ভাবে ক্লিন করে ডেটাবেসের স্টোরেজ ফ্রি ও ফাস্ট রাখার অন্তর্নির্মিত টুল। সাথে এক্সেল ও পিডিএফ এক্সপোর্ট।</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: TECHNICAL SPECIFICATIONS -->
+<div class="section-card">
+  <div class="sec-title">
+    ⚡ 6. টেকনিক্যাল স্পেসিফিকেশন ও ডেটাবেস স্ট্রাকচার
+    <span class="tag">Technical Specs</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>কম্পোনেন্ট</th>
+        <th>প্রযুক্তি / টেকনোলজি</th>
+        <th>ব্যবহার ও বিবরণ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Frontend Architecture</b></td>
+        <td>HTML5, Modern CSS3, Vanilla JS (ES Modules)</td>
+        <td>কোনো ভারী ফ্রেমওয়ার্ক ছাড়া সুপারফাস্ট, লাইটওয়েট এবং ২জি/৩জি নেটওয়ার্কেও দ্রুত লোড হওয়া আর্কিটেকচার।</td>
+      </tr>
+      <tr>
+        <td><b>Cloud Database</b></td>
+        <td>Firebase Realtime Database (asia-southeast1)</td>
+        <td>সিঙ্গাপুর ক্লাস্টারে হোস্ট করা আল্ট্রা-লো লেটেন্সি নো-এসকিউএল রিয়েলটাইম ডেটাবেস। মিলিসেকেন্ডে ডেটা সিঙ্ক।</td>
+      </tr>
+      <tr>
+        <td><b>Cloud Hosting</b></td>
+        <td>Firebase Hosting (Google Edge CDN)</td>
+        <td>গুগলের গ্লোবাল সিডিএন ও এসএসএল সিকিউরিটিসমেত লাইভ হোস্টিং: <code>https://ride-sathi-go.web.app</code></td>
+      </tr>
+      <tr>
+        <td><b>Mapping & Geocoding</b></td>
+        <td>Leaflet.js + OpenStreetMap + Nominatim API</td>
+        <td>জিরো বিলিং কস্টে আনলিমিটেড ম্যাপ ভিউ এবং সারা ভারতের আনরেসট্রিক্টেড লোকেশন সার্চ ও রিভার্স জিওকোডিং।</td>
+      </tr>
+      <tr>
+        <td><b>PWA Integration</b></td>
+        <td>Web App Manifests + Service Worker (sw.js)</td>
+        <td>গ্রাহক, চালক ও অ্যাডমিন—সবার জন্য আলাদা আইকনসহ গুগল প্লে-স্টোর অ্যাপের মতো সরাসরি মোবাইলে ইনস্টলযোগ্য।</td>
+      </tr>
+      <tr>
+        <td><b>Payment Gateway</b></td>
+        <td>Direct UPI Intent Deep-linking + Dynamic QR</td>
+        <td>কোনো গেটওয়ে চার্জ বা থার্ড-পার্টি ফি ছাড়া সরাসরি চালক বা মালিকের ব্যাংক অ্যাকাউন্টে ১০০% টাকা ট্রান্সফার।</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight-blue" style="margin-top:12px">
+    <b>📦 ফায়ারবেস বুকিং ডেটাবেস স্ট্রাকচার (Exact Schema):</b>
+    <pre style="margin:6px 0 0 0;font-size:11px;background:#fff;padding:8px;border-radius:8px;border:1px solid #cbd5e1">
+bookings/ {
+  bookingId: {
+    customerName: "রাহুল সরকার",
+    phone: "9876543210",
+    pickup: "খড়গপুর স্টেশন",
+    drop: "মেদিনীপুর সদর",
+    fare: 75,
+    distance: "4.8 KM",
+    status: "pending", // pending -> accepted -> ongoing -> completed
+    time: "01:45 PM",
+    otp: 8421,
+    vehicleType: "Toto",
+    payType: "CASH",
+    fromLat: 22.1892, fromLon: 88.1923,
+    toLat: 22.2541, toLon: 88.2104,
+    timestamp: 1726258000000
+  }
+}
+    </pre>
+  </div>
+</div>
+
+<!-- SECTION 7: SUMMARY & CONTACT -->
+<div class="section-card">
+  <div class="sec-title">
+    📞 7. অফিশিয়াল লিঙ্ক ও হেল্পলাইন (Official Contacts)
+    <span class="tag">Live Links</span>
+  </div>
+  <table style="margin-bottom:0">
+    <tr>
+      <td style="width:35%"><b>🌐 লাইভ কাস্টমার অ্যাপ:</b></td>
+      <td><a href="https://ride-sathi-go.web.app" style="color:#0284c7;font-weight:700">https://ride-sathi-go.web.app</a></td>
+    </tr>
+    <tr>
+      <td><b>🚖 লাইভ ড্রাইভার প্যানেল:</b></td>
+      <td><a href="https://ride-sathi-go.web.app/driver.html" style="color:#0284c7;font-weight:700">https://ride-sathi-go.web.app/driver.html</a></td>
+    </tr>
+    <tr>
+      <td><b>📝 ড্রাইভার রেজিস্ট্রেশন:</b></td>
+      <td><a href="https://ride-sathi-go.web.app/driver-registration.html" style="color:#0284c7;font-weight:700">https://ride-sathi-go.web.app/driver-registration.html</a></td>
+    </tr>
+    <tr>
+      <td><b>💻 অ্যাডমিন কন্ট্রোল:</b></td>
+      <td><a href="https://ride-sathi-go.web.app/admin.html" style="color:#0284c7;font-weight:700">https://ride-sathi-go.web.app/admin.html</a></td>
+    </tr>
+    <tr>
+      <td><b>📞 কাস্টমার কেয়ার / হেল্পলাইন:</b></td>
+      <td><b>+91 8768447312</b></td>
+    </tr>
+    <tr>
+      <td><b>💳 অফিশিয়াল ইউপিআই আইডি:</b></td>
+      <td><b>8768447312@pthdfc</b></td>
+    </tr>
+  </table>
+</div>
+
+<div class="footer-note">
+  Generated automatically for <b>RIDE SATHI GO</b> • Complete System Documentation • 2026
+</div>
+
+</body>
+</html>

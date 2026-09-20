@@ -1,0 +1,10 @@
+{
+  "name": "RIDE SATHI GO - Registration",
+  "short_name": "Driver Reg",
+  "start_url": "./driver-registration.html",
+  "display": "standalone",
+  "icons": [
+    { "src": "driver-registration-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "driver-registration-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

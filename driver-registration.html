@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RIDE সাথী GO - Driver Registration</title>
+<link rel="manifest" href="manifest-reg.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" type="image/png" sizes="192x192" href="driver-registration-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="driver-registration-512.png">
+<link rel="apple-touch-icon" href="driver-registration-512.png">
+<style>
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;font-family:system-ui;padding:12px}
+.card{background:#fff;width:100%;max-width:460px;padding:24px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+h2{text-align:center;margin:0 0 6px;color:#0f172a;line-height:1.3;font-size:22px}
+.sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:16px;font-weight:bold}
+label{font-size:13px;font-weight:800;margin-top:14px;display:block;color:#1e293b}
+input,select{width:100%;padding:14px;margin:6px 0;border:1.5px solid #cbd5e1;border-radius:12px;font-size:15px;box-sizing:border-box;background:#fff;outline:none}
+input:focus,select:focus{border-color:#16a34a}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg fill='%23334155' height='24' viewBox='0 0 24 24' width='24'><path d='M7 10l5 5 5-5z'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:40px;cursor:pointer}
+.btn{width:100%;padding:15px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-weight:800;font-size:16px;margin-top:18px;cursor:pointer}
+.btn:disabled{background:#94a3b8}
+.waitBox{display:none;text-align:center;padding:20px;background:#f0fdf4;border:2px dashed #16a34a;border-radius:16px;margin-top:14px}
+.hint{font-size:11px;color:#64748b;margin-top:2px}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="card">
+<h2>🏍️ RIDE সাথী GO<br>ড্রাইভার রেজিস্ট্রেশন / Driver Registration</h2>
+<div class="sub">নতুন ড্রাইভার যোগ দিন / Add New Driver</div>
+<label>আপনার নাম * / Your Name *</label>
+<input id="name" placeholder="আপনার নাম লিখুন / Enter Your Name">
+<label>মোবাইল নম্বর * / Mobile Number *</label>
+<input id="mobile" placeholder="10 Digit মোবাইল নম্বর / 10 Digit Mobile Number" type="tel" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+<label>গাড়ির ধরণ * / Vehicle Type *</label>
+<select id="vehicle">
+<option value="Bike">🏍️ Bike / বাইক</option>
+<option value="Toto">🛺 Toto / টোটো</option>
+<option value="Car">🚗 Car / কার</option>
+<option value="Auto">🛺 Auto / অটো</option>
+</select>
+<label>গাড়ির নম্বর * / Vehicle Number *</label>
+<input id="vehNo" placeholder="গাড়ির নম্বর লিখুন / Enter Vehicle Number">
+<div class="hint">আপনার গাড়ির নম্বর লিখুন / Enter your vehicle number</div>
+<button class="btn" id="btn" onclick="register()">✅ রেজিস্টার করুন / Register Now</button>
+<div id="waitBox" class="waitBox">
+<div style="font-size:48px">⏳</div>
+<h3 style="margin:8px 0;color:#14532d">রেজিস্ট্রেশন হয়ে গেছে! / Registration Done!</h3>
+<p style="font-size:13px;color:#334155;margin:0;line-height:1.5">
+Admin Approve করলেই Panel খুলবে।<br>Panel will open after Admin Approval.
+</p>
+<button class="btn" style="background:#0f172a;margin-top:14px" onclick="location.href='driver.html'">➡️ ড্রাইভার প্যানেলে যান / Go to Driver Panel</button>
+</div>
+<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:14px">Support: 8768447312 | RIDE SATHI GO</p>
+<div style="margin-top:12px;text-align:center">
+  <a href="download.html" style="font-size:12px;color:#0284c7;text-decoration:none;font-weight:700">📲 সমস্ত অ্যাপ ডাউনলোড পেজ (Download Apps) →</a>
+</div>
+</div>
+<script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAmEXot3RWmFApaixN94pXsI_CVmOkHwxI",
+  authDomain:"ride-sathi-go.firebaseapp.com",
+  databaseURL:"https://ride-sathi-go-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"ride-sathi-go",
+  storageBucket:"ride-sathi-go.firebasestorage.app",
+  messagingSenderId:"253493728683",
+  appId:"1:253493728683:web:ef2ec9bcf7885788dfeeee"
+});
+const db=firebase.database();
+async function register(){
+ let n=document.getElementById('name').value.trim();
+ let m=document.getElementById('mobile').value.trim();
+ let v=document.getElementById('vehicle').value;
+ let vn=document.getElementById('vehNo').value.trim();
+ let btn=document.getElementById('btn');
+ if(!n){alert('আপনার নাম লিখুন / Enter Your Name');return;}
+ if(m.length!=10){alert('10 Digit মোবাইল নম্বর দিন / Enter 10 digit mobile number');return;}
+ if(!vn){alert('গাড়ির নম্বর লিখুন / Enter Vehicle Number');return;}
+ btn.innerText='⏳ হচ্ছে... / Processing...';btn.disabled=true;
+ try{
+  let now=Date.now();
+  let data={name:n,mobile:m,vehicle:v,vehNo:vn,status:'PENDING',type:'REGISTRATION',isRegistration:true,isSelfieVerified:false,due:0,createdAt:now,lastUpdate:now};
+   // Sync with all admin listener paths
+   await db.ref('pending_drivers/'+m).set(data);
+   await db.ref('driver_registrations/'+m).set(data);
+   await db.ref('driver_requests/'+m).set(data);
+  localStorage.setItem('driverPhone',m);localStorage.setItem('driverName',n);
+  document.getElementById('waitBox').style.display='block';btn.innerText='✅ হয়ে গেছে / Done';btn.style.background='#0f172a';
+ }catch(e){alert('Error: '+e.message);btn.innerText='✅ রেজিস্টার করুন / Register Now';btn.disabled=false;}
+}
+</script>
+</body>
+</html>

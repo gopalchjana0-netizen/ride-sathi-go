@@ -1,0 +1,26 @@
+{
+  "name": "ride-sathi-go",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "RIDE SATHI GO - Ride & Parcel Booking Platform",
+  "main": "index.html",
+  "scripts": {
+    "cap:sync": "cap sync",
+    "cap:build": "cap build"
+  },
+  "keywords": [
+    "ridesathigo",
+    "ride-sharing",
+    "capacitor"
+  ],
+  "author": "RIDE SATHI GO",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

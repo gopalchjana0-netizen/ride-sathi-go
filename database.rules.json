@@ -1,0 +1,75 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+    "bookings": {
+      ".indexOn": ["status", "mobile", "customerPhone", "driverPhone", "time", "date", "city"]
+    },
+    "rides": {
+      ".indexOn": ["status", "driverPhone", "mobile", "date", "time", "city"]
+    },
+    "completed_rides": {
+      ".indexOn": ["status", "driverPhone", "date", "time", "city"]
+    },
+    "ride_requests": {
+      ".indexOn": ["status", "vehicle", "vehicleType", "time", "city"]
+    },
+    "rideRequests": {
+      ".indexOn": ["status", "vehicle", "vehicleType", "time", "city"]
+    },
+    "accepted_rides": {
+      ".indexOn": ["status", "driverPhone", "mobile", "city"]
+    },
+    "drivers": {
+      ".indexOn": ["isOnline", "isBlocked", "due", "vehicle", "mobile", "city", "status"]
+    },
+    "cities": {
+      ".indexOn": ["isActive", "name", "active"]
+    },
+    "operational_cities": {
+      ".indexOn": ["active", "name"]
+    },
+    "feedback": {
+      ".indexOn": ["customerPhone", "bookingId", "timestamp", "rating"]
+    },
+    "ratings": {
+      ".indexOn": ["bookingId", "time"]
+    },
+    "coupons": {
+      ".indexOn": ["code", "active"]
+    },
+    "promo_codes": {
+      ".indexOn": ["code", "active"]
+    },
+    "notifications": {
+      ".indexOn": ["timestamp", "time"]
+    },
+    "login_history": {
+      ".indexOn": ["loginAt", "expiresAt", "type", "uid"]
+    },
+    "driver_registrations": {
+      ".indexOn": ["status", "phone", "time", "vehicle"]
+    },
+    "blocked_drivers": {
+      ".indexOn": ["blockedAt"]
+    },
+    "driver_dues": {
+      ".indexOn": ["status", "time", "deadline"],
+      "$driverPhone": {
+        ".indexOn": ["status", "time", "deadline"]
+      }
+    },
+    "payments": {
+      ".indexOn": ["status", "time", "driverId"]
+    },
+    "wallet": {
+      ".indexOn": ["driverPhone", "time", "status"]
+    },
+    "sos_alerts": {
+      ".indexOn": ["status", "time"]
+    },
+    "driver_selfie_logs": {
+      ".indexOn": ["date", "phone", "time"]
+    }
+  }
+}

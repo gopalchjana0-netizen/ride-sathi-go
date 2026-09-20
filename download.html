@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ride Sathi - Download Apps</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚖</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',system-ui,-apple-system,BlinkMacSystemFont,sans-serif}
+body{background:#0f0f0f;color:#fff;padding:20px;min-height:100vh}
+.top-nav{max-width:1100px;margin:0 auto 10px;display:flex;justify-content:space-between;align-items:center}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:#222;color:#FFD600;padding:8px 16px;border-radius:20px;text-decoration:none;font-weight:700;font-size:13px;border:1px solid #333;transition:all .2s}
+.back-btn:hover{background:#333;border-color:#FFD600}
+.header{text-align:center;padding:25px 10px}
+.header h1{color:#FFD600;font-size:32px;letter-spacing:1px;margin-bottom:4px}
+.badge{display:inline-block;background:#222;border:1px solid #333;color:#FFD600;padding:6px 14px;border-radius:20px;font-size:12px;margin-top:12px;font-weight:600}
+
+/* MODE TOGGLE */
+.mode-toggle{display:flex;justify-content:center;gap:10px;margin:20px auto 25px}
+.mode-btn{background:#1f1f23;color:#a1a1aa;border:1.5px solid #27272a;padding:9px 18px;border-radius:30px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.mode-btn.active{background:#FFD600;color:#000;border-color:#FFD600;box-shadow:0 0 15px rgba(255,214,0,.3)}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:1100px;margin:0 auto}
+.card{background:#1a1a1a;border:1.5px solid #2a2a2a;border-radius:20px;padding:22px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;transition:transform .2s,border-color .2s}
+.card:hover{border-color:#FFD600;transform:translateY(-4px)}
+.icon-box{width:80px;height:80px;margin:0 auto 14px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:bold}
+.c1 .icon-box{background:linear-gradient(135deg,#FFD600,#FFA000);color:#000}
+.c2 .icon-box{background:linear-gradient(135deg,#00E676,#00C853);color:#000}
+.c3 .icon-box{background:linear-gradient(135deg,#448AFF,#2962FF);color:#fff}
+.c4 .icon-box{background:linear-gradient(135deg,#FF6E40,#FF3D00);color:#fff}
+.card h3{font-size:18px;margin-bottom:4px;color:#fff}
+.qr-wrap{margin:14px auto;background:#fff;padding:8px;border-radius:12px;width:166px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.qr-wrap img{width:150px;height:150px;display:block;border-radius:4px}
+.qr-text{font-size:12px;color:#000;font-weight:700;margin-top:6px}
+.btn{display:block;width:100%;background:#FFD600;color:#000;text-decoration:none;padding:13px;border-radius:12px;font-weight:800;margin-top:14px;transition:background .2s;text-align:center;box-sizing:border-box}
+.btn:hover{background:#ffea00}
+.btn-secondary{display:block;width:100%;background:#27272a;color:#e4e4e7;text-decoration:none;padding:10px;border-radius:12px;font-weight:700;margin-top:8px;border:1px solid #3f3f46;font-size:13px;box-sizing:border-box}
+.btn-secondary:hover{background:#3f3f46;color:#fff}
+.free{font-size:11px;color:#00E676;margin-top:10px;font-weight:600}
+
+/* INSTRUCTIONS GUIDE */
+.guide-box{max-width:1100px;margin:40px auto 20px;background:#18181b;border:1px solid #27272a;border-radius:20px;padding:24px}
+.guide-box h2{color:#FFD600;font-size:18px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.guide-step{background:#27272a;border-radius:12px;padding:14px;margin-bottom:10px;font-size:13px;line-height:1.6}
+.guide-step b{color:#FFD600}
+code{background:#09090b;padding:2px 6px;border-radius:4px;color:#a5f3fc;font-family:monospace;font-size:12px}
+
+@media(max-width:600px){
+  body{padding:14px}
+  .header h1{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <a href="index.html" class="back-btn">⬅️ Ride Sathi Home</a>
+  <span style="font-size:12px;color:#a1a1aa">GitHub: <b>gopalchjana0-netizen/ride-sathi-go</b></span>
+</div>
+
+<div class="header">
+  <h1>🚖 RIDE SATHI</h1>
+  <p>Ride Sathi - Download Apps</p>
+  <p style="color:#FFD600;font-weight:600;margin-top:8px">অ্যাপ ডাউনলোড করুন - ১ ক্লিকে</p>
+  <span class="badge">✅ Hosted on GitHub - 100% Free - Zero Firebase Cost</span>
+</div>
+
+<!-- MODE SELECTOR: APK DOWNLOAD vs INSTANT WEB PWA -->
+<div class="mode-toggle">
+  <button class="mode-btn active" id="modeApkBtn" onclick="setMode('apk')">📱 Android APK Download</button>
+  <button class="mode-btn" id="modeWebBtn" onclick="setMode('web')">🌐 Instant Web / PWA App</button>
+</div>
+
+<div class="grid">
+  <!-- 1. CUSTOMER APP -->
+  <div class="card c1">
+    <div>
+      <div class="icon-box">C</div>
+      <h3>Customer App (index.html)</h3>
+      <p style="font-size:12px;color:#888">For Passengers - Book Rides</p>
+      <p style="font-size:10px;color:#555;font-style:italic">Built from index.html</p>
+    </div>
+    <div class="qr-wrap">
+      <img id="qr_customer" alt="Customer QR" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Index.apk">
+      <div class="qr-text" id="qrtext_customer">📱 QR Scan করে ডাউনলোড করুন</div>
+    </div>
+    <div>
+      <a class="btn" id="btn_customer" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Index.apk" download>📥 Download APK</a>
+      <a class="btn-secondary" href="index.html" target="_blank">🌐 Open Web Version</a>
+      <p class="free" id="tag_customer">Hosted on GitHub - 100% Free</p>
+    </div>
+  </div>
+
+  <!-- 2. DRIVER APP -->
+  <div class="card c2">
+    <div>
+      <div class="icon-box">D</div>
+      <h3>Driver App (driver.html)</h3>
+      <p style="font-size:12px;color:#888">For Drivers - Accept Rides</p>
+      <p style="font-size:10px;color:#555;font-style:italic">Built from driver.html</p>
+    </div>
+    <div class="qr-wrap">
+      <img id="qr_driver" alt="Driver QR" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk">
+      <div class="qr-text" id="qrtext_driver">📱 QR Scan করে ডাউনলোড করুন</div>
+    </div>
+    <div>
+      <a class="btn" id="btn_driver" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk" download>📥 Download APK</a>
+      <a class="btn-secondary" href="driver.html" target="_blank">🌐 Open Web Version</a>
+      <p class="free" id="tag_driver">Hosted on GitHub - 100% Free</p>
+    </div>
+  </div>
+
+  <!-- 3. ADMIN PANEL -->
+  <div class="card c3">
+    <div>
+      <div class="icon-box">A</div>
+      <h3>Admin Panel (admin.html)</h3>
+      <p style="font-size:12px;color:#888">For Owner - Manage All Rides</p>
+      <p style="font-size:10px;color:#555;font-style:italic">Built from admin.html</p>
+    </div>
+    <div class="qr-wrap">
+      <img id="qr_admin" alt="Admin QR" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Admin.apk">
+      <div class="qr-text" id="qrtext_admin">📱 QR Scan করে ডাউনলোড করুন</div>
+    </div>
+    <div>
+      <a class="btn" id="btn_admin" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Admin.apk" download>📥 Download APK</a>
+      <a class="btn-secondary" href="admin.html" target="_blank">🌐 Open Web Version</a>
+      <p class="free" id="tag_admin">Hosted on GitHub - 100% Free</p>
+    </div>
+  </div>
+
+  <!-- 4. DRIVER REGISTRATION -->
+  <div class="card c4">
+    <div>
+      <div class="icon-box">R</div>
+      <h3>Driver Registration (driver-registration.html)</h3>
+      <p style="font-size:12px;color:#888">New Driver Registration</p>
+      <p style="font-size:10px;color:#555;font-style:italic">Built from driver-registration.html</p>
+    </div>
+    <div class="qr-wrap">
+      <img id="qr_reg" alt="Registration QR" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver-Registration.apk">
+      <div class="qr-text" id="qrtext_reg">📱 QR Scan করে ডাউনলোড করুন</div>
+    </div>
+    <div>
+      <a class="btn" id="btn_reg" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver-Registration.apk" download>📥 Download APK</a>
+      <a class="btn-secondary" href="driver-registration.html" target="_blank">🌐 Open Web Version</a>
+      <p class="free" id="tag_reg">Hosted on GitHub - 100% Free</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const currentOrigin = window.location.origin || 'https://ride-sathi-go.web.app';
+let currentMode = 'apk';
+
+const apps = [
+  {
+    id: 'customer',
+    apkUrl: 'https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Index.apk',
+    webPath: 'index.html',
+    apkTitle: '📥 Download APK',
+    webTitle: '🚀 Open Customer Web App'
+  },
+  {
+    id: 'driver',
+    apkUrl: 'https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk',
+    webPath: 'driver.html',
+    apkTitle: '📥 Download APK',
+    webTitle: '🚀 Open Driver Web App'
+  },
+  {
+    id: 'admin',
+    apkUrl: 'https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Admin.apk',
+    webPath: 'admin.html',
+    apkTitle: '📥 Download APK',
+    webTitle: '🚀 Open Admin Dashboard'
+  },
+  {
+    id: 'reg',
+    apkUrl: 'https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver-Registration.apk',
+    webPath: 'driver-registration.html',
+    apkTitle: '📥 Download APK',
+    webTitle: '🚀 Open Registration Web'
+  }
+];
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeApkBtn').classList.toggle('active', mode === 'apk');
+  document.getElementById('modeWebBtn').classList.toggle('active', mode === 'web');
+  updateLinks();
+}
+
+function updateLinks() {
+  apps.forEach(app => {
+    const qrImg = document.getElementById('qr_' + app.id);
+    const qrText = document.getElementById('qrtext_' + app.id);
+    const btn = document.getElementById('btn_' + app.id);
+    const tag = document.getElementById('tag_' + app.id);
+
+    if (currentMode === 'apk') {
+      if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(app.apkUrl)}`;
+      if (qrText) qrText.textContent = '📱 QR Scan করে APK ডাউনলোড';
+      if (btn) {
+        btn.href = app.apkUrl;
+        btn.textContent = app.apkTitle;
+        btn.removeAttribute('target');
+      }
+      if (tag) tag.textContent = 'Hosted on GitHub - 100% Free';
+    } else {
+      const url = `${currentOrigin}/${app.webPath}`;
+      if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+      if (qrText) qrText.textContent = '📱 স্ক্যান করে ফোনে সরাসরি খুলুন';
+      if (btn) {
+        btn.href = url;
+        btn.textContent = app.webTitle;
+        btn.target = '_blank';
+      }
+      if (tag) tag.textContent = 'Instant Web PWA - Zero Install Needed';
+    }
+  });
+}
+
+updateLinks();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FastGo - ONE PAGE FINAL - All Fixed</title>
+<style>
+body{font-family:system-ui;background:#f6f6f6;margin:0}
+.header{background:#000;color:#fff;padding:12px;display:flex;justify-content:space-between;position:sticky;top:0;z-index:20}
+.tabs{display:flex;gap:6px;background:#222;padding:8px;position:sticky;top:48px;z-index:20}
+.tab{flex:1;padding:10px;text-align:center;background:#333;color:#fff;border-radius:8px;cursor:pointer;font-weight:800;font-size:13px}
+.tab.active{background:#FFD700;color:#000}
+.page{display:none;padding-bottom:80px}
+.page.active{display:block}
+.card{background:#fff;margin:12px;padding:14px;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:800;background:#FFD700;cursor:pointer;margin:4px 0}
+.btn-black{background:#000;color:#FFD700}.btn-red{background:#ff2f2f;color:#fff}.btn-green{background:#00c853;color:#fff}
+.v-box{display:flex;gap:8px}.v-card{flex:1;border:2px solid #eee;padding:10px;border-radius:10px;text-align:center;cursor:pointer}.v-card.active{border-color:#000;background:#fff9c4}
+input,select,textarea{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:10px;box-sizing:border-box}
+.notif{border-left:4px solid #FFD700;background:#fffbe6;padding:10px;margin:6px 0;border-radius:6px}
+.stars{font-size:32px;color:#ddd;cursor:pointer}.stars.active{color:#FFD700}
+.order{border-left:4px solid #000;background:#fffbe6;padding:10px;margin:8px 0;border-radius:8px}
+.badge{background:red;color:#fff;padding:2px 6px;border-radius:10px;font-size:11px}
+</style></head>
+<body>
+<div class="header"><b>FastGo ONE PAGE</b><span id="phShow" style="font-size:12px"></span></div>
+<div class="tabs">
+<div class="tab active" id="tab-cust" onclick="switchTab('cust')">👤 CUSTOMER</div>
+<div class="tab" id="tab-driver" onclick="switchTab('driver')">🏍️ DRIVER</div>
+<div class="tab" id="tab-admin" onclick="switchTab('admin')">👑 ADMIN</div>
+</div>
+
+<!-- CUSTOMER PAGE -->
+<div id="page-cust" class="page active">
+<div class="card" id="loginCard"><h3>Customer Login</h3><input id="phoneInput" placeholder="Mobile Number"><button class="btn" onclick="loginCust()">Login</button></div>
+<div id="custMain" style="display:none">
+<div class="card"><h3>🎁 Your Coupons - LIVE</h3><div id="myCoupons"></div></div>
+<div class="card"><h3>🔔 Notifications - Instant from Admin</h3><div id="notifList"></div></div>
+<div class="card" id="bookCard"><h3>Book Ride - City & Vehicle (Ola Logic)</h3><select id="citySelect"></select><div class="v-box"><div class="v-card active" id="v-bike" onclick="selectV('bike')">🏍️ Bike</div><div class="v-card" id="v-toto" onclick="selectV('toto')">🛺 Toto</div><div class="v-card" id="v-car" onclick="selectV('car')">🚗 Car</div></div><input id="fromLoc" placeholder="From"><input id="toLoc" placeholder="To"><select id="payMethod"><option value="COD">COD Cash</option><option value="GPay">GPay</option><option value="PhonePe">PhonePe</option></select><button class="btn" onclick="bookRide()">Book Now</button></div>
+<div class="card" id="liveCard" style="display:none"><h3 id="liveStatus"></h3><div id="liveInfo"></div><div id="otpBox" style="background:#000;color:#FFD700;padding:12px;border-radius:10px;text-align:center;display:none">SECRET OTP: <b id="otpShow" style="font-size:28px"></b><br><small>Show to driver</small></div><button class="btn btn-red" onclick="document.getElementById('cancelBox').style.display='block'">❌ Cancel Ride</button><div id="cancelBox" style="display:none"><select id="cancelReason"><option>মন বদলে গেছে / Changed Mind</option><option>এখন যাবো না / Don't want to go now</option><option>ভুল জায়গা / Wrong Location</option><option>ড্রাইভার দূরে / Driver is far</option><option>অন্য গাড়ি পেয়েছি / Got another vehicle</option></select><button class="btn btn-red" onclick="confirmCancel()">Confirm Cancel - Due 0</button></div></div>
+<div class="card" id="feedbackCard" style="display:none"><h3>⭐ Rate 1-5 + Note - Goes to Admin Instant</h3><div><span class="stars" onclick="setStar(1)">★</span><span class="stars" onclick="setStar(2)">★</span><span class="stars" onclick="setStar(3)">★</span><span class="stars" onclick="setStar(4)">★</span><span class="stars" onclick="setStar(5)">★</span></div><textarea id="fbNote" placeholder="Your experience"></textarea><button class="btn" onclick="submitFeedback()">Submit Feedback</button></div>
+<div class="card"><h3>📜 Booking History - By Your Number + Date Filter</h3><input type="date" id="filterDate" onchange="loadAll()"><button class="btn" style="background:#eee" onclick="document.getElementById('filterDate').value='';loadAll()">Show All</button><div id="historyList"></div></div>
+</div>
+</div>
+
+<!-- DRIVER PAGE -->
+<div id="page-driver" class="page">
+<div class="card" id="regCard"><h3>Driver Register / Login - Vehicle Locked</h3><input id="dName" placeholder="Name"><input id="dPhone" placeholder="Phone"><select id="dCity"></select><select id="dVehicle"><option value="bike">Bike</option><option value="toto">Toto</option><option value="car">Car</option></select><button class="btn btn-black" onclick="registerDriver()">Register / Login</button><div id="regMsg" style="font-weight:bold;margin-top:8px"></div></div>
+<div id="driverMain" style="display:none"><div class="card" style="background:#fff9c4"><b id="showV"></b> | <span id="showC"></span> | <span id="showP"></span><br><small style="color:green">✅ Bike booking goes ONLY to Bike drivers. Car drivers will NOT get Bike orders - 100% Fixed</small></div><div class="card" id="cancelAlert" style="display:none;background:#ffeaea"></div><div class="card"><h3>🔔 New Orders ONLY For You (<span id="filterInfo"></span>)</h3><div id="orderList"></div></div><div class="card"><h3>🎁 Driver Coupons LIVE</h3><div id="driverCoupons"></div></div></div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="page-admin" class="page">
+<div class="card"><h3>🌍 Multi-City Add/Delete - FIXED</h3><div style="display:flex;gap:6px"><input id="newCity" placeholder="New City e.g. Mumbai"><button class="btn" style="width:auto" onclick="addCity()">Add</button></div><div id="cityList"></div></div>
+<div class="card"><h3>📲 App Download Links - ONLY IN ADMIN (Removed from Customer)</h3><input id="custAppLink" placeholder="Customer App Link"><input id="driverAppLink" placeholder="Driver App Link"><input id="adminAppLink" placeholder="Admin App Link"><button class="btn" onclick="saveLinks()">Save Links</button><div id="linkShow" style="color:#333;font-size:13px;margin-top:6px;background:#fff9c4;padding:8px;border-radius:6px"></div></div>
+<div class="card"><h3>🚨 Pending Driver Approvals - City+Vehicle Wise</h3><div id="pendingList"></div></div>
+<div class="card"><h3>📢 Send Notification - Instant to Customer</h3><input id="nTitle" placeholder="Title"><textarea id="nMsg" placeholder="Message"></textarea><button class="btn" onclick="sendNotif()">Send Live</button></div>
+<div class="card"><h3>🎟️ Generate Coupon - Instant Show Fixed</h3><select id="cFor"><option value="customer">For Customer</option><option value="driver">For Driver</option></select><input id="cPhone" placeholder="all or specific number"><input id="cCode" placeholder="Code e.g. PUJA50"><input id="cDiscount" placeholder="Discount"><input id="cDesc" placeholder="Desc"><button class="btn" onclick="genCoupon()">Generate LIVE</button><div id="cList"></div></div>
+<div class="card"><h3>📦 All Bookings - City + Vehicle + Due 0 on Cancel</h3><div id="bookList"></div></div>
+<div class="card"><h3>⭐ Feedback Review 1-5 - Live from Customer</h3><div id="fbList"></div></div>
+</div>
+
+<script>
+// STORAGE KEYS - ONE PAGE
+const BOOK='fastgo_one_book', DRIVER='fastgo_one_driver', CITY='fastgo_one_city', NOTIF='fastgo_one_notif', COUPON='fastgo_one_coupon', FEED='fastgo_one_feed', APP='fastgo_one_app';
+let curPhone=localStorage.getItem('fastgo_one_curPhone')||'', myDriverPhone=localStorage.getItem('fastgo_one_driverPhone')||'', selV='bike', curRide=null, rate=0;
+
+function switchTab(t){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('tab-'+t).classList.add('active');loadAll()}
+
+// CUSTOMER FUNCS
+function selectV(v){selV=v;document.querySelectorAll('.v-card').forEach(e=>e.classList.remove('active'));document.getElementById('v-'+v).classList.add('active')}
+function loginCust(){let p=document.getElementById('phoneInput').value.trim();if(p.length<10)return alert('Enter number');curPhone=p;localStorage.setItem('fastgo_one_curPhone',p);document.getElementById('phShow').innerText='Cust: '+p;initCust()}
+function initCust(){if(!curPhone)return;document.getElementById('loginCard').style.display='none';document.getElementById('custMain').style.display='block';loadCities();loadAll()}
+function bookRide(){let city=document.getElementById('citySelect').value,f=document.getElementById('fromLoc').value.trim(),t=document.getElementById('toLoc').value.trim(),pay=document.getElementById('payMethod').value;if(!f||!t)return alert('Enter From To');let b=JSON.parse(localStorage.getItem(BOOK)||'[]');let id='R'+Date.now(),otp=Math.floor(1000+Math.random()*9000);b.unshift({id,phone:curPhone,city,from:f,to:t,vehicle:selV,payMethod:pay,status:'Requested',otp,driverPhone:'',date:new Date().toISOString(),isCancelled:false,dueAmount:0,rejectedBy:[],cancelReason:''});localStorage.setItem(BOOK,JSON.stringify(b));alert(`${city} - ${selV.toUpperCase()} Booked!`);loadAll()}
+function confirmCancel(){let r=document.getElementById('cancelReason').value;let books=JSON.parse(localStorage.getItem(BOOK)||'[]');let i=books.findIndex(b=>b.id===curRide);if(i>-1){books[i].status='Cancelled by Customer';books[i].cancelReason=r;books[i].isCancelled=true;books[i].dueAmount=0;localStorage.setItem(BOOK,JSON.stringify(books));alert('Cancelled - Driver will be notified - Due 0');loadAll()}}
+function setStar(n){rate=n;document.querySelectorAll('.stars').forEach((s,i)=>s.classList.toggle('active',i<n))}
+function submitFeedback(){if(rate===0)return alert('Select star');let fbs=JSON.parse(localStorage.getItem(FEED)||'[]');fbs.unshift({rideId:curRide,phone:curPhone,rating:rate,note:document.getElementById('fbNote').value,date:new Date().toISOString()});localStorage.setItem(FEED,JSON.stringify(fbs));document.getElementById('feedbackCard').style.display='none';let books=JSON.parse(localStorage.getItem(BOOK)||'[]');let i=books.findIndex(b=>b.id===curRide);if(i>-1){books[i].status='Completed & Feedback Done';localStorage.setItem(BOOK,JSON.stringify(books))}alert('Feedback sent to Admin');loadAll()}
+
+// DRIVER FUNCS
+function registerDriver(){let n=document.getElementById('dName').value||'Driver',p=document.getElementById('dPhone').value.trim(),city=document.getElementById('dCity').value,veh=document.getElementById('dVehicle').value;if(p.length<10)return alert('Enter number');let d=JSON.parse(localStorage.getItem(DRIVER)||'[]');let ex=d.find(x=>x.phone===p);if(!ex){d.push({phone:p,name:n,city,vehicle:veh,status:'pending',date:new Date().toISOString()});localStorage.setItem(DRIVER,JSON.stringify(d));document.getElementById('regMsg').innerHTML=`<span style="color:orange">⏳ Pending Approval - ${city} ${veh} - Wait for Admin</span>`;return}myDriverPhone=p;localStorage.setItem('fastgo_one_driverPhone',p);checkDriver()}
+function checkDriver(){let d=JSON.parse(localStorage.getItem(DRIVER)||'[]');let me=d.find(x=>x.phone===myDriverPhone);if(!me)return;if(me.status==='pending'){document.getElementById('regMsg').innerHTML=`<span style="color:orange">⏳ Pending Approval - Admin has not approved ${me.city} ${me.vehicle}</span>`;document.getElementById('driverMain').style.display='none';return}document.getElementById('regCard').style.display='none';document.getElementById('driverMain').style.display='block';document.getElementById('showV').innerText=me.vehicle.toUpperCase();document.getElementById('showC').innerText=me.city;document.getElementById('showP').innerText=me.phone;document.getElementById('filterInfo').innerText=me.city+' + '+me.vehicle.toUpperCase();loadAll()}
+
+// ADMIN FUNCS
+function addCity(){let c=document.getElementById('newCity').value.trim();if(!c)return alert('Enter city');let cities=JSON.parse(localStorage.getItem(CITY)||'["Kolkata","Howrah","Delhi","Mumbai"]');if(cities.includes(c))return alert('Already exists');cities.push(c);localStorage.setItem(CITY,JSON.stringify(cities));document.getElementById('newCity').value='';loadAll()}
+function deleteCity(city){let cities=JSON.parse(localStorage.getItem(CITY)||'[]');cities=cities.filter(x=>x!==city);localStorage.setItem(CITY,JSON.stringify(cities));loadAll()}
+function saveLinks(){localStorage.setItem(APP,JSON.stringify({cust:document.getElementById('custAppLink').value,driver:document.getElementById('driverAppLink').value,admin:document.getElementById('adminAppLink').value}));alert('App links saved - Only in Admin now');loadAll()}
+function approveDriver(ph){let d=JSON.parse(localStorage.getItem(DRIVER)||'[]');let i=d.findIndex(x=>x.phone===ph);if(i>-1){d[i].status='approved';localStorage.setItem(DRIVER,JSON.stringify(d));loadAll()}}
+function sendNotif(){let t=document.getElementById('nTitle').value,m=document.getElementById('nMsg').value;if(!t||!m)return alert('Fill');let n=JSON.parse(localStorage.getItem(NOTIF)||'[]');n.unshift({title:t,msg:m,date:new Date().toISOString()});localStorage.setItem(NOTIF,JSON.stringify(n));alert('Sent Live');loadAll()}
+function genCoupon(){let f=document.getElementById('cFor').value,ph=document.getElementById('cPhone').value||'all',code=document.getElementById('cCode').value;if(!code)return alert('Enter code');let c=JSON.parse(localStorage.getItem(COUPON)||'[]');c.unshift({for:f,forPhone:ph,code,discount:document.getElementById('cDiscount').value,desc:document.getElementById('cDesc').value});localStorage.setItem(COUPON,JSON.stringify(c));alert('Coupon Live - Will show instantly');loadAll()}
+
+// COMMON LOAD - THIS IS THE 100% VEHICLE MATCHING LOGIC
+function loadCities(){let cities=JSON.parse(localStorage.getItem(CITY)||'["Kolkata","Howrah","Delhi","Mumbai"]');let opts=cities.map(c=>`<option>${c}</option>`).join('');if(document.getElementById('citySelect'))document.getElementById('citySelect').innerHTML=opts;if(document.getElementById('dCity'))document.getElementById('dCity').innerHTML=opts;}
+
+function loadAll(){
+loadCities();
+// Customer Live
+let books=JSON.parse(localStorage.getItem(BOOK)||'[]');
+if(curPhone){
+let live=books.find(b=>b.phone===curPhone&&(b.status==='Requested'||b.status==='Accepted'));
+if(live){document.getElementById('bookCard').style.display='none';document.getElementById('liveCard').style.display='block';curRide=live.id;document.getElementById('liveStatus').innerText=live.status+' | '+live.city+' | '+live.vehicle.toUpperCase();document.getElementById('liveInfo').innerHTML=`${live.from} → ${live.to}<br>Driver: ${live.driverPhone||'Searching...'} | Pay: ${live.payMethod}`;document.getElementById('otpBox').style.display=live.status==='Accepted'?'block':'none';document.getElementById('otpShow').innerText=live.otp;if(live.status==='Completed')document.getElementById('feedbackCard').style.display='block';}else{document.getElementById('bookCard').style.display='block';document.getElementById('liveCard').style.display='none';}
+let my=books.filter(b=>b.phone===curPhone);let fd=document.getElementById('filterDate')?.value;if(fd)my=my.filter(b=>b.date.slice(0,10)===fd);document.getElementById('historyList').innerHTML=my.map(b=>`<div style="padding:8px;border-bottom:1px solid #eee"><b>${b.id}</b> | ${b.city} | ${b.vehicle.toUpperCase()} | ${b.status} ${b.isCancelled?'(Due 0)':''}<br><small>${new Date(b.date).toLocaleString()}</small></div>`).join('')||'No history';
+document.getElementById('myCoupons').innerHTML=JSON.parse(localStorage.getItem(COUPON)||'[]').filter(c=>c.for==='customer'&&(c.forPhone==='all'||c.forPhone===curPhone)).map(c=>`<div class="notif"><b>${c.code}</b> - ${c.discount}<br>${c.desc||''}</div>`).join('')||'No coupon';
+document.getElementById('notifList').innerHTML=JSON.parse(localStorage.getItem(NOTIF)||'[]').map(n=>`<div class="notif"><b>${n.title}</b><br>${n.msg}<br><small>${new Date(n.date).toLocaleString()}</small></div>`).join('')||'No notifications';
+}
+// Driver - 100% FIXED: City + Vehicle + Not Rejected
+if(myDriverPhone){
+let drivers=JSON.parse(localStorage.getItem(DRIVER)||'[]');let me=drivers.find(d=>d.phone===myDriverPhone);
+if(me && me.status==='approved'){
+// THIS LINE FIXES YOUR MAIN ISSUE: Bike order ONLY to Bike drivers
+let req=books.filter(b=>b.status==='Requested' && b.city===me.city && b.vehicle===me.vehicle &&!(b.rejectedBy||[]).includes(me.phone));
+document.getElementById('orderList').innerHTML=req.length?req.map(b=>`<div class="order"><b>${b.id}</b> | ${b.city} | ${b.vehicle.toUpperCase()}<br>${b.from}→${b.to}<br>Cust:${b.phone} | ${b.payMethod}<br><div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-green" onclick="acceptRide('${b.id}')">✅ Accept</button><button class="btn btn-red" onclick="openReject('${b.id}')">❌ Reject</button></div><div id="rb-${b.id}" style="display:none;margin-top:6px"><select id="rr-${b.id}"><option>Too Far</option><option>Busy</option><option>Vehicle Issue</option></select><button class="btn btn-red" onclick="confirmReject('${b.id}')">Confirm Reject</button></div></div>`).join(''):`No <b>${me.city} ${me.vehicle.toUpperCase()}</b> orders. (Bike orders will NOT go to Car drivers)`;
+let canc=books.filter(b=>b.driverPhone===me.phone && b.status.includes('Cancelled'));let el=document.getElementById('cancelAlert');if(canc.length){el.style.display='block';el.innerHTML=`<b>⚠️ Cancelled by Customer - Due 0</b><br>`+canc.map(c=>`${c.id} - ${c.phone} - Reason: ${c.cancelReason}`).join('<br>');}else el.style.display='none';
+document.getElementById('driverCoupons').innerHTML=JSON.parse(localStorage.getItem(COUPON)||'[]').filter(c=>c.for==='driver'&&(c.forPhone==='all'||c.forPhone===me.phone)).map(c=>`<div class="notif"><b>${c.code}</b> - ${c.discount}</div>`).join('')||'No coupon';
+}
+}
+// Admin
+let cities=JSON.parse(localStorage.getItem(CITY)||'["Kolkata","Howrah","Delhi","Mumbai"]');document.getElementById('cityList').innerHTML=cities.map(c=>`<div style="background:#333;color:#fff;padding:8px;margin:4px 0;display:flex;justify-content:space-between">${c}<button onclick="deleteCity('${c}')" style="background:red;color:#fff;border:none;padding:4px 8px;border-radius:4px">Delete</button></div>`).join('');
+let links=JSON.parse(localStorage.getItem(APP)||'{}');if(document.getElementById('custAppLink')){document.getElementById('custAppLink').value=links.cust||'';document.getElementById('driverAppLink').value=links.driver||'';document.getElementById('adminAppLink').value=links.admin||'';document.getElementById('linkShow').innerHTML=`Customer App: ${links.cust||'Not set'}<br>Driver App: ${links.driver||'Not set'}<br>Admin App: ${links.admin||'Not set'}<br><br><small>This section is ONLY in Admin - Removed from Customer as you asked</small>`;}
+let pend=JSON.parse(localStorage.getItem(DRIVER)||'[]').filter(d=>d.status==='pending');document.getElementById('pendingList').innerHTML=pend.map(d=>`<div style="background:#333;color:#fff;padding:8px;margin:4px 0">${d.name} - ${d.phone} - ${d.city} - <b>${d.vehicle.toUpperCase()}</b> <button class="btn" onclick="approveDriver('${d.phone}')">Approve</button></div>`).join('')||'No pending';
+document.getElementById('bookList').innerHTML=books.map(b=>`<div style="background:#333;color:#fff;padding:6px;margin:4px 0;font-size:12px">${b.id} | ${b.city} | ${b.vehicle.toUpperCase()} | Cust:${b.phone} | Drv:${b.driverPhone||'-'} | ${b.status} ${b.isCancelled?'(Due 0)':''}</div>`).join('')||'No bookings';
+document.getElementById('fbList').innerHTML=JSON.parse(localStorage.getItem(FEED)||'[]').map(f=>`<div style="background:#333;color:#fff;padding:8px;margin:4px 0">⭐${f.rating}/5 | ${f.phone} | ${f.rideId}<br>${f.note}<br><small>${new Date(f.date).toLocaleString()}</small></div>`).join('')||'No feedback';
+document.getElementById('cList').innerHTML=JSON.parse(localStorage.getItem(COUPON)||'[]').map(c=>`<div style="background:#333;color:#fff;padding:6px;margin:4px 0;font-size:12px">${c.for} | ${c.forPhone} | <b>${c.code}</b> - ${c.discount}</div>`).join('')||'';
+}
+window.openReject=function(id){document.getElementById('rb-'+id).style.display='block'}
+window.confirmReject=function(id){let books=JSON.parse(localStorage.getItem(BOOK)||'[]');let i=books.findIndex(b=>b.id===id);if(i>-1){if(!books[i].rejectedBy)books[i].rejectedBy=[];books[i].rejectedBy.push(myDriverPhone);localStorage.setItem(BOOK,JSON.stringify(books));alert('Rejected - Will not come again');loadAll()}}
+window.acceptRide=function(id){let books=JSON.parse(localStorage.getItem(BOOK)||'[]');let i=books.findIndex(b=>b.id===id);if(i>-1){books[i].status='Accepted';books[i].driverPhone=myDriverPhone;localStorage.setItem(BOOK,JSON.stringify(books));alert('Accepted - OTP sent to customer');loadAll()}}
+
+// Init
+if(curPhone){document.getElementById('phShow').innerText='Cust: '+curPhone;document.getElementById('loginCard').style.display='none';document.getElementById('custMain').style.display='block';}
+if(myDriverPhone){document.getElementById('regCard').style.display='none';document.getElementById('driverMain').style.display='block';}
+loadCities();loadAll();setInterval(loadAll,2500);
+</script></body></html>
