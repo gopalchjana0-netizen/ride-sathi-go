@@ -1,0 +1,71 @@
+name: Build Installable APK for Sharing
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install and Build Web
+        run: |
+          npm install
+          mkdir -p public
+          cp -f *.html public/ 2>/dev/null || true
+          cp -f *.png public/ 2>/dev/null || true
+          cp -f *.js public/ 2>/dev/null || true
+          cp -f manifest*.json public/ 2>/dev/null || true
+          npx cap sync android
+
+      - name: Decode Keystore from Secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > android/app/ridesathi-release-key.jks
+            echo "KEYSTORE_PATH=android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
+            echo "Keystore decoded from secrets"
+          elif [ -f "android/app/ridesathi-release-key.jks" ]; then
+            echo "Using committed ridesathi-release-key.jks"
+            echo "KEYSTORE_PATH=android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
+          else
+            echo "Generating fallback release keystore on runner..."
+            keytool -genkey -v -keystore android/app/ridesathi-release-key.jks \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -alias ridesathi -storepass RideSathi@2026 -keypass RideSathi@2026 \
+              -dname "CN=Ride Sathi, OU=Dev, O=RideSathi, L=Kolkata, ST=WB, C=IN"
+            echo "KEYSTORE_PATH=android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
+          fi
+
+      - name: Build Signed Release APK and AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'RideSathi@2026' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'ridesathi' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'RideSathi@2026' }}
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          ./gradlew bundleRelease --no-daemon
+          ls -lh app/build/outputs/apk/release/
+
+      - name: Upload Installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: RideSathi-Installable-APK
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

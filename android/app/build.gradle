@@ -18,11 +18,17 @@ android {
     }
     signingConfigs {
         release {
-            if (System.getenv("KEYSTORE_BASE64") != null && file("release.keystore").exists()) {
-                storeFile file('release.keystore')
-                storePassword System.getenv("KEYSTORE_PASSWORD") ?: "android"
-                keyAlias System.getenv("KEY_ALIAS") ?: "androiddebugkey"
-                keyPassword System.getenv("KEY_PASSWORD") ?: "android"
+            def keystorePath = System.getenv("KEYSTORE_PATH")
+            if (keystorePath != null && file(keystorePath).exists()) {
+                storeFile file(keystorePath)
+                storePassword System.getenv("KEYSTORE_PASSWORD") ?: "RideSathi@2026"
+                keyAlias System.getenv("KEY_ALIAS") ?: "ridesathi"
+                keyPassword System.getenv("KEY_PASSWORD") ?: "RideSathi@2026"
+            } else if (file('ridesathi-release-key.jks').exists()) {
+                storeFile file('ridesathi-release-key.jks')
+                storePassword 'RideSathi@2026'
+                keyAlias 'ridesathi'
+                keyPassword 'RideSathi@2026'
             } else if (file('debug.keystore').exists()) {
                 storeFile file('debug.keystore')
                 storePassword 'android'
@@ -40,6 +46,7 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -56,6 +63,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
