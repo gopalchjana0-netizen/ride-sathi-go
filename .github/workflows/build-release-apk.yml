@@ -24,11 +24,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
 
       - name: Install NPM Dependencies
-        run: npm ci || npm install
+        run: npm install
 
       - name: Sync Web Assets to Public Folder
         run: |
@@ -39,7 +38,9 @@ jobs:
           cp -f manifest*.json public/ 2>/dev/null || true
 
       - name: Sync Capacitor Android
-        run: npx cap sync android
+        run: |
+          npm install
+          npx cap sync android
 
       - name: Decode Release Keystore
         if: env.KEYSTORE_BASE64 != ''
