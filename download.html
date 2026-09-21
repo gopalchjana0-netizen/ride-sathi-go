@@ -82,8 +82,8 @@ code{background:#09090b;padding:2px 6px;border-radius:4px;color:#a5f3fc;font-fam
       <p style="font-size:10px;color:#555;font-style:italic">v2.3.0 Latest Auto-Updatable</p>
     </div>
     <div class="qr-wrap">
-      <img id="qr_customer" alt="Customer QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Customer-v2.3.0.apk">
-      <div class="qr-text" id="qrtext_customer">📱 QR Scan করে ডাউনলোড করুন</div>
+      <img id="qr_customer" alt="Customer QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html">
+      <div class="qr-text" id="qrtext_customer">📱 QR Scan করে ডাউনলোড পেজ খুলুন</div>
     </div>
     <div>
       <a class="btn" id="btn_customer" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Customer-v2.3.0.apk" download>📥 Download Customer v2.3.0 APK</a>
@@ -101,8 +101,8 @@ code{background:#09090b;padding:2px 6px;border-radius:4px;color:#a5f3fc;font-fam
       <p style="font-size:10px;color:#555;font-style:italic">v2.3.0 Latest Auto-Updatable</p>
     </div>
     <div class="qr-wrap">
-      <img id="qr_driver" alt="Driver QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-v2.3.0.apk">
-      <div class="qr-text" id="qrtext_driver">📱 QR Scan করে ডাউনলোড করুন</div>
+      <img id="qr_driver" alt="Driver QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html">
+      <div class="qr-text" id="qrtext_driver">📱 QR Scan করে ডাউনলোড পেজ খুলুন</div>
     </div>
     <div>
       <a class="btn" id="btn_driver" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-v2.3.0.apk" download>📥 Download Driver v2.3.0 APK</a>
@@ -120,8 +120,8 @@ code{background:#09090b;padding:2px 6px;border-radius:4px;color:#a5f3fc;font-fam
       <p style="font-size:10px;color:#555;font-style:italic">v2.3.0 Latest Auto-Updatable</p>
     </div>
     <div class="qr-wrap">
-      <img id="qr_admin" alt="Admin QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Admin-v2.3.0.apk">
-      <div class="qr-text" id="qrtext_admin">📱 QR Scan করে ডাউনলোড করুন</div>
+      <img id="qr_admin" alt="Admin QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html">
+      <div class="qr-text" id="qrtext_admin">📱 QR Scan করে ডাউনলোড পেজ খুলুন</div>
     </div>
     <div>
       <a class="btn" id="btn_admin" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Admin-v2.3.0.apk" download>📥 Download Admin v2.3.0 APK</a>
@@ -139,8 +139,8 @@ code{background:#09090b;padding:2px 6px;border-radius:4px;color:#a5f3fc;font-fam
       <p style="font-size:10px;color:#555;font-style:italic">v2.3.0 Latest Auto-Updatable</p>
     </div>
     <div class="qr-wrap">
-      <img id="qr_reg" alt="Registration QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-Registration-v2.3.0.apk">
-      <div class="qr-text" id="qrtext_reg">📱 QR Scan করে ডাউনলোড করুন</div>
+      <img id="qr_reg" alt="Registration QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html">
+      <div class="qr-text" id="qrtext_reg">📱 QR Scan করে ডাউনলোড পেজ খুলুন</div>
     </div>
     <div>
       <a class="btn" id="btn_reg" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-Registration-v2.3.0.apk" download>📥 Download Registration v2.3.0 APK</a>
@@ -200,8 +200,8 @@ function updateLinks() {
     const tag = document.getElementById('tag_' + app.id);
 
     if (currentMode === 'apk') {
-      if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${app.apkUrl}`;
-      if (qrText) qrText.textContent = '📱 QR Scan করে APK ডাউনলোড';
+      if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html`;
+      if (qrText) qrText.textContent = '📱 QR Scan করে ডাউনলোড পেজ খুলুন';
       if (btn) {
         btn.href = app.apkUrl;
         btn.textContent = app.apkTitle;

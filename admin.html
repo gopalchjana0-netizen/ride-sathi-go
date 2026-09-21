@@ -608,336 +608,8 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <a id="openSheetMainBtn" href="https://docs.google.com/spreadsheets" target="_blank" rel="noopener" class="btn approve" style="padding:10px 16px;font-size:13px;font-weight:bold;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
           📊 Open Google Sheet Report
         </a>
-        <a href="download.html" target="_blank" rel="noopener" class="btn purple" style="padding:10px 16px;font-size:13px;font-weight:bold;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
-          📲 Download APKs Hub
-        </a>
-        <button class="btn orange" onclick="runManualSheetBackup()" id="manualSheetBackupBtn" style="padding:10px 16px;font-size:13px;font-weight:bold">
-          ⚡ Backup &amp; Clean Old (&gt;7D) Now
-        </button>
-        <button class="btn blue" onclick="loadGoogleSheetMetrics()" style="padding:10px 16px;font-size:13px;font-weight:bold">
-          🔄 Refresh
-        </button>
-      </div>
-    </div>
-
-    <!-- Sheet ID Configuration -->
-    <div style="margin-top:14px;background:#fff;padding:12px 16px;border-radius:12px;border:1px solid #bbf7d0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <label class="small" style="font-weight:bold;color:#166534;white-space:nowrap">📋 Google Sheet ID:</label>
-      <input id="googleSheetIdInput" placeholder="Paste Google Sheet ID here (e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)" style="flex:1;min-width:280px;padding:8px 12px;border:1.5px solid #059669;border-radius:8px;font-size:12px">
-      <button class="btn approve" onclick="saveGoogleSheetId()" style="padding:8px 16px;font-size:12px;font-weight:bold">
-        💾 Save Sheet ID
-      </button>
-      <a href="GOOGLE_SHEET_SETUP.txt" target="_blank" style="font-size:11px;color:#0284c7;text-decoration:underline">📖 View Setup Guide</a>
-    </div>
-
-    <!-- Last Backup Status Notification -->
-    <div id="lastBackupBanner" style="margin-top:10px;background:#eff6ff;padding:8px 12px;border-radius:8px;border:1px solid #bfdbfe;font-size:11px;color:#1e40af;display:none">
-      ⏳ Last Backup: <span id="lastBackupText">-</span>
-    </div>
-  </div>
-
-  <!-- Key Performance Metrics Cards -->
-  <div class="grid4" style="margin-top:14px">
-    <div class="card" style="border-left:4px solid #16a34a;background:#fff">
-      <p class="small" style="margin:0;color:#64748b">Today Total Customers</p>
-      <p id="sheetMetricTodayCust" class="big" style="color:#16a34a;margin:4px 0 0">0</p>
-      <small style="color:#15803d;font-size:10px;font-weight:bold">👤 Unique Active Callers</small>
-    </div>
-    <div class="card" style="border-left:4px solid #0284c7;background:#fff">
-      <p class="small" style="margin:0;color:#64748b">Today Total Drivers</p>
-      <p id="sheetMetricTodayDrivers" class="big" style="color:#0284c7;margin:4px 0 0">0</p>
-      <small style="color:#0369a1;font-size:10px;font-weight:bold">🏍️ Fleet Working Today</small>
-    </div>
-    <div class="card" style="border-left:4px solid #f59e0b;background:#fff">
-      <p class="small" style="margin:0;color:#64748b">Today Total Rides</p>
-      <p id="sheetMetricTodayRides" class="big" style="color:#f59e0b;margin:4px 0 0">0</p>
-      <small style="color:#b45309;font-size:10px;font-weight:bold">🚖 Completed + Ongoing</small>
-    </div>
-    <div class="card" style="border-left:4px solid #7c3aed;background:#fff">
-      <p class="small" style="margin:0;color:#64748b">Total Earning ₹</p>
-      <p id="sheetMetricTotalEarning" class="big" style="color:#7c3aed;margin:4px 0 0">₹0</p>
-      <small style="color:#6d28d9;font-size:10px;font-weight:bold">💰 Gross Business Volume</small>
-    </div>
-  </div>
-
-  <!-- City-Wise Breakdown Report Table -->
-  <div class="card" style="margin-top:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <b>🏙️ City-Wise Performance &amp; Revenue Breakdown (শহরভিত্তিক রিপোর্ট)</b>
-      <span class="badge" id="sheetCityCountBadge" style="background:#059669;color:#fff">0 Cities</span>
-    </div>
-    <div style="overflow-x:auto;margin-top:10px">
-      <table class="table" style="width:100%;font-size:12px;text-align:left;border-collapse:collapse">
-        <thead>
-          <tr style="background:#e2e8f0;color:#0f172a">
-            <th style="padding:10px">#</th>
-            <th style="padding:10px">City Name</th>
-            <th style="padding:10px">Today Rides</th>
-            <th style="padding:10px">Completed Rides</th>
-            <th style="padding:10px">Active Drivers</th>
-            <th style="padding:10px">Total Earning (₹)</th>
-            <th style="padding:10px">Share %</th>
-          </tr>
-        </thead>
-        <tbody id="sheetCityTableBody">
-          <tr><td colspan="7" style="text-align:center;padding:20px;color:#64748b">Calculating city metrics...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 7-Day Backup Data Structure Information Card -->
-  <div class="card" style="border:1.5px dashed #059669;background:#f0fdf4;margin-top:14px">
-    <b style="color:#065f46;font-size:14px">📋 Google Sheet Tabs &amp; Columns Configuration</b>
-    <p class="small" style="color:#047857;margin:4px 0 8px">
-      Cloud Function <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;color:#166534">deleteOldRidesAndBackup</code> saves data to 4 tabs in the Sheet owned by <b style="color:#065f46">support.ridesathi@gmail.com</b>:
-    </p>
-    <div class="grid4">
-      <div style="background:#fff;padding:8px 12px;border-radius:8px;border:1px solid #bbf7d0">
-        <b style="color:#15803d;font-size:12px">1. rides</b>
-        <div class="small" style="color:#64748b">Active ride records</div>
-      </div>
-      <div style="background:#fff;padding:8px 12px;border-radius:8px;border:1px solid #bbf7d0">
-        <b style="color:#15803d;font-size:12px">2. completed_rides</b>
-        <div class="small" style="color:#64748b">Finished trips history</div>
-      </div>
-      <div style="background:#fff;padding:8px 12px;border-radius:8px;border:1px solid #bbf7d0">
-        <b style="color:#15803d;font-size:12px">3. ride_requests</b>
-        <div class="small" style="color:#64748b">Incoming requests</div>
-      </div>
-      <div style="background:#fff;padding:8px 12px;border-radius:8px;border:1px solid #bbf7d0">
-        <b style="color:#15803d;font-size:12px">4. accepted_rides</b>
-        <div class="small" style="color:#64748b">Accepted dispatch logs</div>
-      </div>
-    </div>
-    <p class="small" style="color:#0f172a;margin-top:10px">
-      <b>Columns in each tab:</b> <code>Date | Time | City | Customer Mobile | Driver Mobile | Fare | Status | Ride ID</code>
-    </p>
-  </div>
-</div>
-
-<div id="citiesDiv" style="display:none">
-  <!-- Top Banner & Stats Overview -->
-  <div class="card" style="border:2px solid #059669;background:#f0fdf4">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <div>
-        <h3 style="margin:0;color:#065f46;display:flex;align-items:center;gap:8px">
-          🏙️ Multi-City Expansion & Geo-Fencing (শহর ব্যবস্থাপনা)
-        </h3>
-        <p class="small" style="color:#047857;margin:4px 0 0">
-          নতুন শহর যুক্ত করুন, অপারেশনাল ব্যাসার্ধ ও শহরের জন্য স্বতন্ত্র ভাড়া নির্ধারণ করুন। সম্পূর্ণ ফ্রি OSM জিওকোডিং।
-        </p>
-      </div>
-      <button class="btn approve" onclick="loadCitiesManagement()" id="citiesRefreshBtn" style="padding:10px 16px;font-size:13px;font-weight:bold;cursor:pointer">
-        🔄 Refresh Cities
-      </button>
-    </div>
-
-    <!-- Quick Stats Cards -->
-    <div class="grid4" style="margin-top:14px">
-      <div class="card" style="border-left:4px solid #059669;padding:12px;background:#fff">
-        <p class="small" style="margin:0;color:#64748b">Active Cities</p>
-        <p id="statActiveCities" class="big" style="color:#059669;margin:4px 0 0">0</p>
-      </div>
-      <div class="card" style="border-left:4px solid #0284c7;padding:12px;background:#fff">
-        <p class="small" style="margin:0;color:#64748b">Fleet Coverage</p>
-        <p id="statTotalDriversCities" class="big" style="color:#0284c7;margin:4px 0 0">0</p>
-      </div>
-      <div class="card" style="border-left:4px solid #7c3aed;padding:12px;background:#fff">
-        <p class="small" style="margin:0;color:#64748b">City Rides</p>
-        <p id="statTotalRidesCities" class="big" style="color:#7c3aed;margin:4px 0 0">0</p>
-      </div>
-      <div class="card" style="border-left:4px solid #f59e0b;padding:12px;background:#fff">
-        <p class="small" style="margin:0;color:#64748b">Geo-Fencing</p>
-        <p class="big" style="color:#f59e0b;font-size:16px;margin:4px 0 0">Haversine Free</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Add / Edit City Form -->
-  <div class="card" style="border:2px solid #0284c7;background:#f8fafc;margin-top:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <b style="color:#0369a1;font-size:16px" id="cityFormTitle">➕ Add New Operational City (নতুন শহর যোগ করুন)</b>
-      <span id="cityEditingBadge" class="badge" style="display:none;background:#f59e0b;color:#fff">Editing Mode</span>
-    </div>
-    <input type="hidden" id="cityEditId" value="">
-
-    <div class="grid2">
-      <div>
-        <label class="small">শহরের নাম (City Name) *:</label>
-        <div style="display:flex;gap:6px">
-          <input id="cityInput" placeholder="যেমন: Kolkata, Medinipur, Digha, Siliguri" style="flex:1" oninput="if(document.getElementById('cityNameInput'))document.getElementById('cityNameInput').value=this.value">
-          <input type="hidden" id="cityNameInput">
-          <button type="button" class="btn approve" onclick="addCity()" style="padding:10px 14px;white-space:nowrap;font-weight:bold" title="Add city directly">
-            ➕ Add
-          </button>
-          <button type="button" class="btn blue" onclick="autoGeocodeCity()" id="cityGeoBtn" style="padding:10px 14px;white-space:nowrap;font-weight:bold" title="FREE OpenStreetMap search to auto-fill lat/lng">
-            📍 Auto-Locate
-          </button>
-        </div>
-        <small id="cityGeoStatus" style="color:#0284c7;font-size:11px;display:none"></small>
-      </div>
-      <div>
-        <label class="small">সার্ভিস পরিধি (Operational Radius in KM) *:</label>
-        <input id="cityRadiusInput" type="number" min="1" max="500" value="25" placeholder="যেমন: 25 (কিমি)">
-      </div>
-    </div>
-
-    <div class="grid2" style="margin-top:8px">
-      <div>
-        <label class="small">কেন্দ্রীয় অক্ষাংশ (Center Latitude) *:</label>
-        <input id="cityLatInput" type="number" step="any" placeholder="যেমন: 22.5726">
-      </div>
-      <div>
-        <label class="small">কেন্দ্রীয় দ্রাঘিমাংশ (Center Longitude) *:</label>
-        <input id="cityLngInput" type="number" step="any" placeholder="যেমন: 88.3639">
-      </div>
-    </div>
-
-    <!-- City Dynamic Rates -->
-    <div style="background:#eff6ff;padding:12px;border-radius:12px;border:1px solid #bfdbfe;margin-top:10px">
-      <b style="color:#1d4ed8;font-size:13px">💰 শহরের জন্য নির্দিষ্ট ভাড়া নির্ধারণ (City Custom Fare Rates):</b>
-      <div class="grid3" style="margin-top:6px">
-        <div>
-          <label class="small">বেস / নুন্যতম ভাড়া (Base Minimum ₹) *:</label>
-          <input id="cityBaseFareInput" type="number" min="0" value="30" placeholder="Base Fare ₹">
-        </div>
-        <div>
-          <label class="small">প্রতি কিমি ভাড়া (Per KM Rate ₹) *:</label>
-          <input id="cityPerKmInput" type="number" min="0" step="0.5" value="15" placeholder="Per KM ₹">
-        </div>
-        <div>
-          <label class="small">প্রতি মিনিট ভাড়া (Per Min Rate ₹):</label>
-          <input id="cityPerMinInput" type="number" min="0" step="0.1" value="1" placeholder="Per Min ₹">
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:10px">
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:bold;cursor:pointer">
-        <input type="checkbox" id="cityIsActiveCheckbox" checked style="width:18px;height:18px;cursor:pointer">
-        <span>🟢 এই শহরে পরিষেবা সক্রিয় রাখুন (Enable Service in this City)</span>
-      </label>
-
-      <div style="display:flex;gap:8px">
-        <button class="btn approve" onclick="saveCity()" id="citySaveBtn" style="padding:12px 24px;font-weight:bold;font-size:14px">
-          💾 Save City (শহর সংরক্ষণ করুন)
-        </button>
-        <button class="btn reject" onclick="resetCityForm()" style="padding:12px 18px;font-weight:bold;font-size:14px">
-          ❌ Reset / Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Operational Cities Table -->
-  <div class="card" style="margin-top:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <b>📋 সমস্ত কার্যকরী শহরসমূহ (All Operational Cities)</b>
-      <span class="badge" id="citiesCountBadge" style="background:#059669;color:#fff">0 Cities</span>
-    </div>
-
-    <div style="overflow-x:auto;margin-top:10px">
-      <table class="table" style="width:100%;font-size:12px;text-align:left;border-collapse:collapse">
-        <thead>
-          <tr style="background:#e2e8f0;color:#0f172a">
-            <th style="padding:10px">#</th>
-            <th style="padding:10px">City Name</th>
-            <th style="padding:10px">Center Coordinates</th>
-            <th style="padding:10px">Radius</th>
-            <th style="padding:10px">Fare Structure</th>
-            <th style="padding:10px">Drivers / Rides</th>
-            <th style="padding:10px">Status</th>
-            <th style="padding:10px">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="citiesTableBody">
-          <tr><td colspan="8" style="text-align:center;padding:20px;color:#64748b">Loading cities...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<div id="trackingDiv" style="display:none">
-  <!-- To enable auto-delete: Go to Firebase Console > Firestore > loginHistory collection > TTL Policy > Set field as 'expiresAt'. Firebase will auto delete docs after 7 days FREE. -->
-  <div class="card" style="border:2px solid #0284c7;background:#f8fafc">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <div>
-        <h3 style="margin:0;color:#0f172a;display:flex;align-items:center;gap:8px">
-          🛰️ User Tracking (Auto Delete in 7 Days)
-        </h3>
-        <p class="small" style="color:#64748b;margin:4px 0 0">
-          Customer & Driver stealth login tracking with IP, Device, Lat/Lng & OpenStreetMap location.
-        </p>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn blue" onclick="loadUserTracking()" id="trackRefreshBtn" style="padding:10px 16px;font-size:13px;font-weight:bold;cursor:pointer">
-          🔄 Refresh Tracking
-        </button>
-      </div>
-    </div>
-
-    <!-- STORAGE WARNING BANNER -->
-    <div style="margin-top:12px;background:#ecfdf5;border:1.5px solid #10b981;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:20px">🛡️</span>
-        <div>
-          <b style="color:#065f46;font-size:13px">7 din por auto delete hobe, 1GB full hobe na</b>
-          <div class="small" style="color:#047857">Firebase TTL auto-purges logs older than 7 days. Only 1 read per manual refresh (No continuous onSnapshot). 100% Free Quota Safe.</div>
-        </div>
-      </div>
-      <span class="badge" id="trackingCountBadge" style="background:#0284c7;color:#fff;font-size:12px;padding:5px 10px">0 Logs</span>
-    </div>
-
-    <!-- SEARCH & FILTER -->
-    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
-      <input type="text" id="trackSearchInput" placeholder="🔍 Search by Name, Phone, IP, or Location..." oninput="filterTrackingTable()" style="flex:2;min-width:200px;padding:10px;border-radius:10px;border:1px solid #cbd5e1">
-      <select id="trackTypeFilter" onchange="filterTrackingTable()" style="flex:1;min-width:140px;padding:10px;border-radius:10px;border:1px solid #cbd5e1;font-weight:bold">
-        <option value="ALL">👥 All (Customer & Driver)</option>
-        <option value="customer">👤 Customer Only</option>
-        <option value="driver">🏍️ Driver Only</option>
-      </select>
-    </div>
-
-    <!-- TRACKING TABLE -->
-    <div style="overflow-x:auto;margin-top:14px">
-      <table class="table" style="width:100%;font-size:12px;text-align:left;border-collapse:collapse">
-        <thead>
-          <tr style="background:#e2e8f0;color:#0f172a">
-            <th style="padding:10px">#</th>
-            <th style="padding:10px">Name</th>
-            <th style="padding:10px">Phone</th>
-            <th style="padding:10px">Type</th>
-            <th style="padding:10px">IP</th>
-            <th style="padding:10px">Device</th>
-            <th style="padding:10px">Location</th>
-            <th style="padding:10px">Login Time</th>
-            <th style="padding:10px">Expire Date</th>
-          </tr>
-        </thead>
-        <tbody id="trackingTableBody">
-          <tr><td colspan="9" style="text-align:center;padding:20px;color:#64748b">Click "Refresh Tracking" to load records...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- APP DOWNLOAD & DEPLOYMENT HUB -->
-<div id="appDownloadDiv" style="display:none">
-  <div class="card" style="border:2px solid #7c3aed;background:#faf5ff">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-      <div>
-        <h3 style="margin:0;color:#6d28d9;display:flex;align-items:center;gap:8px">
-          📲 RIDE SATHI GO - App Download & Deployment Hub
-        </h3>
-        <p class="small" style="color:#7c3aed;margin:4px 0 0">
-          কাস্টমার, ড্রাইভার ও অ্যাডমিন অ্যাপ ডাউনলোড করুন অথবা মোবাইল ব্রাউজারে ইনস্টল (Install PWA / APK) করুন।
-        </p>
-      </div>
-      <a href="download.html" target="_blank" rel="noopener" class="btn purple" style="padding:10px 18px;font-size:13px;font-weight:bold;text-decoration:none">
-        📦 Open APKs Hub (download.html)
+        <a href="/download.html" target="_blank" rel="noopener" class="btn purple" style="padding:10px 18px;font-size:13px;font-weight:bold;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
+        Go to Download Page -&gt; /download.html
       </a>
     </div>
 
@@ -949,18 +621,19 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <h4 style="margin:8px 0 4px;color:#0f172a">কাস্টমার অ্যাপ</h4>
         <p class="small" style="color:#64748b;margin:0 0 10px">Passenger Web App (index.html)</p>
         <div style="margin:6px auto 10px;text-align:center">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Customer-v2.3.0.apk" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Customer App APK QR">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Customer App APK QR">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Customer-v2.3.0.apk" download class="btn approve" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
+          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Customer-v2.3.0.apk" download class="btn approve" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
             📥 Download Customer v2 APK
           </a>
           <a href="index.html" target="_blank" class="btn blue" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none">
             🚀 Open App
           </a>
-          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Customer-v2.3.0.apk')">
+          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Customer-v2.3.0.apk')">
             🔗 Copy APK Link
           </button>
+          <a href="/download.html" target="_blank" data-download-page-btn="Customer" class="btn purple" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none;margin-top:2px">Go to Download Page -&gt; /download.html</a>
         </div>
       </div>
 
@@ -970,18 +643,19 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <h4 style="margin:8px 0 4px;color:#0f172a">ড্রাইভার অ্যাপ</h4>
         <p class="small" style="color:#64748b;margin:0 0 10px">Driver Partner Panel (driver.html)</p>
         <div style="margin:6px auto 10px;text-align:center">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-v2.3.0.apk" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Driver App APK QR">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Driver App APK QR">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-v2.3.0.apk" download class="btn orange" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
+          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Driver-v2.3.0.apk" download class="btn orange" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
             📥 Download Driver v2 APK
           </a>
           <a href="driver.html" target="_blank" class="btn blue" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none">
             🚀 Open App
           </a>
-          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-v2.3.0.apk')">
+          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Driver-v2.3.0.apk')">
             🔗 Copy APK Link
           </button>
+          <a href="/download.html" target="_blank" data-download-page-btn="Driver" class="btn purple" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none;margin-top:2px">Go to Download Page -&gt; /download.html</a>
         </div>
       </div>
 
@@ -991,18 +665,19 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <h4 style="margin:8px 0 4px;color:#0f172a">ড্রাইভার রেজিস্ট্রেশন</h4>
         <p class="small" style="color:#64748b;margin:0 0 10px">Onboarding (driver-registration.html)</p>
         <div style="margin:6px auto 10px;text-align:center">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-Registration-v2.3.0.apk" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Registration App APK QR">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Registration App APK QR">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-Registration-v2.3.0.apk" download class="btn blue" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
+          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Driver-Registration-v2.3.0.apk" download class="btn blue" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
             📥 Download Registration v2 APK
           </a>
           <a href="driver-registration.html" target="_blank" class="btn blue" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none">
             🚀 Open Portal
           </a>
-          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Driver-Registration-v2.3.0.apk')">
+          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Driver-Registration-v2.3.0.apk')">
             🔗 Copy APK Link
           </button>
+          <a href="/download.html" target="_blank" data-download-page-btn="Driver-Registration" class="btn purple" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none;margin-top:2px">Go to Download Page -&gt; /download.html</a>
         </div>
       </div>
 
@@ -1012,18 +687,19 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <h4 style="margin:8px 0 4px;color:#0f172a">অ্যাডমিন ড্যাশবোর্ড</h4>
         <p class="small" style="color:#64748b;margin:0 0 10px">Super Admin (admin.html)</p>
         <div style="margin:6px auto 10px;text-align:center">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Admin-v2.3.0.apk" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Admin App APK QR">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://ride-sathi-go.web.app/download.html" style="width:110px;height:110px;border-radius:8px;border:1px solid #cbd5e1;padding:3px" alt="Admin App APK QR">
         </div>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Admin-v2.3.0.apk" download class="btn purple" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
+          <a href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Admin-v2.3.0.apk" download class="btn purple" style="padding:9px;font-size:12px;font-weight:bold;text-decoration:none">
             📥 Download Admin v2 APK
           </a>
           <a href="admin.html" target="_blank" class="btn blue" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none">
             🚀 Open Admin
           </a>
-          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v2.3.0/RideSathi-Admin-v2.3.0.apk')">
+          <button class="btn blue" style="padding:8px;font-size:11px" onclick="copyAppUrl('https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/latest/download/RideSathi-Admin-v2.3.0.apk')">
             🔗 Copy APK Link
           </button>
+          <a href="/download.html" target="_blank" data-download-page-btn="Admin" class="btn purple" style="padding:8px;font-size:11px;font-weight:bold;text-decoration:none;margin-top:2px">Go to Download Page -&gt; /download.html</a>
         </div>
       </div>
     </div>
