@@ -79,3 +79,9 @@ android/app/release.keystore
 
 # Secret service account keys
 **/service-account.json
+
+# APK binaries & release output
+*.apk
+release_v*/
+temp_v*/
+old_pngs/

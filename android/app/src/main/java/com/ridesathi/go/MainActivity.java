@@ -1,100 +1,84 @@
 package com.ridesathi.go;
 
-import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
-    private WebView webView;
-    private SwipeRefreshLayout swipeRefresh;
-    private static final String WEB_URL = "https://ride-sathi-go.web.app";
-    private static final String VERCEL_URL = "https://ride-sathi-go.vercel.app";
+  private WebView webView;
 
-    @Override
-    @SuppressLint("SetJavaScriptEnabled")
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    try {
+      webView = new WebView(this);
+      setContentView(webView);
 
-        webView = findViewById(R.id.webview);
-        swipeRefresh = findViewById(R.id.swipeRefresh);
+      WebSettings s = webView.getSettings();
+      s.setJavaScriptEnabled(true);
+      s.setDomStorageEnabled(true);
+      s.setAllowFileAccess(true);
+      s.setAllowContentAccess(true);
+      s.setGeolocationEnabled(true);
+      s.setDatabaseEnabled(true);
+      s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(true);
-        settings.setJavaScriptCanOpenWindowsAutomatically(true);
-        settings.setGeolocationEnabled(true);
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        settings.setUserAgentString(settings.getUserAgentString() + " RideSathiApp");
-
-        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
-            try {
-                android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW);
-                i.setData(android.net.Uri.parse(url));
-                startActivity(i);
-            } catch (Exception ignored) {}
-        });
-
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                if (url.endsWith(".apk") || url.contains("/releases/download/")) {
-                    try {
-                        android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
-                        startActivity(i);
-                        return true;
-                    } catch (Exception ignored) {}
-                }
-                if (url.startsWith("tel:") || url.startsWith("whatsapp:") || url.contains("wa.me") || url.startsWith("intent:") || url.startsWith("mailto:")) {
-                    try {
-                        android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
-                        startActivity(i);
-                        return true;
-                    } catch (Exception ignored) {}
-                }
-                return false;
-            }
-
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (request.isForMainFrame() && request.getUrl().toString().contains("vercel.app")) {
-                    view.loadUrl(WEB_URL);
-                }
-            }
-        });
-
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                callback.invoke(origin, true, false);
-            }
-        });
-
-        webView.loadUrl(WEB_URL);
-
-        swipeRefresh.setOnRefreshListener(() -> {
-            webView.reload();
-            swipeRefresh.setRefreshing(false);
-        });
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
+      webView.setWebChromeClient(new WebChromeClient() {
+        @Override
+        public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+          callback.invoke(origin, true, false);
         }
+      });
+
+      webView.setDownloadListener((u, userAgent, contentDisposition, mimetype, contentLength) -> {
+        try {
+          Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(u));
+          startActivity(i);
+        } catch (Exception ignored) {}
+      });
+
+      webView.setWebViewClient(new WebViewClient() {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+          String u = request.getUrl().toString();
+          if (u.startsWith("tel:") || u.startsWith("whatsapp:") || u.contains("wa.me") || u.startsWith("intent:") || u.startsWith("mailto:") || u.endsWith(".apk")) {
+            try {
+              Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(u));
+              startActivity(i);
+              return true;
+            } catch (Exception ignored) {}
+          }
+          return false;
+        }
+      });
+
+      String url = "https://ride-sathi-go.web.app/index.html";
+      try {
+        Bundle meta = getPackageManager().getApplicationInfo(getPackageName(), 128).metaData;
+        if (meta != null && meta.containsKey("START_URL")) {
+          url = meta.getString("START_URL");
+        }
+      } catch (Exception e) {}
+
+      webView.loadUrl(url);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
+  }
+
+  @Override
+  public void onBackPressed() {
+    if (webView != null && webView.canGoBack()) {
+      webView.goBack();
+    } else {
+      super.onBackPressed();
+    }
+  }
 }
