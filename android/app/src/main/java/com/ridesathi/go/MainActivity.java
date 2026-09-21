@@ -37,7 +37,35 @@ public class MainActivity extends AppCompatActivity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setUserAgentString(settings.getUserAgentString() + " RideSathiApp");
 
+        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+            try {
+                android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW);
+                i.setData(android.net.Uri.parse(url));
+                startActivity(i);
+            } catch (Exception ignored) {}
+        });
+
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (url.endsWith(".apk") || url.contains("/releases/download/")) {
+                    try {
+                        android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                        startActivity(i);
+                        return true;
+                    } catch (Exception ignored) {}
+                }
+                if (url.startsWith("tel:") || url.startsWith("whatsapp:") || url.contains("wa.me") || url.startsWith("intent:") || url.startsWith("mailto:")) {
+                    try {
+                        android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                        startActivity(i);
+                        return true;
+                    } catch (Exception ignored) {}
+                }
+                return false;
+            }
+
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame() && request.getUrl().toString().contains("vercel.app")) {
