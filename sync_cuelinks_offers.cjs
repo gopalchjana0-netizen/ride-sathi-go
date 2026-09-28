@@ -29,6 +29,10 @@ function stripHtml(html) {
 function mapCategory(cuelinksCats, title, campaign) {
   const catStr = (Object.values(cuelinksCats || {}).join(' ') + ' ' + (title || '') + ' ' + (campaign || '')).toLowerCase();
 
+  const rechargeRegex = /\b(recharge|prepaid recharge|prepaid mobile|postpaid bill|dth|electricity bill|electric bill|utility bill|water bill|gas bill|fastag|broadband bill|airtel|jio|bsnl|vodafone|tataplay)\b/i;
+  if (rechargeRegex.test(catStr)) {
+    return 'Recharge';
+  }
   if (catStr.includes('travel') || catStr.includes('flight') || catStr.includes('hotel') || catStr.includes('bus') || catStr.includes('ticket') || catStr.includes('air') || catStr.includes('klook')) {
     return 'Travel';
   }
@@ -85,20 +89,31 @@ function fetchPage(page) {
   });
 }
 
-// Evergreen Top Indian Brands Catalog (Always guaranteed at top)
+// Evergreen Top Indian Brands & High-Commission Recharge Catalog
 const evergreenTopBrands = [
-  { b: 'Amazon', d: 'Up to 80% OFF on Mobiles, Fashion & Electronics', c: 'AMZ80', cat: 'Shopping', l: 'https://www.amazon.in', badge: 'Trending', rank: 1 },
-  { b: 'Flipkart', d: 'Big Saving Days: Up to 80% OFF on Top Products', c: 'FLIP50', cat: 'Shopping', l: 'https://www.flipkart.com', badge: 'Top Deal', rank: 2 },
-  { b: 'Myntra', d: 'Flat 30% to 70% OFF on Branded Fashion & Shoes', c: 'MYNTRA30', cat: 'Shopping', l: 'https://www.myntra.com', badge: 'Fashion', rank: 3 },
-  { b: 'Ajio', d: 'Min 50-70% OFF on Trends & Exclusive Brands', c: 'AJIO50', cat: 'Shopping', l: 'https://www.ajio.com', badge: 'Hot', rank: 4 },
-  { b: 'MakeMyTrip', d: 'Flat ₹2,000 OFF on Domestic Flights & Hotels', c: 'MMT2000', cat: 'Travel', l: 'https://www.makemytrip.com', badge: 'Flight/Hotel', rank: 5 },
-  { b: 'RedBus', d: 'Flat 20% OFF on West Bengal Bus Bookings', c: 'REDBUS20', cat: 'Travel', l: 'https://www.redbus.in', badge: 'Bus', rank: 6 },
-  { b: 'Swiggy', d: 'Flat 50% OFF + Instant Delivery on Food & Instamart', c: 'SWIGGY50', cat: 'Food', l: 'https://www.swiggy.com', badge: 'Top Food', rank: 7 },
-  { b: 'Zomato', d: '60% OFF up to ₹120 on Online Food Orders', c: 'ZOMATO60', cat: 'Food', l: 'https://www.zomato.com', badge: 'Food', rank: 8 },
-  { b: 'Blinkit', d: 'Instant 10-Min Delivery + Flat ₹50 OFF', c: 'BLINKIT50', cat: 'Grocery', l: 'https://blinkit.com', badge: '10 Mins', rank: 9 },
-  { b: 'Tata 1mg', d: 'Flat 20% OFF on Prescription Medicines & Health Checkups', c: '1MG20', cat: 'Health', l: 'https://www.1mg.com', badge: 'Medicines', rank: 10 },
-  { b: 'Nykaa', d: 'Up to 50% OFF on Top Cosmetics, Skincare & Fragrance', c: 'NYKAA50', cat: 'Beauty', l: 'https://www.nykaa.com', badge: 'Beauty', rank: 11 },
-  { b: 'boAt Lifestyle', d: 'Flat 10% OFF on Wireless Earphones & Smartwatches', c: 'BOAT10', cat: 'Electronics', l: 'https://www.boat-lifestyle.com', badge: 'Audio', rank: 12 }
+  // 📱 Mobile Recharge, DTH & Utility Bills
+  { b: 'Jio Recharge', d: 'Up to ₹50 Cashback on Jio Unlimited 5G & Data Packs', c: 'JIO50', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Prepaid', rank: 1 },
+  { b: 'Airtel Recharge', d: 'Flat ₹40 Cashback on Airtel 1.5GB/2GB Daily Plans', c: 'AIRTEL40', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Prepaid', rank: 2 },
+  { b: 'Vi Recharge', d: 'Hero Unlimited Midnight Data Plans + Flat ₹30 Cashback', c: 'VI30', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Prepaid', rank: 3 },
+  { b: 'BSNL Mobile', d: 'Affordable 3G/4G Validity Plans + Extra Discount', c: 'BSNL20', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Validity', rank: 4 },
+  { b: 'WBSEDCL Electricity', d: 'পশ্চিমবঙ্গ বিদ্যুৎ বিল পেমেন্টে পান নিশ্চিত ₹৫০ পর্যন্ত ক্যাশব্যাক', c: 'BILL50', cat: 'Recharge', l: 'https://www.amazon.in/b?node=14322429031', badge: 'WB Bill', rank: 5 },
+  { b: 'DTH Recharge', d: 'Tata Play, Airtel DTH, Dish TV রিচার্জে ক্যাশব্যাক ও ছাড়', c: 'DTHSAVE', cat: 'Recharge', l: 'https://www.amazon.in/b?node=14322430031', badge: 'DTH', rank: 6 },
+  { b: 'Fastag Recharge', d: 'Paytm, SBI, ICICI ও সকল ব্যাংকের Fastag রিচার্জ ক্যাশব্যাক', c: 'FASTAG10', cat: 'Recharge', l: 'https://www.amazon.in/b?node=21488168031', badge: 'Fastag', rank: 7 },
+  { b: 'Amazon Pay Bills', d: 'All Mobile Recharge, DTH & Utility Bill Payment Hub', c: 'AMZPAY', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'All in One', rank: 8 },
+
+  // 🛍️ Mega Shopping
+  { b: 'Amazon', d: 'Up to 80% OFF on Mobiles, Fashion & Electronics', c: 'AMZ80', cat: 'Shopping', l: 'https://www.amazon.in', badge: 'Trending', rank: 9 },
+  { b: 'Flipkart', d: 'Big Saving Days: Up to 80% OFF on Top Products', c: 'FLIP50', cat: 'Shopping', l: 'https://www.flipkart.com', badge: 'Top Deal', rank: 10 },
+  { b: 'Myntra', d: 'Flat 30% to 70% OFF on Branded Fashion & Shoes', c: 'MYNTRA30', cat: 'Shopping', l: 'https://www.myntra.com', badge: 'Fashion', rank: 11 },
+  { b: 'Ajio', d: 'Min 50-70% OFF on Trends & Exclusive Brands', c: 'AJIO50', cat: 'Shopping', l: 'https://www.ajio.com', badge: 'Hot', rank: 12 },
+  { b: 'MakeMyTrip', d: 'Flat ₹2,000 OFF on Domestic Flights & Hotels', c: 'MMT2000', cat: 'Travel', l: 'https://www.makemytrip.com', badge: 'Flight/Hotel', rank: 13 },
+  { b: 'RedBus', d: 'Flat 20% OFF on West Bengal Bus Bookings', c: 'REDBUS20', cat: 'Travel', l: 'https://www.redbus.in', badge: 'Bus', rank: 14 },
+  { b: 'Swiggy', d: 'Flat 50% OFF + Instant Delivery on Food & Instamart', c: 'SWIGGY50', cat: 'Food', l: 'https://www.swiggy.com', badge: 'Top Food', rank: 15 },
+  { b: 'Zomato', d: '60% OFF up to ₹120 on Online Food Orders', c: 'ZOMATO60', cat: 'Food', l: 'https://www.zomato.com', badge: 'Food', rank: 16 },
+  { b: 'Blinkit', d: 'Instant 10-Min Delivery + Flat ₹50 OFF', c: 'BLINKIT50', cat: 'Grocery', l: 'https://blinkit.com', badge: '10 Mins', rank: 17 },
+  { b: 'Tata 1mg', d: 'Flat 20% OFF on Prescription Medicines & Health Checkups', c: '1MG20', cat: 'Health', l: 'https://www.1mg.com', badge: 'Medicines', rank: 18 },
+  { b: 'Nykaa', d: 'Up to 50% OFF on Top Cosmetics, Skincare & Fragrance', c: 'NYKAA50', cat: 'Beauty', l: 'https://www.nykaa.com', badge: 'Beauty', rank: 19 },
+  { b: 'boAt Lifestyle', d: 'Flat 10% OFF on Wireless Earphones & Smartwatches', c: 'BOAT10', cat: 'Electronics', l: 'https://www.boat-lifestyle.com', badge: 'Audio', rank: 20 }
 ];
 
 async function syncOffers() {

@@ -3409,15 +3409,44 @@ window.addEventListener('load', function() {
       <button onclick="closeReferralModal()" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center">&times;</button>
     </div>
 
+    <!-- Quick Mobile Recharge & Bill Pay Hub -->
+    <div style="background:linear-gradient(135deg,#064e3b,#047857);color:#fff;border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 3px 10px rgba(6,78,59,0.15)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:12.5px;font-weight:800;display:flex;align-items:center;gap:6px">
+          ⚡ <span>মোবাইল রিচার্জ ও বিল পেমেন্ট</span>
+        </div>
+        <span style="background:#10b981;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">ক্যাশব্যাক নিশ্চিত</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center">
+        <div onclick="copyShop('JIO50','https://www.amazon.in/hpc/recharge','Jio Recharge')" style="background:rgba(255,255,255,0.14);padding:8px 4px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.2)">
+          <img src="https://www.google.com/s2/favicons?domain=jio.com&sz=128" style="width:24px;height:24px;border-radius:50%;background:#fff;padding:2px;display:block;margin:0 auto">
+          <div style="font-size:11px;font-weight:800;margin-top:4px">Jio</div>
+        </div>
+        <div onclick="copyShop('AIRTEL40','https://www.amazon.in/hpc/recharge','Airtel Recharge')" style="background:rgba(255,255,255,0.14);padding:8px 4px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.2)">
+          <img src="https://www.google.com/s2/favicons?domain=airtel.in&sz=128" style="width:24px;height:24px;border-radius:50%;background:#fff;padding:2px;display:block;margin:0 auto">
+          <div style="font-size:11px;font-weight:800;margin-top:4px">Airtel</div>
+        </div>
+        <div onclick="copyShop('VI30','https://www.amazon.in/hpc/recharge','Vi Recharge')" style="background:rgba(255,255,255,0.14);padding:8px 4px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.2)">
+          <img src="https://www.google.com/s2/favicons?domain=myvi.in&sz=128" style="width:24px;height:24px;border-radius:50%;background:#fff;padding:2px;display:block;margin:0 auto">
+          <div style="font-size:11px;font-weight:800;margin-top:4px">Vi / BSNL</div>
+        </div>
+        <div onclick="copyShop('BILL50','https://www.amazon.in/b?node=14322429031','WB Electricity Bill')" style="background:rgba(255,255,255,0.14);padding:8px 4px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,0.2)">
+          <img src="https://www.google.com/s2/favicons?domain=wbsedcl.in&sz=128" style="width:24px;height:24px;border-radius:50%;background:#fff;padding:2px;display:block;margin:0 auto">
+          <div style="font-size:11px;font-weight:800;margin-top:4px">বিদ্যুৎ বিল</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Search Input -->
     <div style="position:relative;margin-bottom:10px">
-      <input id="offerSearch" placeholder="🔍 ব্র্যান্ড বা কুপন সার্চ করুন (যেমন Amazon, Swiggy, Bus)..." style="width:100%;padding:11px 14px;padding-left:36px;border-radius:12px;border:1.5px solid #e2e8f0;box-sizing:border-box;font-size:13.5px;background:#f8fafc">
+      <input id="offerSearch" placeholder="🔍 ব্র্যান্ড বা কুপন সার্চ করুন (যেমন Jio, Amazon, Swiggy)..." style="width:100%;padding:11px 14px;padding-left:36px;border-radius:12px;border:1.5px solid #e2e8f0;box-sizing:border-box;font-size:13.5px;background:#f8fafc">
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:#94a3b8">🔍</span>
     </div>
 
     <!-- Category Filter Chips -->
     <div id="chips" style="display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;-webkit-overflow-scrolling:touch">
       <button onclick="filterCat('All',this)" class="offer-chip active" data-cat="All">সব (All)</button>
+      <button onclick="filterCat('Recharge',this)" class="offer-chip" data-cat="Recharge" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0">📱 রিচার্জ ও বিল</button>
       <button onclick="filterCat('Shopping',this)" class="offer-chip" data-cat="Shopping">🛍️ শপিং</button>
       <button onclick="filterCat('Travel',this)" class="offer-chip" data-cat="Travel">🧳 ট্রাভেল ও বাস</button>
       <button onclick="filterCat('Food',this)" class="offer-chip" data-cat="Food">🍔 ফুড</button>
@@ -3450,6 +3479,16 @@ let allOffers = [];
 const CACHE_KEY = "ride_offers_lifetime_v6";
 
 const defaultOffersCatalog = [
+  // 📱 Mobile Recharge, DTH & Utility Bills
+  {b:"Jio Recharge", d:"Up to ₹50 Cashback on Jio Unlimited 5G & Data Packs", c:"JIO50", cat:"Recharge", l:"https://www.amazon.in/hpc/recharge", badge:"Prepaid"},
+  {b:"Airtel Recharge", d:"Flat ₹40 Cashback on Airtel 1.5GB/2GB Daily Plans", c:"AIRTEL40", cat:"Recharge", l:"https://www.amazon.in/hpc/recharge", badge:"Prepaid"},
+  {b:"Vi Recharge", d:"Hero Unlimited Midnight Data Plans + Flat ₹30 Cashback", c:"VI30", cat:"Recharge", l:"https://www.amazon.in/hpc/recharge", badge:"Prepaid"},
+  {b:"BSNL Mobile", d:"Affordable 3G/4G Validity Plans + Extra Discount", c:"BSNL20", cat:"Recharge", l:"https://www.amazon.in/hpc/recharge", badge:"Validity"},
+  {b:"WBSEDCL Electricity", d:"পশ্চিমবঙ্গ বিদ্যুৎ বিল পেমেন্টে পান নিশ্চিত ₹৫০ পর্যন্ত ক্যাশব্যাক", c:"BILL50", cat:"Recharge", l:"https://www.amazon.in/b?node=14322429031", badge:"WB Bill"},
+  {b:"DTH Recharge", d:"Tata Play, Airtel DTH, Dish TV রিচার্জে ক্যাশব্যাক ও ছাড়", c:"DTHSAVE", cat:"Recharge", l:"https://www.amazon.in/b?node=14322430031", badge:"DTH"},
+  {b:"Fastag Recharge", d:"Paytm, SBI, ICICI ও সকল ব্যাংকের Fastag রিচার্জ ক্যাশব্যাক", c:"FASTAG10", cat:"Recharge", l:"https://www.amazon.in/b?node=21488168031", badge:"Fastag"},
+  {b:"Amazon Pay Bills", d:"All Mobile Recharge, DTH & Utility Bill Payment Hub", c:"AMZPAY", cat:"Recharge", l:"https://www.amazon.in/hpc/recharge", badge:"All in One"},
+
   // 🛍️ Mega Shopping
   {b:"Amazon", d:"Up to 80% OFF on Mobiles, Fashion & Home", c:"AMZ80", cat:"Shopping", l:"https://www.amazon.in", badge:"Trending"},
   {b:"Flipkart", d:"Up to 80% OFF Big Saving Days", c:"FLIP50", cat:"Shopping", l:"https://www.flipkart.com", badge:"Top Deal"},
@@ -3496,6 +3535,16 @@ const defaultOffersCatalog = [
 ];
 
 function getBrandFavicon(brandName, linkUrl) {
+  var b = (brandName || '').toLowerCase();
+  if (b.includes('jio')) return 'https://www.google.com/s2/favicons?domain=jio.com&sz=128';
+  if (b.includes('airtel')) return 'https://www.google.com/s2/favicons?domain=airtel.in&sz=128';
+  if (b.includes('vi ') || b.includes('vodafone')) return 'https://www.google.com/s2/favicons?domain=myvi.in&sz=128';
+  if (b.includes('bsnl')) return 'https://www.google.com/s2/favicons?domain=bsnl.co.in&sz=128';
+  if (b.includes('wbsedcl') || b.includes('electric')) return 'https://www.google.com/s2/favicons?domain=wbsedcl.in&sz=128';
+  if (b.includes('dth') || b.includes('tata play')) return 'https://www.google.com/s2/favicons?domain=tataplay.com&sz=128';
+  if (b.includes('fastag')) return 'https://www.google.com/s2/favicons?domain=ihmcl.co.in&sz=128';
+  if (b.includes('amazon')) return 'https://www.google.com/s2/favicons?domain=amazon.in&sz=128';
+
   try {
     var u = new URL(linkUrl);
     var host = u.hostname.replace(/^www\./, '');

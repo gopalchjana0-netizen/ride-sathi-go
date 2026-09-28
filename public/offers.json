@@ -1,9 +1,89 @@
 {
-  "updated_at": "2026-09-28T02:26:05.436Z",
+  "updated_at": "2026-09-28T02:47:15.026Z",
   "channel_id": "324245",
   "publisher_id": "276694",
-  "total_offers": 262,
+  "total_offers": 270,
   "offers": [
+    {
+      "b": "Jio Recharge",
+      "d": "Up to ₹50 Cashback on Jio Unlimited 5G & Data Packs",
+      "c": "JIO50",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/hpc/recharge",
+      "badge": "Prepaid",
+      "rank": 1,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fhpc%2Frecharge"
+    },
+    {
+      "b": "Airtel Recharge",
+      "d": "Flat ₹40 Cashback on Airtel 1.5GB/2GB Daily Plans",
+      "c": "AIRTEL40",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/hpc/recharge",
+      "badge": "Prepaid",
+      "rank": 2,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fhpc%2Frecharge"
+    },
+    {
+      "b": "Vi Recharge",
+      "d": "Hero Unlimited Midnight Data Plans + Flat ₹30 Cashback",
+      "c": "VI30",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/hpc/recharge",
+      "badge": "Prepaid",
+      "rank": 3,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fhpc%2Frecharge"
+    },
+    {
+      "b": "BSNL Mobile",
+      "d": "Affordable 3G/4G Validity Plans + Extra Discount",
+      "c": "BSNL20",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/hpc/recharge",
+      "badge": "Validity",
+      "rank": 4,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fhpc%2Frecharge"
+    },
+    {
+      "b": "WBSEDCL Electricity",
+      "d": "পশ্চিমবঙ্গ বিদ্যুৎ বিল পেমেন্টে পান নিশ্চিত ₹৫০ পর্যন্ত ক্যাশব্যাক",
+      "c": "BILL50",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/b?node=14322429031",
+      "badge": "WB Bill",
+      "rank": 5,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fb%3Fnode%3D14322429031"
+    },
+    {
+      "b": "DTH Recharge",
+      "d": "Tata Play, Airtel DTH, Dish TV রিচার্জে ক্যাশব্যাক ও ছাড়",
+      "c": "DTHSAVE",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/b?node=14322430031",
+      "badge": "DTH",
+      "rank": 6,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fb%3Fnode%3D14322430031"
+    },
+    {
+      "b": "Fastag Recharge",
+      "d": "Paytm, SBI, ICICI ও সকল ব্যাংকের Fastag রিচার্জ ক্যাশব্যাক",
+      "c": "FASTAG10",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/b?node=21488168031",
+      "badge": "Fastag",
+      "rank": 7,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fb%3Fnode%3D21488168031"
+    },
+    {
+      "b": "Amazon Pay Bills",
+      "d": "All Mobile Recharge, DTH & Utility Bill Payment Hub",
+      "c": "AMZPAY",
+      "cat": "Recharge",
+      "l": "https://www.amazon.in/hpc/recharge",
+      "badge": "All in One",
+      "rank": 8,
+      "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in%2Fhpc%2Frecharge"
+    },
     {
       "b": "Amazon",
       "d": "Up to 80% OFF on Mobiles, Fashion & Electronics",
@@ -11,7 +91,7 @@
       "cat": "Shopping",
       "l": "https://www.amazon.in",
       "badge": "Trending",
-      "rank": 1,
+      "rank": 9,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.amazon.in"
     },
     {
@@ -21,7 +101,7 @@
       "cat": "Shopping",
       "l": "https://www.flipkart.com",
       "badge": "Top Deal",
-      "rank": 2,
+      "rank": 10,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.flipkart.com"
     },
     {
@@ -31,7 +111,7 @@
       "cat": "Shopping",
       "l": "https://www.myntra.com",
       "badge": "Fashion",
-      "rank": 3,
+      "rank": 11,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.myntra.com"
     },
     {
@@ -41,7 +121,7 @@
       "cat": "Shopping",
       "l": "https://www.ajio.com",
       "badge": "Hot",
-      "rank": 4,
+      "rank": 12,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.ajio.com"
     },
     {
@@ -51,7 +131,7 @@
       "cat": "Travel",
       "l": "https://www.makemytrip.com",
       "badge": "Flight/Hotel",
-      "rank": 5,
+      "rank": 13,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.makemytrip.com"
     },
     {
@@ -61,7 +141,7 @@
       "cat": "Travel",
       "l": "https://www.redbus.in",
       "badge": "Bus",
-      "rank": 6,
+      "rank": 14,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.redbus.in"
     },
     {
@@ -71,7 +151,7 @@
       "cat": "Food",
       "l": "https://www.swiggy.com",
       "badge": "Top Food",
-      "rank": 7,
+      "rank": 15,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.swiggy.com"
     },
     {
@@ -81,7 +161,7 @@
       "cat": "Food",
       "l": "https://www.zomato.com",
       "badge": "Food",
-      "rank": 8,
+      "rank": 16,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.zomato.com"
     },
     {
@@ -91,7 +171,7 @@
       "cat": "Grocery",
       "l": "https://blinkit.com",
       "badge": "10 Mins",
-      "rank": 9,
+      "rank": 17,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fblinkit.com"
     },
     {
@@ -101,7 +181,7 @@
       "cat": "Health",
       "l": "https://www.1mg.com",
       "badge": "Medicines",
-      "rank": 10,
+      "rank": 18,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.1mg.com"
     },
     {
@@ -111,7 +191,7 @@
       "cat": "Beauty",
       "l": "https://www.nykaa.com",
       "badge": "Beauty",
-      "rank": 11,
+      "rank": 19,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.nykaa.com"
     },
     {
@@ -121,7 +201,7 @@
       "cat": "Electronics",
       "l": "https://www.boat-lifestyle.com",
       "badge": "Audio",
-      "rank": 12,
+      "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
     },
     {
@@ -843,7 +923,7 @@
       "b": "Living Shapes",
       "d": "Living Shapes Holiday Extravaganza: Flat 40% Off + 5% Extra on Prepaid!",
       "c": "LIVING5",
-      "cat": "Shopping",
+      "cat": "Recharge",
       "l": "https://livingshapes.in/collections/festive-sale",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Flivingshapes.in%2Fcollections%2Ffestive-sale&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/98447/medium/Screenshot_2026-09-18_155440.png?1789727122",
@@ -1030,7 +1110,7 @@
       "b": "khadi Natural",
       "d": "Mega Offer: Receive Up to 30% Off + Additional 5% for Prepaid Orders!",
       "c": "KHADI30",
-      "cat": "Food",
+      "cat": "Recharge",
       "l": "https://www.khadinatural.com/collections/all-products-offer",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.khadinatural.com%2Fcollections%2Fall-products-offer&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/39355/medium/New_Project_-_2025-12-02T185508.098.png?1764681944",
@@ -1734,7 +1814,7 @@
       "b": "Buyindusvalley",
       "d": "Pay Day Offer: Up to 50% Off + Flat 10% + Extra 5% + 2% Prepaid",
       "c": "PAYDAY5",
-      "cat": "Health",
+      "cat": "Recharge",
       "l": "https://www.buyindusvalley.in/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.buyindusvalley.in%2F&cid=324245&subid=ridesathigo",
       "img": "/photos/medium/missing.png",
@@ -2273,7 +2353,7 @@
       "b": "Gritzo",
       "d": "Up to 40% Off + Rs.100 Off on Supermilk + 5% Cashback on Prepaid!",
       "c": "SUPERMILK",
-      "cat": "Food",
+      "cat": "Recharge",
       "l": "https://www.gritzo.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.gritzo.com%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4785/medium/New_Project_%2865%29.png?1673344087",
