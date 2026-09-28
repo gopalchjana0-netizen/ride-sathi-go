@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-28T06:20:05.582Z",
+  "updated_at": "2026-09-28T12:18:32.192Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,105 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "khadi Natural",
+      "d": "Special Gandhi Jayanti Offer: Buy 1 Get 1 Free + Additional 5% Off for Prepaid Orders",
+      "c": "B1G1",
+      "cat": "Health",
+      "l": "https://www.khadinatural.com/collections/all-products-offer",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.khadinatural.com%2Fcollections%2Fall-products-offer&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/39355/medium/New_Project_-_2025-12-02T185508.098.png?1764681944",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "LinenClub",
+      "d": "Limited Time Festive Offer at Linen Club: Save Up to 50% + Unlock Extra 10% Off!",
+      "c": "FESTIVE10",
+      "cat": "Shopping",
+      "l": "https://www.linenclub.com/cavallo-by-linen-club-festive-offer",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.linenclub.com%2Fcavallo-by-linen-club-festive-offer&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/65536/medium/images_%286%29.jpg?1779694838",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Snag an Extra 15% Off Your Rs. 4999 Purchases!",
+      "c": "FEASTSPL2",
+      "cat": "Health",
+      "l": "https://luxe.ajio.com/s/feastspl2-186594",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Ffeastspl2-186594&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Fashion Frenzy: Enjoy 12% Off, Max Discount of Rs. 1000!",
+      "c": "TREAT",
+      "cat": "Shopping",
+      "l": "https://luxe.ajio.com/s/treat-375263",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Ftreat-375263&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Enjoy 10% Extra Discount on Fashion & Accessories – Save Up to Rs. 500",
+      "c": "SALE10",
+      "cat": "Shopping",
+      "l": "https://luxe.ajio.com/s/sale10-362698",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Fsale10-362698&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Grab ₹400 Off On Your Cart Total Of ₹3190+!",
+      "c": "FLASHSALE",
+      "cat": "Shopping",
+      "l": "https://luxe.ajio.com/s/flshsale-5021-70061",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Fflshsale-5021-70061&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Get an Extra 5% Off – Save Up to ₹650 on Orders of ₹1290!",
+      "c": "SALE5",
+      "cat": "Shopping",
+      "l": "https://luxe.ajio.com/s/sale5-362697",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Fsale5-362697&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Enjoy 5% Off on ₹1290+ Orders - Max Discount of ₹300 Awaits!",
+      "c": "ALLSTARS5",
+      "cat": "Shopping",
+      "l": "https://luxe.ajio.com/s/allstars5-5559-74301",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Fallstars5-5559-74301&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Don’t Miss Out: Lucky Size Store Sale—Extra 25% Off on Rs. 10,000 Purchases!",
+      "c": "ALNORETURNNOEXCHANGE",
+      "cat": "Shopping",
+      "l": "https://luxe.ajio.com/s/alnoreturnnoexchange-406204",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxe.ajio.com%2Fs%2Falnoreturnnoexchange-406204&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Furlenco",
@@ -553,39 +652,6 @@
       "l": "https://kapiva.in/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fkapiva.in%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3562/medium/kapiva.png?1579089783",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Campus Shoes",
-      "d": "Enjoy Up to 60% OFF + Extra 15% OFF on All Items!",
-      "c": "PSD15",
-      "cat": "Shopping",
-      "l": "https://www.campusshoes.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.campusshoes.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/5332/medium/New_Project_-_2023-10-20T152258.998.png?1697795607",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Campus Shoes",
-      "d": "Grab 12% OFF on Orders Over Rs.1199—Shop Now!",
-      "c": "PSD12",
-      "cat": "Shopping",
-      "l": "https://www.campusshoes.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.campusshoes.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/5332/medium/New_Project_-_2023-10-20T152258.998.png?1697795607",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Campus Shoes",
-      "d": "Enjoy a Flat Rs 50 OFF on All Footwear!",
-      "c": "CON50",
-      "cat": "Shopping",
-      "l": "https://www.campusshoes.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.campusshoes.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/5332/medium/New_Project_-_2023-10-20T152258.998.png?1697795607",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2885,72 +2951,6 @@
       "l": "https://www.pepperfry.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.pepperfry.com%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/104/medium/Pepperfry-logo.png?1509629824",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Pepperfry",
-      "d": "Grab This: Save Up to 70% + Extra ₹1000 Off Your Cart!",
-      "c": "SPLASH1K",
-      "cat": "Shopping",
-      "l": "https://www.pepperfry.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.pepperfry.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/104/medium/Pepperfry-logo.png?1509629824",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Boat",
-      "d": "Score Rs. 500 Off on Boat Earbuds, Smart Watches & More Today!",
-      "c": "BTXDD",
-      "cat": "Travel",
-      "l": "https://www.boat-lifestyle.com/collections/super-savers",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2Fsuper-savers&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Pepperfry",
-      "d": "Get Ready Monsoon Sale: Save Up to 70% + Get 20% Cashback + Rs.1000 Off Over Rs.12999!",
-      "c": "MONSOON1K",
-      "cat": "Shopping",
-      "l": "https://www.pepperfry.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.pepperfry.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/104/medium/Pepperfry-logo.png?1509629824",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Vijay Sales",
-      "d": "Up to 65% Off + Flat Rs.500 Savings on Big Appliances!",
-      "c": "DDS500",
-      "cat": "Travel",
-      "l": "https://www.vijaysales.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.vijaysales.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3782/medium/Vijay_sales.png?1597990363",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Digihaat",
-      "d": "Grab a Universal Mobile Rain Cover – Save Rs. 28 Instantly!",
-      "c": "MOBILERAINCOVER",
-      "cat": "Food",
-      "l": "https://digihaat.in/en/product?domain=ONDC%3ARET14&provider_id=65bb2d03973ed0c9944efd4b&bpp_id=prd.mystore.in&item_id=6a114d56559ae921dde962c3",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fdigihaat.in%2Fen%2Fproduct%3Fdomain%3DONDC%3ARET14%26provider_id%3D65bb2d03973ed0c9944efd4b%26bpp_id%3Dprd.mystore.in%26item_id%3D6a114d56559ae921dde962c3&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "BabyForest",
-      "d": "Get Two Floor Cleaners for the Price of One! Use Your Coupon Now!",
-      "c": "CLEANER50",
-      "cat": "Shopping",
-      "l": "https://www.babyforest.in/products/swaksh-bhoomi-natural-floor-cleaner",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.babyforest.in%2Fproducts%2Fswaksh-bhoomi-natural-floor-cleaner&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/39265/medium/maxresdefault.jpg?1764329465",
       "badge": "Coupon",
       "rank": 20
     }
