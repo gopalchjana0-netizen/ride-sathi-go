@@ -1,0 +1,38 @@
+name: Auto Sync Cuelinks Offers
+
+on:
+  schedule:
+    # Runs automatically every 6 hours (00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allows 1-click manual run anytime from GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  sync-offers:
+    name: Fetch & Sync Live Cuelinks Offers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run Cuelinks Sync Engine
+        run: node sync_cuelinks_offers.cjs
+
+      - name: Commit and Push Updated Offers Feed
+        run: |
+          git config --local user.email "bot@ride-sathi-go.web.app"
+          git config --local user.name "Cuelinks Sync Bot"
+          git add offers.json public/offers.json
+          if git diff --staged --quiet; then
+            echo "No changes in offers feed."
+          else
+            git commit -m "Auto-sync Cuelinks live offers feed [skip ci]"
+            git push origin main
+          fi
