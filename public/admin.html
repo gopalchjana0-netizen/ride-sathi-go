@@ -90,6 +90,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
   <div class="tab" id="tab-appDownload" onclick="openTab('appDownload',this)" style="color:#7c3aed;background:#faf5ff">📲<br>Apps</div>
   <div class="tab" id="tab-supportChat" onclick="openTab('supportChat',this)" style="color:#7c3aed;background:#faf5ff">💬<br>Live Chat <span id="adminLiveChatUnreadBadge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:900">0</span></div>
   <div class="tab" id="tab-smartTools" onclick="openTab('smartTools',this)" style="color:#0284c7;background:#f0f9ff">🌟<br>Smart Tools</div>
+  <div class="tab" id="tab-manage" onclick="openTab('manage',this)" style="color:#0369a1;background:#e0f2fe;font-weight:900">👥<br>Manage</div>
 </div>
 
 <div class="container">
@@ -114,6 +115,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
 <div class="homeCard hc-purple" onclick="openTab('appDownload',document.getElementById('tab-appDownload'))"><b>📲 App Download Hub</b><span>Customer, Driver, Admin Apps</span><br><small style="font-weight:800;color:#7c3aed">Download Hub</small></div>
 <div class="homeCard hc-purple" onclick="openTab('supportChat',document.getElementById('tab-supportChat'))"><b>💬 24x7 Live Chat Support</b><span>AI Auto-Reply & Live Human Chat</span><br><small style="font-weight:800;color:#7c3aed" id="homeSupportChatStatus">0 Active Chats</small></div>
 <div class="homeCard hc-blue" onclick="openTab('smartTools',document.getElementById('tab-smartTools'))"><b>🌟 Smart Operations Hub</b><span>Speed Limits, Offline Booking & Stand QR Posters</span><br><small style="font-weight:800;color:#0284c7" id="homeSmartToolsSummary">Fleet Safety & Stand Hub</small></div>
+<div class="homeCard hc-blue" onclick="openTab('manage',document.getElementById('tab-manage'))" style="border:2px solid #0284c7;background:#f0f9ff"><b>👥 Manage Users (Google Auth)</b><span>কাস্টমার ও ড্রাইভার লগইন তালিকা, Block/Unblock, Edit, Delete</span><br><small style="font-weight:800;color:#0284c7" id="homeManageSummary">Manage Auth & Users</small></div>
 </div>
 <div class="card" style="border:2px solid #f59e0b;background:#fffbeb"><b>🎯 LIVE NOW - Active Trips Summary</b><div id="homeLiveList" style="margin-top:8px"></div></div>
 </div>
@@ -2123,6 +2125,152 @@ function doPost(e) {
 
 </div>
 
+<!-- ============================================== -->
+<!-- 👥 MANAGE TAB: GOOGLE AUTH & ALL USERS HUB     -->
+<!-- ============================================== -->
+<div id="manageDiv" style="display:none">
+  <!-- Manage Header Card -->
+  <div class="card" style="border:2px solid #0284c7;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:24px">👥</span>
+          <h3 style="margin:0;font-size:18px;color:#0369a1">ব্যবহারকারী ব্যবস্থাপনা (User & Auth Management)</h3>
+        </div>
+        <p class="small" style="margin:4px 0 0;color:#0284c7;font-weight:600">
+          গুগল সাইন-ইন ও মোবাইল দিয়ে লগইন করা কাস্টমার ও ড্রাইভারদের সম্পূর্ণ তালিকা, ব্লক/আনব্লক, এডিট ও ডিলিট করুন
+        </p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button type="button" class="btn blue" onclick="loadManageUsersData(true)" style="padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
+          🔄 রিফ্রেশ তালিকা
+        </button>
+        <button type="button" class="btn" onclick="exportManageUsersCsv()" style="background:#16a34a;color:#fff;padding:8px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
+          📥 Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Stats Cards Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:14px">
+      <div style="background:#fff;border-radius:12px;padding:10px 12px;border:1px solid #bae6fd;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+        <div style="font-size:11px;color:#64748b;font-weight:700">👥 মোট ইউজার</div>
+        <div style="font-size:20px;font-weight:900;color:#0f172a" id="statManageTotal">0</div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:10px 12px;border:1px solid #bbf7d0;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+        <div style="font-size:11px;color:#16a34a;font-weight:700">👤 কাস্টমার</div>
+        <div style="font-size:20px;font-weight:900;color:#16a34a" id="statManageCustomers">0</div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:10px 12px;border:1px solid #fed7aa;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+        <div style="font-size:11px;color:#ea580c;font-weight:700">🏍️ ড্রাইভার</div>
+        <div style="font-size:20px;font-weight:900;color:#ea580c" id="statManageDrivers">0</div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:10px 12px;border:1px solid #a7f3d0;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+        <div style="font-size:11px;color:#059669;font-weight:700">🟢 সক্রিয় (Active)</div>
+        <div style="font-size:20px;font-weight:900;color:#059669" id="statManageActive">0</div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:10px 12px;border:1px solid #fecaca;box-shadow:0 1px 4px rgba(0,0,0,0.04)">
+        <div style="font-size:11px;color:#dc2626;font-weight:700">🚫 ব্লকড (Blocked)</div>
+        <div style="font-size:20px;font-weight:900;color:#dc2626" id="statManageBlocked">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar Card -->
+  <div class="card" style="margin-bottom:12px;padding:12px">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;align-items:center">
+      <div>
+        <input type="text" id="manageSearchInput" placeholder="🔍 নাম, ইমেল বা ফোন নম্বর দিয়ে সার্চ করুন..." oninput="filterManageUsersList()" style="margin:0;padding:10px 12px;border-radius:10px;font-size:13px">
+      </div>
+      <div>
+        <select id="manageTypeFilter" onchange="filterManageUsersList()" style="margin:0;padding:10px;border-radius:10px;font-size:12.5px;font-weight:700">
+          <option value="ALL">👥 সব ইউজার (All)</option>
+          <option value="CUSTOMER">👤 শুধুমাত্র কাস্টমার</option>
+          <option value="DRIVER">🏍️ শুধুমাত্র ড্রাইভার</option>
+        </select>
+      </div>
+      <div>
+        <select id="manageStatusFilter" onchange="filterManageUsersList()" style="margin:0;padding:10px;border-radius:10px;font-size:12.5px;font-weight:700">
+          <option value="ALL">🌟 সব স্ট্যাটাস (All)</option>
+          <option value="ACTIVE">🟢 শুধুমাত্র Active</option>
+          <option value="BLOCKED">🚫 শুধুমাত্র Blocked</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users List Container -->
+  <div id="manageUsersListContainer">
+    <div id="manageUsersLoading" style="text-align:center;padding:30px;color:#64748b;font-weight:700">
+      ⏳ ডাটাবেস ও গুগল শিট থেকে ব্যবহারকারীদের তথ্য লোড হচ্ছে...
+    </div>
+    <div id="manageUsersList" style="display:flex;flex-direction:column;gap:10px">
+      <!-- User cards populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- ✏️ EDIT USER MODAL                             -->
+<!-- ============================================== -->
+<div id="editUserModal" onclick="if(event.target===this)closeEditUserModal()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:99999;backdrop-filter:blur(4px);justify-content:center;align-items:center;padding:16px">
+  <div style="background:#fff;width:100%;max-width:440px;border-radius:20px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #f1f5f9;padding-bottom:12px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">✏️</span>
+        <b style="font-size:16px;color:#0f172a">ইউজার প্রোফাইল এডিট</b>
+      </div>
+      <button type="button" onclick="closeEditUserModal()" style="background:#f1f5f9;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;font-weight:bold;cursor:pointer">✕</button>
+    </div>
+
+    <input type="hidden" id="editUserOrigEmail">
+    <input type="hidden" id="editUserOrigPhone">
+    <input type="hidden" id="editUserOrigType">
+
+    <div style="margin-bottom:10px">
+      <label class="small" style="font-weight:700;color:#334155">ব্যবহারকারীর নাম (Name):</label>
+      <input type="text" id="editUserName" placeholder="নাম লিখুন..." style="margin-top:4px;padding:10px;border-radius:10px">
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label class="small" style="font-weight:700;color:#334155">ইমেল আইডি (Email):</label>
+      <input type="text" id="editUserEmail" readonly style="margin-top:4px;padding:10px;border-radius:10px;background:#f8fafc;color:#64748b">
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label class="small" style="font-weight:700;color:#334155">মোবাইল নম্বর (Phone):</label>
+      <input type="tel" id="editUserPhone" maxlength="10" placeholder="১০ সংখ্যার মোবাইল নম্বর..." style="margin-top:4px;padding:10px;border-radius:10px">
+    </div>
+
+    <div style="margin-bottom:10px" id="editUserVehicleWrap">
+      <label class="small" style="font-weight:700;color:#334155">গাড়ির ধরন (Vehicle Type - ড্রাইভারের জন্য):</label>
+      <select id="editUserVehicle" style="margin-top:4px;padding:10px;border-radius:10px">
+        <option value="-">- নেই (Not Applicable) -</option>
+        <option value="BIKE">🏍️ BIKE (বাইক)</option>
+        <option value="TOTO">🛺 TOTO (টোটো)</option>
+        <option value="CAR">🚗 CAR (কার)</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label class="small" style="font-weight:700;color:#334155">অ্যাকাউন্ট স্ট্যাটাস (Status):</label>
+      <select id="editUserStatus" style="margin-top:4px;padding:10px;border-radius:10px;font-weight:700">
+        <option value="active">🟢 Active (সক্রিয়)</option>
+        <option value="blocked">🚫 Blocked (স্থগিত / নিষিদ্ধ)</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button type="button" class="btn blue" onclick="saveUserEditDetails()" id="btnSaveUserEdit" style="flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:800">
+        💾 সেভ করুন
+      </button>
+      <button type="button" class="btn" onclick="closeEditUserModal()" style="background:#e2e8f0;color:#0f172a;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:700">
+        বাতিল
+      </button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 </div>
@@ -2182,7 +2330,7 @@ function parseCoords(obj){
 function openTab(n,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
-  ['home','dash','dispatch','broadcast','slideshow','appCms','promo','report','selfie','live','tripLive','sos','pending','all','blocked','payment','wallet','rides','ratings','setting','tracking','cities','sheetReport','appDownload','driverComm','supportChat','smartTools'].forEach(x=>{
+  ['home','dash','dispatch','broadcast','slideshow','appCms','promo','report','selfie','live','tripLive','sos','pending','all','blocked','payment','wallet','rides','ratings','setting','tracking','cities','sheetReport','appDownload','driverComm','supportChat','smartTools','manage'].forEach(x=>{
     let d=document.getElementById(x+'Div'); 
     if(d) d.style.display=x==n?'block':'none'
   });
@@ -2204,6 +2352,11 @@ function openTab(n,el){
   if(n=='smartTools') {
     setTimeout(() => {
       loadSmartToolsAdminSettings();
+    }, 50);
+  }
+  if(n=='manage') {
+    setTimeout(() => {
+      loadManageUsersData();
     }, 50);
   }
   
@@ -8368,5 +8521,524 @@ window.deleteRentalPackageAdmin = deleteRentalPackageAdmin;
 window.listenScheduledBookingsAdmin = listenScheduledBookingsAdmin;
 window.saveScheduleSettingsAdmin = saveScheduleSettingsAdmin;
 window.cancelScheduledBookingAdmin = cancelScheduledBookingAdmin;
+
+// ==============================================
+// 👥 ADVANCED USER & GOOGLE AUTH MANAGEMENT (MANAGE TAB)
+// ==============================================
+const GAS_MANAGE_URL = "https://script.google.com/macros/s/AKfycbw9Hdm08euyCYYalM17QZ5gkTAfyTiRm_S3Sj_2SyQOlJNEfIv_2vodA8ifXj6cPJRxNw/exec";
+let manageAllUsersCache = [];
+
+async function loadManageUsersData(forceAlert = false) {
+  const listEl = document.getElementById('manageUsersList');
+  const loadingEl = document.getElementById('manageUsersLoading');
+  if (loadingEl) loadingEl.style.display = 'block';
+
+  try {
+    let sheetUsers = [];
+    // 1. Fetch from Google Apps Script Web App
+    try {
+      const resp = await fetch(GAS_MANAGE_URL);
+      if (resp.ok) {
+        const raw = await resp.json();
+        if (Array.isArray(raw)) {
+          sheetUsers = raw;
+        }
+      }
+    } catch(e) {
+      console.warn("GAS fetch notice:", e);
+    }
+
+    // 2. Fetch from Firebase Realtime Database
+    let fbDrivers = {};
+    let fbUsers = {};
+    try {
+      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+      if (dRef) {
+        const [dSnap, uSnap] = await Promise.all([
+          dRef.ref('drivers').once('value').catch(() => null),
+          dRef.ref('users').once('value').catch(() => null)
+        ]);
+        if (dSnap && dSnap.exists()) fbDrivers = dSnap.val() || {};
+        if (uSnap && uSnap.exists()) fbUsers = uSnap.val() || {};
+      }
+    } catch(e) {
+      console.warn("Firebase fetch notice:", e);
+    }
+
+    // 3. Merge & Deduplicate users by Email or Phone
+    const userMap = new Map();
+
+    // Add Sheet users
+    sheetUsers.forEach(u => {
+      const email = String(u.email || u.from || '').toLowerCase().trim();
+      const phone = String(u.phone || u.to || '').replace(/[^0-9]/g, '').slice(-10);
+      const key = email || phone || ('user_' + Math.random());
+      
+      const isDriver = String(u.type || '').toLowerCase().includes('driver') || (u.vehicle && u.vehicle !== '-');
+      const name = u.name || u['customer name'] || u.phone || 'User';
+      const status = String(u.status || 'active').toLowerCase().trim();
+      const photo = u.photo || u.picture || u.km || '';
+      const vehicle = u.vehicle || u.type || '-';
+      const date = u.date || new Date().toISOString();
+
+      userMap.set(key, {
+        key: key,
+        name: name,
+        email: email,
+        phone: phone,
+        type: isDriver ? 'driver' : 'customer',
+        vehicle: vehicle,
+        status: (status === 'blocked' || status === 'due-lock') ? 'blocked' : 'active',
+        photo: photo,
+        date: date,
+        source: 'Google Auth & Sheet'
+      });
+    });
+
+    // Merge Firebase drivers
+    Object.keys(fbDrivers).forEach(k => {
+      const d = fbDrivers[k] || {};
+      const phone = String(d.phone || k || '').replace(/[^0-9]/g, '').slice(-10);
+      const email = String(d.email || '').toLowerCase().trim();
+      const key = email || phone;
+      if (!key) return;
+
+      const existing = userMap.get(key) || userMap.get(email) || userMap.get(phone);
+      const isBlocked = d.status === 'BLOCKED' || d.isBlocked === true;
+      const status = isBlocked ? 'blocked' : (existing ? existing.status : 'active');
+
+      userMap.set(key, {
+        key: key,
+        name: d.name || (existing ? existing.name : 'Driver Partner'),
+        email: email || (existing ? existing.email : ''),
+        phone: phone,
+        type: 'driver',
+        vehicle: d.vehicleType || d.vehicle || (existing ? existing.vehicle : 'TOTO'),
+        status: status,
+        photo: d.selfie || d.photo || (existing ? existing.photo : ''),
+        date: d.regDate || d.date || (existing ? existing.date : new Date().toISOString()),
+        source: existing ? 'Google Auth & Firebase' : 'Firebase Driver'
+      });
+    });
+
+    // Merge Firebase users
+    Object.keys(fbUsers).forEach(k => {
+      const u = fbUsers[k] || {};
+      const phone = String(u.phone || k || '').replace(/[^0-9]/g, '').slice(-10);
+      const email = String(u.email || '').toLowerCase().trim();
+      const key = email || phone;
+      if (!key) return;
+
+      const existing = userMap.get(key) || userMap.get(email) || userMap.get(phone);
+      const isBlocked = u.status === 'BLOCKED' || u.isBlocked === true;
+      const status = isBlocked ? 'blocked' : (existing ? existing.status : 'active');
+
+      userMap.set(key, {
+        key: key,
+        name: u.name || (existing ? existing.name : 'Customer'),
+        email: email || (existing ? existing.email : ''),
+        phone: phone,
+        type: existing ? existing.type : 'customer',
+        vehicle: existing ? existing.vehicle : '-',
+        status: status,
+        photo: u.photo || (existing ? existing.photo : ''),
+        date: u.date || (existing ? existing.date : new Date().toISOString()),
+        source: existing ? 'Google Auth & Firebase' : 'Firebase User'
+      });
+    });
+
+    manageAllUsersCache = Array.from(userMap.values());
+    
+    // Sort latest date first
+    manageAllUsersCache.sort((a, b) => {
+      const da = new Date(a.date).getTime() || 0;
+      const db_ = new Date(b.date).getTime() || 0;
+      return db_ - da;
+    });
+
+    updateManageStats();
+    renderManageUsers(manageAllUsersCache);
+    if (forceAlert) alert("✅ ব্যবহারকারী তালিকা সফলভাবে রিফ্রেশ হয়েছে!");
+  } catch(err) {
+    console.error("loadManageUsersData error:", err);
+    if (listEl) listEl.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444">❌ তথ্য লোড করতে সমস্যা হয়েছে: ${err.message}</div>`;
+  } finally {
+    if (loadingEl) loadingEl.style.display = 'none';
+  }
+}
+
+function updateManageStats() {
+  const total = manageAllUsersCache.length;
+  const customers = manageAllUsersCache.filter(u => u.type === 'customer').length;
+  const drivers = manageAllUsersCache.filter(u => u.type === 'driver').length;
+  const active = manageAllUsersCache.filter(u => u.status === 'active').length;
+  const blocked = manageAllUsersCache.filter(u => u.status === 'blocked').length;
+
+  const tEl = document.getElementById('statManageTotal');
+  const cEl = document.getElementById('statManageCustomers');
+  const dEl = document.getElementById('statManageDrivers');
+  const aEl = document.getElementById('statManageActive');
+  const bEl = document.getElementById('statManageBlocked');
+
+  if (tEl) tEl.innerText = total;
+  if (cEl) cEl.innerText = customers;
+  if (dEl) dEl.innerText = drivers;
+  if (aEl) aEl.innerText = active;
+  if (bEl) bEl.innerText = blocked;
+
+  const homeSummary = document.getElementById('homeManageSummary');
+  if (homeSummary) homeSummary.innerText = `${total} Users (${active} Active, ${blocked} Blocked)`;
+}
+
+function filterManageUsersList() {
+  const q = (document.getElementById('manageSearchInput')?.value || '').toLowerCase().trim();
+  const typeFilter = document.getElementById('manageTypeFilter')?.value || 'ALL';
+  const statusFilter = document.getElementById('manageStatusFilter')?.value || 'ALL';
+
+  const filtered = manageAllUsersCache.filter(u => {
+    // Type match
+    if (typeFilter === 'CUSTOMER' && u.type !== 'customer') return false;
+    if (typeFilter === 'DRIVER' && u.type !== 'driver') return false;
+
+    // Status match
+    if (statusFilter === 'ACTIVE' && u.status !== 'active') return false;
+    if (statusFilter === 'BLOCKED' && u.status !== 'blocked') return false;
+
+    // Query match
+    if (q) {
+      const matchName = String(u.name || '').toLowerCase().includes(q);
+      const matchEmail = String(u.email || '').toLowerCase().includes(q);
+      const matchPhone = String(u.phone || '').includes(q);
+      const matchVeh = String(u.vehicle || '').toLowerCase().includes(q);
+      return matchName || matchEmail || matchPhone || matchVeh;
+    }
+    return true;
+  });
+
+  renderManageUsers(filtered);
+}
+
+function renderManageUsers(users) {
+  const listEl = document.getElementById('manageUsersList');
+  if (!listEl) return;
+
+  if (!users || users.length === 0) {
+    listEl.innerHTML = `
+      <div style="background:#fff;padding:26px;border-radius:14px;text-align:center;color:#64748b;border:1px dashed #cbd5e1">
+        🔍 কোনো ব্যবহারকারী পাওয়া যায়নি (No users found)।
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  users.forEach((u) => {
+    const isDriver = u.type === 'driver';
+    const isBlocked = u.status === 'blocked';
+    const typeBadge = isDriver 
+      ? '<span style="background:#ffedd5;color:#c2410c;padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:800">🏍️ DRIVER</span>'
+      : '<span style="background:#dbeafe;color:#1d4ed8;padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:800">👤 CUSTOMER</span>';
+    
+    const statusBadge = isBlocked
+      ? '<span class="badge" style="background:#fee2e2;color:#991b1b;padding:3px 8px;font-size:11px">🚫 BLOCKED</span>'
+      : '<span class="badge" style="background:#dcfce7;color:#166534;padding:3px 8px;font-size:11px">🟢 ACTIVE</span>';
+
+    const vehBadge = (isDriver && u.vehicle && u.vehicle !== '-') 
+      ? `<span style="background:#f1f5f9;color:#475569;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:700">🚖 ${u.vehicle.toUpperCase()}</span>` 
+      : '';
+
+    const avatar = u.photo 
+      ? `<img src="${u.photo}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid ${isBlocked ? '#ef4444' : '#0284c7'}" onerror="this.src='logo.png'">`
+      : `<div style="width:46px;height:46px;border-radius:50%;background:${isDriver ? '#f97316' : '#0284c7'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
+
+    const formattedDate = formatDateDisplay(u.date);
+
+    html += `
+      <div style="background:#fff;border-radius:14px;padding:12px 14px;border:1.5px solid ${isBlocked ? '#fecaca' : '#e2e8f0'};box-shadow:0 2px 6px rgba(0,0,0,0.03);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:240px">
+          ${avatar}
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <b style="font-size:14px;color:#0f172a">${u.name}</b>
+              ${typeBadge}
+              ${vehBadge}
+              ${statusBadge}
+            </div>
+            <div style="font-size:12px;color:#475569;margin-top:2px;display:flex;flex-wrap:wrap;gap:10px">
+              ${u.email ? `<span style="color:#0284c7">📧 ${u.email}</span>` : '<span style="color:#94a3b8">📧 ইমেল নেই</span>'}
+              ${u.phone ? `<a href="tel:${u.phone}" style="color:#16a34a;text-decoration:none;font-weight:700">📱 +91 ${u.phone}</a>` : ''}
+              <span style="color:#94a3b8">📅 ${formattedDate}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${isBlocked 
+            ? `<button type="button" class="btn approve" onclick="toggleBlockUser('${u.email}', 'active', '${u.phone}', '${u.type}')" style="padding:6px 12px;font-size:11px">🟢 আনব্লক</button>` 
+            : `<button type="button" class="btn reject" onclick="toggleBlockUser('${u.email}', 'blocked', '${u.phone}', '${u.type}')" style="padding:6px 12px;font-size:11px">🚫 ব্লক</button>`
+          }
+          <button type="button" class="btn orange" onclick="openEditUserModal('${u.key}')" style="padding:6px 12px;font-size:11px">✏️ এডিট</button>
+          <button type="button" class="btn" onclick="deleteUserRecord('${u.email}', '${u.phone}', '${u.type}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:6px 12px;font-size:11px">🗑️ মুছুন</button>
+        </div>
+      </div>
+    `;
+  });
+
+  listEl.innerHTML = html;
+}
+
+function formatDateDisplay(dateStr) {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr).slice(0, 16);
+    return d.toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+    });
+  } catch(e) {
+    return String(dateStr).slice(0, 16);
+  }
+}
+
+async function toggleBlockUser(email, newStatus, phone, type) {
+  const isBlock = newStatus === 'blocked';
+  if (!confirm(`⚠️ আপনি কি সত্যিই এই ব্যবহারকারীকে ${isBlock ? 'ব্লক (Block)' : 'আনব্লক (Unblock)'} করতে চান?`)) return;
+
+  // 1. Update in local cache immediately
+  const target = manageAllUsersCache.find(u => (email && u.email && u.email.toLowerCase() === email.toLowerCase()) || (phone && u.phone === phone));
+  if (target) {
+    target.status = newStatus;
+    updateManageStats();
+    filterManageUsersList();
+  }
+
+  // 2. Call Google Apps Script backend
+  const postEmail = email || target?.email;
+  if (postEmail) {
+    fetch(GAS_MANAGE_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'toggleblock',
+        email: postEmail,
+        status: newStatus
+      })
+    }).catch(e => console.warn('GAS block notice:', e));
+  }
+
+  // 3. Update Firebase Realtime Database
+  const cleanP = (phone || target?.phone || '').replace(/[^0-9]/g, '');
+  if (cleanP) {
+    try {
+      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+      if (dRef) {
+        if (type === 'driver' || target?.type === 'driver') {
+          await Promise.allSettled([
+            dRef.ref('drivers/' + cleanP + '/status').set(isBlock ? 'BLOCKED' : 'APPROVED'),
+            dRef.ref('drivers/' + cleanP + '/isBlocked').set(isBlock),
+            dRef.ref('drivers/DRIVER_' + cleanP + '/status').set(isBlock ? 'BLOCKED' : 'APPROVED'),
+            dRef.ref('drivers/DRIVER_' + cleanP + '/isBlocked').set(isBlock)
+          ]);
+        } else {
+          await Promise.allSettled([
+            dRef.ref('users/' + cleanP + '/status').set(isBlock ? 'BLOCKED' : 'ACTIVE'),
+            dRef.ref('users/' + cleanP + '/isBlocked').set(isBlock)
+          ]);
+        }
+      }
+    } catch(e) {
+      console.warn('Firebase block notice:', e);
+    }
+  }
+
+  alert(`✅ ব্যবহারকারী সফলভাবে ${isBlock ? 'ব্লক' : 'আনব্লক'} করা হয়েছে!`);
+}
+
+function openEditUserModal(userKey) {
+  const u = manageAllUsersCache.find(x => x.key === userKey);
+  if (!u) return;
+
+  document.getElementById('editUserOrigEmail').value = u.email || '';
+  document.getElementById('editUserOrigPhone').value = u.phone || '';
+  document.getElementById('editUserOrigType').value = u.type || 'customer';
+  document.getElementById('editUserName').value = u.name || '';
+  document.getElementById('editUserEmail').value = u.email || 'N/A';
+  document.getElementById('editUserPhone').value = u.phone || '';
+  document.getElementById('editUserStatus').value = u.status || 'active';
+
+  const vehWrap = document.getElementById('editUserVehicleWrap');
+  const vehSelect = document.getElementById('editUserVehicle');
+  if (u.type === 'driver') {
+    if (vehWrap) vehWrap.style.display = 'block';
+    if (vehSelect) vehSelect.value = (u.vehicle || 'TOTO').toUpperCase();
+  } else {
+    if (vehWrap) vehWrap.style.display = 'none';
+    if (vehSelect) vehSelect.value = '-';
+  }
+
+  const modal = document.getElementById('editUserModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeEditUserModal() {
+  const modal = document.getElementById('editUserModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveUserEditDetails() {
+  const email = document.getElementById('editUserOrigEmail').value;
+  const origPhone = document.getElementById('editUserOrigPhone').value;
+  const type = document.getElementById('editUserOrigType').value;
+  const name = document.getElementById('editUserName').value.trim();
+  const phone = document.getElementById('editUserPhone').value.replace(/[^0-9]/g, '').slice(-10);
+  const vehicle = document.getElementById('editUserVehicle').value;
+  const status = document.getElementById('editUserStatus').value;
+
+  if (!name || name.length < 2) {
+    alert("❌ সঠিক নাম লিখুন!");
+    return;
+  }
+  if (!phone || phone.length !== 10) {
+    alert("❌ ১০ সংখ্যার সঠিক মোবাইল নম্বর লিখুন!");
+    return;
+  }
+
+  // Update local cache
+  const target = manageAllUsersCache.find(u => (email && u.email && u.email.toLowerCase() === email.toLowerCase()) || (origPhone && u.phone === origPhone) || (phone && u.phone === phone));
+  if (target) {
+    target.name = name;
+    target.phone = phone;
+    target.vehicle = vehicle;
+    target.status = status;
+    updateManageStats();
+    filterManageUsersList();
+  }
+
+  // Send to GAS
+  const postEmail = email || target?.email;
+  if (postEmail) {
+    fetch(GAS_MANAGE_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update',
+        email: postEmail,
+        name: name,
+        phone: phone,
+        vehicle: vehicle,
+        status: status
+      })
+    }).catch(e => console.warn('GAS update notice:', e));
+  }
+
+  // Update in Firebase
+  const targetPhone = phone || origPhone;
+  if (targetPhone) {
+    try {
+      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+      if (dRef) {
+        if (type === 'driver' || target?.type === 'driver') {
+          await Promise.allSettled([
+            dRef.ref('drivers/' + targetPhone + '/name').set(name),
+            dRef.ref('drivers/' + targetPhone + '/vehicleType').set(vehicle),
+            dRef.ref('drivers/' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'APPROVED'),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/name').set(name),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/vehicleType').set(vehicle),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'APPROVED')
+          ]);
+        } else {
+          await Promise.allSettled([
+            dRef.ref('users/' + targetPhone + '/name').set(name),
+            dRef.ref('users/' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'ACTIVE')
+          ]);
+        }
+      }
+    } catch(e) {}
+  }
+
+  closeEditUserModal();
+  alert("✅ ব্যবহারকারীর বিবরণ সফলভাবে সেভ হয়েছে!");
+}
+
+async function deleteUserRecord(email, phone, type) {
+  if (!confirm("⚠️ আপনি কি সত্যিই এই ব্যবহারকারীর রেকর্ড ডিলিট করতে চান? এটি পূর্বাবস্থায় ফেরানো যাবে না!")) return;
+
+  // Remove from local cache
+  manageAllUsersCache = manageAllUsersCache.filter(u => !(
+    (email && u.email && u.email.toLowerCase() === email.toLowerCase()) ||
+    (phone && u.phone === phone)
+  ));
+  updateManageStats();
+  filterManageUsersList();
+
+  // Call GAS delete
+  if (email) {
+    fetch(GAS_MANAGE_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete',
+        email: email
+      })
+    }).catch(e => console.warn('GAS delete notice:', e));
+  }
+
+  // Remove from Firebase
+  const cleanP = (phone || '').replace(/[^0-9]/g, '');
+  if (cleanP) {
+    try {
+      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+      if (dRef) {
+        if (type === 'driver') {
+          await Promise.allSettled([
+            dRef.ref('drivers/' + cleanP).remove(),
+            dRef.ref('drivers/DRIVER_' + cleanP).remove()
+          ]);
+        } else {
+          await dRef.ref('users/' + cleanP).remove();
+        }
+      }
+    } catch(e) {}
+  }
+
+  alert("✅ ব্যবহারকারীর রেকর্ড সফলভাবে মুছে ফেলা হয়েছে!");
+}
+
+function exportManageUsersCsv() {
+  if (!manageAllUsersCache.length) {
+    alert("⚠️ এক্সপোর্ট করার জন্য কোনো ডাটা নেই!");
+    return;
+  }
+
+  let csv = 'Name,Type,Email,Phone,Vehicle,Status,Registration_Date,Source\r\n';
+  manageAllUsersCache.forEach(u => {
+    csv += `"${(u.name||'').replace(/"/g, '""')}","${u.type||''}","${u.email||''}","${u.phone||''}","${u.vehicle||''}","${u.status||''}","${u.date||''}","${u.source||''}"\r\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `RideSathi_Users_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// Expose Manage functions to window
+window.loadManageUsersData = loadManageUsersData;
+window.updateManageStats = updateManageStats;
+window.filterManageUsersList = filterManageUsersList;
+window.renderManageUsers = renderManageUsers;
+window.toggleBlockUser = toggleBlockUser;
+window.openEditUserModal = openEditUserModal;
+window.closeEditUserModal = closeEditUserModal;
+window.saveUserEditDetails = saveUserEditDetails;
+window.deleteUserRecord = deleteUserRecord;
+window.exportManageUsersCsv = exportManageUsersCsv;
 
 </script></body></html>
