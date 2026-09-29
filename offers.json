@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-29T06:17:33.651Z",
+  "updated_at": "2026-09-29T12:18:17.746Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,50 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Trip.com",
+      "d": "Special Offer: Get 20% Off Iryo Trains Across Spain!",
+      "c": "IRYO20",
+      "cat": "Travel",
+      "l": "https://www.trip.com/sale/w/3g5idiy89zicu25s/sep-super-destination-exploreeurope.html?locale=en-XX&transparentBar=1",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.trip.com%2Fsale%2Fw%2F3g5idiy89zicu25s%2Fsep-super-destination-exploreeurope.html%3Flocale%3Den-XX%26transparentBar%3D1&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3135/medium/trip.png?1520838491",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Trip.com",
+      "d": "Save 8% on Your Next Car Rental Booking!",
+      "c": "TRIPCAR8",
+      "cat": "Travel",
+      "l": "https://www.trip.com/carhire/?channelid=14409&locale=en-XX&curr=INR",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.trip.com%2Fcarhire%2F%3Fchannelid%3D14409%26locale%3Den-XX%26curr%3DINR&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3135/medium/trip.png?1520838491",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Wellbeing Nutrition",
+      "d": "Festive Wellness Bonanza: Save 10% + More Discounts on Prepaid Orders!",
+      "c": "NEW10",
+      "cat": "Health",
+      "l": "https://wellbeingnutrition.com/collections/shop-all-1",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwellbeingnutrition.com%2Fcollections%2Fshop-all-1&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4139/medium/New_Project_-_2021-07-19T113839.854_%281%29.png?1626675159",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Muscletech",
+      "d": "Score 8% Off Muscletech Protein & Supplements Now!",
+      "c": "DL",
+      "cat": "Shopping",
+      "l": "https://www.muscletech.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.muscletech.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4966/medium/logo.png?1683628593",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "khadi Natural",
@@ -2907,50 +2951,6 @@
       "l": "https://fyva.in/collections/pinacolada",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Ffyva.in%2Fcollections%2Fpinacolada&cid=324245&subid=ridesathigo",
       "img": "/photos/medium/missing.png",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Oyela",
-      "d": "Enjoy a 20% Discount on Your Complete Purchase at Oyela!",
-      "c": "FLASH20",
-      "cat": "Shopping",
-      "l": "https://oyela.in/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Foyela.in%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/7117/medium/Screenshot_2024-07-25_183635.png?1721912840",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Pepperfry",
-      "d": "Grab Your Home & Kitchen Essentials: Up to 70% Off + 15% Extra Savings!",
-      "c": "HOME15",
-      "cat": "Shopping",
-      "l": "https://www.pepperfry.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.pepperfry.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/104/medium/Pepperfry-logo.png?1509629824",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Pepperfry",
-      "d": "Grab This: Save Up to 70% + Extra ₹1000 Off Your Cart!",
-      "c": "SPLASH1K",
-      "cat": "Shopping",
-      "l": "https://www.pepperfry.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.pepperfry.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/104/medium/Pepperfry-logo.png?1509629824",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Boat",
-      "d": "Score Rs. 500 Off on Boat Earbuds, Smart Watches & More Today!",
-      "c": "BTXDD",
-      "cat": "Travel",
-      "l": "https://www.boat-lifestyle.com/collections/super-savers",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2Fsuper-savers&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
       "badge": "Coupon",
       "rank": 20
     }
