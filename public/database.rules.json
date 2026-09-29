@@ -1,0 +1,393 @@
+{
+  "rules": {
+    "bookings": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "mobile",
+        "customerPhone",
+        "driverPhone",
+        "time",
+        "date",
+        "city"
+      ],
+      "$bookingId": {
+        ".write": true
+      }
+    },
+    "rides": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "driverPhone",
+        "mobile",
+        "date",
+        "time",
+        "city"
+      ],
+      "$rideId": {
+        ".write": true
+      }
+    },
+    "completed_rides": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "driverPhone",
+        "date",
+        "time",
+        "city"
+      ],
+      "$rideId": {
+        ".write": true
+      }
+    },
+    "completed_rides_by_driver": {
+      ".read": true,
+      ".write": true,
+      "$driverPhone": {
+        ".write": true,
+        "$rideId": {
+          ".write": true
+        }
+      }
+    },
+    "ride_requests": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "vehicle",
+        "vehicleType",
+        "time",
+        "city"
+      ],
+      "$reqId": {
+        ".write": true
+      }
+    },
+    "rideRequests": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "vehicle",
+        "vehicleType",
+        "time",
+        "city"
+      ],
+      "$reqId": {
+        ".write": true
+      }
+    },
+    "accepted_rides": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "driverPhone",
+        "mobile",
+        "city"
+      ],
+      "$rideId": {
+        ".write": true
+      }
+    },
+    "live_trips": {
+      ".read": true,
+      ".write": true,
+      "$tripId": {
+        ".write": true
+      }
+    },
+    "drivers": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "isOnline",
+        "isBlocked",
+        "due",
+        "vehicle",
+        "mobile",
+        "city",
+        "status"
+      ],
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "cities": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "isActive",
+        "name",
+        "active"
+      ],
+      "$cityId": {
+        ".write": true
+      }
+    },
+    "operational_cities": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "active",
+        "name"
+      ],
+      "$cityId": {
+        ".write": true
+      }
+    },
+    "feedback": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "customerPhone",
+        "bookingId",
+        "timestamp",
+        "rating"
+      ],
+      "$feedbackId": {
+        ".write": true
+      }
+    },
+    "feedbacks": {
+      ".read": true,
+      ".write": true,
+      "$feedbackId": {
+        ".write": true
+      }
+    },
+    "ratings": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "bookingId",
+        "time"
+      ],
+      "$ratingId": {
+        ".write": true
+      }
+    },
+    "coupons": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "code",
+        "active"
+      ],
+      "$code": {
+        ".write": true
+      }
+    },
+    "promo_codes": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "code",
+        "active"
+      ],
+      "$code": {
+        ".write": true
+      }
+    },
+    "promoCodes": {
+      ".read": true,
+      ".write": true,
+      "$code": {
+        ".write": true
+      }
+    },
+    "notifications": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "timestamp",
+        "time"
+      ],
+      "$notifId": {
+        ".write": true
+      }
+    },
+    "login_history": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "loginAt",
+        "expiresAt",
+        "type",
+        "uid"
+      ],
+      "$historyId": {
+        ".write": true
+      }
+    },
+    "users": {
+      ".read": true,
+      ".write": true,
+      "$userId": {
+        ".write": true
+      }
+    },
+    "driver_requests": {
+      ".read": true,
+      ".write": true,
+      "$reqId": {
+        ".write": true
+      }
+    },
+    "driver_registrations": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "phone",
+        "time",
+        "vehicle"
+      ],
+      "$regId": {
+        ".write": true
+      }
+    },
+    "driver_verifications": {
+      ".read": true,
+      ".write": true,
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "blocked_drivers": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "blockedAt"
+      ],
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "pending_drivers": {
+      ".read": true,
+      ".write": true,
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "driver_dues": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "time",
+        "deadline"
+      ],
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "payments": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "time",
+        "driverId"
+      ],
+      "$paymentId": {
+        ".write": true
+      }
+    },
+    "wallet": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "driverPhone",
+        "time",
+        "status"
+      ],
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "sos_alerts": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "time"
+      ],
+      "$alertId": {
+        ".write": true
+      }
+    },
+    "driver_selfie_logs": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "date",
+        "phone",
+        "time"
+      ],
+      "$logId": {
+        ".write": true
+      }
+    },
+    "driver_selfies": {
+      ".read": true,
+      ".write": true,
+      "$selfieId": {
+        ".write": true
+      }
+    },
+    "driver_locations": {
+      ".read": true,
+      ".write": true,
+      "$driverPhone": {
+        ".write": true
+      }
+    },
+    "commission_records": {
+      ".read": true,
+      ".write": true,
+      "$recId": {
+        ".write": true
+      }
+    },
+    "support_chats": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": [
+        "status",
+        "lastTimestamp",
+        "unreadByAdmin"
+      ]
+    },
+    "settings": {
+      ".read": true,
+      ".write": true
+    },
+    "slides": {
+      ".read": true,
+      ".write": true
+    },
+    "app_content": {
+      ".read": true,
+      ".write": true
+    },
+    "broadcast_history": {
+      ".read": true,
+      ".write": true,
+      "$historyId": {
+        ".write": true
+      }
+    },
+    "notices": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

@@ -1,0 +1,35 @@
+# Cloudflare Pages Global Edge Caching & Security Headers (100% Free Forever)
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(self), microphone=(self)
+
+# Cache Images, Audio, Icons, Fonts for 30 Days at Global Edge CDN
+/*.png
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.jpg
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.wav
+  Cache-Control: public, max-age=2592000, immutable
+
+/*.ogg
+  Cache-Control: public, max-age=2592000, immutable
+
+# Offers and Deals JSON - 30 minutes cache, 24 hours stale while revalidate
+/offers.json
+  Cache-Control: public, max-age=1800, stale-while-revalidate=86400
+  Content-Type: application/json
+
+# HTML Pages - 5 minutes browser cache, 1 hour stale revalidate
+/*.html
+  Cache-Control: public, max-age=300, stale-while-revalidate=3600

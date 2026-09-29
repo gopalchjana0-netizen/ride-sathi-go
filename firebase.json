@@ -18,9 +18,55 @@
       "**/node_modules/**",
       "**/build/**",
       "**/*.apk",
-      "android/**"
+      "android/**",
+      "*.txt",
+      "*.ps1",
+      "functions/**",
+      "ridesathigo-backend/**",
+      "scratch/**",
+      "package*.json",
+      "deep_audit_result.json",
+      "service-account*.json"
     ],
     "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+          { "key": "X-XSS-Protection", "value": "1; mode=block" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          { "key": "Permissions-Policy", "value": "geolocation=(self), microphone=(self)" }
+        ]
+      },
+      {
+        "source": "**/*.@(jpg|jpeg|gif|png|webp|svg|ico|woff|woff2|ttf|eot|ogg|wav)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
+        ]
+      },
+      {
+        "source": "/offers.json",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=1800, stale-while-revalidate=86400" },
+          { "key": "Content-Type", "value": "application/json" }
+        ]
+      },
+      {
+        "source": "**/*.@(html|htm)",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=300, stale-while-revalidate=3600" }
+        ]
+      },
+      {
+        "source": "/sitemap.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml"
+          }
+        ]
+      },
       {
         "source": "/ads.txt",
         "headers": [
@@ -31,11 +77,11 @@
         ]
       },
       {
-        "source": "/sitemap.xml",
+        "source": "/robots.txt",
         "headers": [
           {
             "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
+            "value": "text/plain"
           }
         ]
       }
