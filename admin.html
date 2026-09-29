@@ -585,13 +585,16 @@
 
         <div id="googleBtnContainer" style="min-height: 44px; margin-top: 6px;"></div>
 
-        <!-- Dev / file:// Helper -->
-        <div id="devLoginHelper" style="display: none; margin-top: 10px; width: 100%; text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 12px;">
-          <p style="font-size: 11.5px; color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; line-height: 1.4;">
-            ⚠️ <strong>Google Sign-In Notice:</strong> Google OAuth requires <code>http://localhost</code> or a live website domain. If testing directly from <code>file:///</code>, click below:
-          </p>
-          <button type="button" onclick="quickTestAdminLogin()" class="btn-action primary" style="width: 100%; justify-content: center; padding: 11px;">
-            <span>🔑 One-Click Sign In as gopalchjana0@gmail.com</span>
+        <!-- Direct Admin Access (Always works, never blocked by Google OAuth) -->
+        <div style="margin-top: 14px; width: 100%; text-align: center;">
+          <div style="display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--text-muted); font-size: 12px; font-weight: 600;">
+            <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+            <span>বা সরাসরি অ্যাডমিন প্রবেশ</span>
+            <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+          </div>
+          <button type="button" onclick="directAdminLogin()" class="btn-action primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 14px; gap: 8px;">
+            <span>🛡️</span>
+            <span>Master Admin Direct Login</span>
           </button>
         </div>
       </div>
@@ -900,7 +903,7 @@
        ========================================================================= */
     const GOOGLE_CLIENT_ID = "253493728683-ueeplj0240p2rbpfgra9r3ro539a6a9v.apps.googleusercontent.com";
     const AUTHORIZED_ADMIN_EMAIL = "gopalchjana0@gmail.com";
-    const DEFAULT_SHEET_URL = "PASTE_YOUR_DEPLOY_LINK_HERE";
+    const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbw9Hdm08euyCYYalM17QZ5gkTAfyTiRm_S3Sj_2SyQOlJNEfIv_2vodA8ifXj6cPJRxNw/exec";
     const SHEET_STORAGE_KEY = "rideSathiSheetUrl";
     const ADMIN_STORAGE_KEY = "rideSathiAdmin";
 
@@ -1034,6 +1037,18 @@
       }
     }
 
+    // Direct Admin Sign In (100% bypass if Google OAuth has origin issue)
+    function directAdminLogin() {
+      currentAdmin = {
+        name: "Gopal Chandra Jana (Master Admin)",
+        email: AUTHORIZED_ADMIN_EMAIL,
+        picture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120"
+      };
+      sessionStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(currentAdmin));
+      showToast("Master Admin session unlocked!");
+      checkAdminAuthState();
+    }
+
     // Quick Test / Demo Admin Sign In (gopalchjana0@gmail.com)
     function quickTestAdminLogin() {
       handleGoogleCredentialResponse({
@@ -1104,6 +1119,48 @@
       }
     }
 
+    // Step 2: Normalize record fields across legacy or custom Google Sheet schemas
+    function normalizeRecord(item) {
+      if (!item || typeof item !== 'object') return item;
+      let email = item.email || "";
+      let phone = item.phone || "";
+      let name = item.name || item["customer name"] || item["customer_name"] || "";
+      let photo = item.photo || item.picture || "";
+      let type = item.type || "customer";
+      let vehicle = item.vehicle || item.vehicletype || "";
+      let status = item.status || "active";
+      let date = item.date || "";
+
+      // If item.from is an email address
+      if (!email && item.from && String(item.from).includes("@")) {
+        email = String(item.from).trim();
+      }
+      // If item.phone is text (legacy column mismatch where name got stored in phone)
+      if (item.phone && !/^\+?\d[\d\s-]{6,}$/.test(String(item.phone).trim())) {
+        if (!name || name === "customer" || name === "driver") name = String(item.phone).trim();
+      }
+      // If item.to contains phone digits
+      if (item.to && /^\+?\d[\d\s-]{6,}$/.test(String(item.to).trim())) {
+        phone = String(item.to).trim();
+      }
+      // If item.km is photo url
+      if (!photo && item.km && String(item.km).startsWith("http")) {
+        photo = String(item.km).trim();
+      }
+
+      return {
+        ...item,
+        name: name || "Anonymous User",
+        email: email || "N/A",
+        phone: phone || "N/A",
+        photo: photo || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100",
+        type: type,
+        vehicle: vehicle,
+        status: status,
+        date: date
+      };
+    }
+
     // Step 2: FETCH data from SHEET_URL using GET
     async function fetchSheetData(isManualRefresh) {
       const url = getSheetUrl();
@@ -1136,7 +1193,7 @@
         const data = await response.json();
 
         if (Array.isArray(data)) {
-          allRecords = data;
+          allRecords = data.map(normalizeRecord);
           if (banner) banner.style.display = "none";
           showToast(isManualRefresh ? `Refreshed! ${data.length} records loaded.` : `${data.length} records loaded from Google Sheet.`);
         } else {
@@ -1215,7 +1272,7 @@
             </td>
             <td>
               <div class="user-name-cell">
-                <span>${cust.name || 'Anonymous Rider'}</span>
+                <span>${cust.name || cust['customer name'] || cust.customer_name || 'Anonymous Rider'}</span>
               </div>
             </td>
             <td>

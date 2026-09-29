@@ -788,13 +788,16 @@
             <span>Protected by Google Identity Services</span>
           </div>
 
-          <!-- Dev / file:// Helper -->
-          <div id="devLoginHelper" style="display: none; margin-top: 10px; width: 100%; text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 12px;">
-            <p style="font-size: 11.5px; color: #b45309; background: #fef3c7; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; line-height: 1.4;">
-              ⚠️ <strong>Google Sign-In Notice:</strong> Google OAuth requires <code>http://localhost</code> or a live website domain. If testing directly from <code>file:///</code>, click below:
-            </p>
-            <button type="button" onclick="quickTestCustomerLogin()" class="btn-submit" style="background: #334155; padding: 10px 14px; font-size: 13px;">
-              <span>⚡ One-Click Test Customer Login</span>
+          <!-- Direct Mobile Login (Always works, never blocked) -->
+          <div style="margin-top: 14px; width: 100%; text-align: center;">
+            <div style="display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--text-muted); font-size: 12px; font-weight: 600;">
+              <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+              <span>বা সরাসরি মোবাইল দিয়ে লগইন</span>
+              <hr style="flex: 1; border: none; border-top: 1px solid var(--border);">
+            </div>
+            <button type="button" onclick="startDirectCustomerLogin()" class="btn-submit" style="background: #ffffff; color: var(--dark); border: 1.5px solid var(--border); box-shadow: var(--shadow); justify-content: center; gap: 8px; font-size: 14px;">
+              <span>📱</span>
+              <span>মোবাইল নম্বর দিয়ে শুরু করুন (Direct Login)</span>
             </button>
           </div>
         </div>
@@ -1020,7 +1023,7 @@
        RIDE SATHI GO - CUSTOMER CONFIGURATION (100% FREE - NO FIREBASE)
        ========================================================================= */
     const GOOGLE_CLIENT_ID = "253493728683-ueeplj0240p2rbpfgra9r3ro539a6a9v.apps.googleusercontent.com";
-    const SHEET_URL = "PASTE_YOUR_DEPLOY_LINK_HERE"; // Replace with your Google Apps Script Web App URL
+    const SHEET_URL = "https://script.google.com/macros/s/AKfycbw9Hdm08euyCYYalM17QZ5gkTAfyTiRm_S3Sj_2SyQOlJNEfIv_2vodA8ifXj6cPJRxNw/exec";
     const STORAGE_KEY = "rideSathiCustomer";
 
     // Temporary Google profile data held during onboarding
@@ -1183,6 +1186,24 @@
       } else {
         setTimeout(initGoogleIdentity, 300);
       }
+    }
+
+    // Direct Mobile Customer Login (Instant fallback if Google OAuth has origin issue)
+    function startDirectCustomerLogin() {
+      tempGoogleUser = {
+        name: "",
+        email: "rider" + Math.floor(1000 + Math.random() * 9000) + "@ridesathigo.com",
+        picture: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120"
+      };
+
+      document.getElementById("formAvatar").src = tempGoogleUser.picture;
+      document.getElementById("formEmailBadge").textContent = `✓ Mobile Registration`;
+      document.getElementById("inputName").value = "";
+      document.getElementById("inputPhone").value = "";
+
+      showScreen("formScreen");
+      showToast("দয়া করে নাম ও ১০ সংখ্যার মোবাইল নম্বর দিন");
+      setTimeout(() => document.getElementById("inputName").focus(), 300);
     }
 
     // Quick Test / Demo Sign In
