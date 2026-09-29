@@ -4,6 +4,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,20 +37,21 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
+          mkdir -p android/app
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 --decode > android/app/ridesathi-release-key.jks
-            echo "KEYSTORE_PATH=android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PATH=$GITHUB_WORKSPACE/android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
             echo "Keystore decoded from secrets"
           elif [ -f "android/app/ridesathi-release-key.jks" ]; then
             echo "Using committed ridesathi-release-key.jks"
-            echo "KEYSTORE_PATH=android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PATH=$GITHUB_WORKSPACE/android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
           else
             echo "Generating fallback release keystore on runner..."
             keytool -genkey -v -keystore android/app/ridesathi-release-key.jks \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -alias ridesathi -storepass RideSathi@2026 -keypass RideSathi@2026 \
               -dname "CN=Ride Sathi, OU=Dev, O=RideSathi, L=Kolkata, ST=WB, C=IN"
-            echo "KEYSTORE_PATH=android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PATH=$GITHUB_WORKSPACE/android/app/ridesathi-release-key.jks" >> $GITHUB_ENV
           fi
 
       - name: Build Signed Release APK and AAB
@@ -66,6 +71,6 @@ jobs:
         with:
           name: RideSathi-Installable-APK
           path: |
-            android/app/build/outputs/apk/release/app-release.apk
-            android/app/build/outputs/bundle/release/app-release.aab
-          if-no-files-found: error
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: warn

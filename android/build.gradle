@@ -22,7 +22,10 @@ allprojects {
         google()
         mavenCentral()
     }
-    buildDir = new File("C:/Users/DELL/ridesathi_build", project.name)
+    // Only redirect buildDir locally on Windows if the custom directory exists
+    if (System.getProperty("os.name", "").toLowerCase().contains("windows") && new File("C:/Users/DELL/ridesathi_build").exists()) {
+        buildDir = new File("C:/Users/DELL/ridesathi_build", project.name)
+    }
 }
 
 task clean(type: Delete) {
