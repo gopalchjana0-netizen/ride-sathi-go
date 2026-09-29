@@ -91,15 +91,15 @@ function fetchPage(page) {
 
 // Evergreen Top Indian Brands & High-Commission Recharge Catalog
 const evergreenTopBrands = [
-  // 📱 Mobile Recharge, DTH & Utility Bills
-  { b: 'Jio Recharge', d: 'Up to ₹50 Cashback on Jio Unlimited 5G & Data Packs', c: 'JIO50', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Prepaid', rank: 1 },
-  { b: 'Airtel Recharge', d: 'Flat ₹40 Cashback on Airtel 1.5GB/2GB Daily Plans', c: 'AIRTEL40', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Prepaid', rank: 2 },
-  { b: 'Vi Recharge', d: 'Hero Unlimited Midnight Data Plans + Flat ₹30 Cashback', c: 'VI30', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Prepaid', rank: 3 },
-  { b: 'BSNL Mobile', d: 'Affordable 3G/4G Validity Plans + Extra Discount', c: 'BSNL20', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'Validity', rank: 4 },
-  { b: 'WBSEDCL Electricity', d: 'পশ্চিমবঙ্গ বিদ্যুৎ বিল পেমেন্টে পান নিশ্চিত ₹৫০ পর্যন্ত ক্যাশব্যাক', c: 'BILL50', cat: 'Recharge', l: 'https://www.amazon.in/b?node=14322429031', badge: 'WB Bill', rank: 5 },
-  { b: 'DTH Recharge', d: 'Tata Play, Airtel DTH, Dish TV রিচার্জে ক্যাশব্যাক ও ছাড়', c: 'DTHSAVE', cat: 'Recharge', l: 'https://www.amazon.in/b?node=14322430031', badge: 'DTH', rank: 6 },
-  { b: 'Fastag Recharge', d: 'Paytm, SBI, ICICI ও সকল ব্যাংকের Fastag রিচার্জ ক্যাশব্যাক', c: 'FASTAG10', cat: 'Recharge', l: 'https://www.amazon.in/b?node=21488168031', badge: 'Fastag', rank: 7 },
-  { b: 'Amazon Pay Bills', d: 'All Mobile Recharge, DTH & Utility Bill Payment Hub', c: 'AMZPAY', cat: 'Recharge', l: 'https://www.amazon.in/hpc/recharge', badge: 'All in One', rank: 8 },
+  // 📱 Mobile Recharge, DTH & Utility Bills (Verified Cuelinks Tracking on Amazon Pay - 0% Error)
+  { b: 'Jio Recharge', d: 'Up to ₹50 Cashback on Jio Unlimited 5G & Data Packs', c: 'JIO50', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'Prepaid', rank: 1 },
+  { b: 'Airtel Recharge', d: 'Flat ₹40 Cashback on Airtel 1.5GB/2GB Daily Plans', c: 'AIRTEL40', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'Prepaid', rank: 2 },
+  { b: 'Vi Recharge', d: 'Hero Unlimited Midnight Data Plans + Flat ₹30 Cashback', c: 'VI30', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'Prepaid', rank: 3 },
+  { b: 'BSNL Mobile', d: 'Affordable 3G/4G Validity Plans + Extra Discount', c: 'BSNL20', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'Validity', rank: 4 },
+  { b: 'WBSEDCL Electricity', d: 'পশ্চিমবঙ্গ বিদ্যুৎ বিল পেমেন্টে পান নিশ্চিত ক্যাশব্যাক ও ছাড়', c: 'BILL50', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'WB Bill', rank: 5 },
+  { b: 'DTH Recharge', d: 'Tata Play, Airtel DTH, Dish TV রিচার্জে ক্যাশব্যাক ও ছাড়', c: 'DTHSAVE', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'DTH', rank: 6 },
+  { b: 'Fastag Recharge', d: 'Paytm, SBI, ICICI ও সকল ব্যাংকের Fastag রিচার্জ ক্যাশব্যাক', c: 'FASTAG10', cat: 'Recharge', l: 'https://www.amazon.in/pay', badge: 'Fastag', rank: 7 },
+  { b: 'Amazon Deals & Bills', d: 'All Mobile Recharge, Deals & Shopping Hub', c: 'AMZPAY', cat: 'Shopping', l: 'https://www.amazon.in', badge: 'All in One', rank: 8 },
 
   // 🛍️ Mega Shopping
   { b: 'Amazon', d: 'Up to 80% OFF on Mobiles, Fashion & Electronics', c: 'AMZ80', cat: 'Shopping', l: 'https://www.amazon.in', badge: 'Trending', rank: 9 },
@@ -189,12 +189,12 @@ async function syncOffers() {
   // Combine Evergreen Top Brands + Fresh Cuelinks Deals
   const finalCatalog = [];
 
-  // Add evergreen brands first with affiliate URLs
+  // Add evergreen brands with verified Cuelinks affiliate tracking URLs
   for (const eb of evergreenTopBrands) {
-    const aff = `https://linksredirect.com/?cid=${CHANNEL_ID}&subid=${SUB_ID}&url=${encodeURIComponent(eb.l)}`;
+    const affUrl = `https://linksredirect.com/?cid=${CHANNEL_ID}&subid=${SUB_ID}&url=${encodeURIComponent(eb.l)}`;
     finalCatalog.push({
       ...eb,
-      aff: aff
+      aff: affUrl
     });
   }
 

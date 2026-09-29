@@ -1,8 +1,54 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
+    // 1. Cities operational configuration
+    match /cities/{cityId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.token.email == 'support.ridesathi@gmail.com';
+      allow delete: if false;
+    }
+    
+    // 2. Bookings & dispatch
+    match /bookings/{bookingId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.size() > 0;
+      allow delete: if false; // Protect booking records from unauthorized client wiping
+    }
+    
+    // 3. Customer feedback and reviews
+    match /feedback/{feedbackId} {
+      allow read, create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+    
+    // 4. Emergency SOS
+    match /sos/{sosId} {
+      allow read, create: if true;
+      allow update: if true;
+      allow delete: if false; // SOS records cannot be tampered with or deleted
+    }
+    
+    // 5. Driver profiles and live telemetry
+    match /drivers/{driverId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.size() > 0;
+      allow delete: if false; // Drivers cannot be deleted from untrusted client code
+    }
+    
+    match /live_locations/{locId} {
       allow read, write: if true;
+    }
+
+    match /loginHistory/{historyId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false; // Immutable login audit log
+    }
+
+    // Default lockdown for any undefined collection
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

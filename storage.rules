@@ -2,7 +2,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      allow read, write: if true;
+      // Complete lockdown: Ride Sathi Go uses Realtime Database for lightweight thumbnails.
+      // Cloud Storage is completely disabled to guarantee lifetime ₹0.00 storage billing.
+      allow read, write: if false;
     }
   }
 }
+
