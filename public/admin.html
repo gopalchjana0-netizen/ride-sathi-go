@@ -8814,22 +8814,21 @@ async function toggleBlockUser(email, newStatus, phone, type) {
   }
 
   // 2. Call Google Apps Script backend
-  const postEmail = email || target?.email;
-  if (postEmail) {
-    fetch(GAS_MANAGE_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'toggleblock',
-        email: postEmail,
-        status: newStatus
-      })
-    }).catch(e => console.warn('GAS block notice:', e));
-  }
+  const postEmail = email || target?.email || '';
+  const cleanP = (phone || target?.phone || '').replace(/[^0-9]/g, '').slice(-10);
+  fetch(GAS_MANAGE_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'toggleblock',
+      email: postEmail,
+      phone: cleanP,
+      status: newStatus
+    })
+  }).catch(e => console.warn('GAS block notice:', e));
 
   // 3. Update Firebase Realtime Database
-  const cleanP = (phone || target?.phone || '').replace(/[^0-9]/g, '');
   if (cleanP) {
     try {
       const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
@@ -8838,13 +8837,16 @@ async function toggleBlockUser(email, newStatus, phone, type) {
           await Promise.allSettled([
             dRef.ref('drivers/' + cleanP + '/status').set(isBlock ? 'BLOCKED' : 'APPROVED'),
             dRef.ref('drivers/' + cleanP + '/isBlocked').set(isBlock),
+            dRef.ref('drivers/' + cleanP + '/updatedAt').set(Date.now()),
             dRef.ref('drivers/DRIVER_' + cleanP + '/status').set(isBlock ? 'BLOCKED' : 'APPROVED'),
-            dRef.ref('drivers/DRIVER_' + cleanP + '/isBlocked').set(isBlock)
+            dRef.ref('drivers/DRIVER_' + cleanP + '/isBlocked').set(isBlock),
+            dRef.ref('drivers/DRIVER_' + cleanP + '/updatedAt').set(Date.now())
           ]);
         } else {
           await Promise.allSettled([
             dRef.ref('users/' + cleanP + '/status').set(isBlock ? 'BLOCKED' : 'ACTIVE'),
-            dRef.ref('users/' + cleanP + '/isBlocked').set(isBlock)
+            dRef.ref('users/' + cleanP + '/isBlocked').set(isBlock),
+            dRef.ref('users/' + cleanP + '/updatedAt').set(Date.now())
           ]);
         }
       }
@@ -8889,7 +8891,7 @@ function closeEditUserModal() {
 
 async function saveUserEditDetails() {
   const email = document.getElementById('editUserOrigEmail').value;
-  const origPhone = document.getElementById('editUserOrigPhone').value;
+  const origPhone = document.getElementById('editUserOrigPhone').value.replace(/[^0-9]/g, '').slice(-10);
   const type = document.getElementById('editUserOrigType').value;
   const name = document.getElementById('editUserName').value.trim();
   const phone = document.getElementById('editUserPhone').value.replace(/[^0-9]/g, '').slice(-10);
@@ -8916,26 +8918,28 @@ async function saveUserEditDetails() {
     filterManageUsersList();
   }
 
-  // Send to GAS
-  const postEmail = email || target?.email;
-  if (postEmail) {
-    fetch(GAS_MANAGE_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'update',
-        email: postEmail,
-        name: name,
-        phone: phone,
-        vehicle: vehicle,
-        status: status
-      })
-    }).catch(e => console.warn('GAS update notice:', e));
-  }
+  // Send to GAS (passes both email and phone for 100% reliable matching)
+  const postEmail = email || target?.email || '';
+  fetch(GAS_MANAGE_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'update',
+      email: postEmail,
+      origEmail: email || '',
+      phone: phone,
+      origPhone: origPhone || '',
+      name: name,
+      vehicle: vehicle,
+      status: status,
+      type: type
+    })
+  }).catch(e => console.warn('GAS update notice:', e));
 
-  // Update in Firebase
+  // Update in Firebase Realtime Database
   const targetPhone = phone || origPhone;
+  const oldPhone = (origPhone && origPhone !== targetPhone) ? origPhone : null;
   if (targetPhone) {
     try {
       const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
@@ -8943,52 +8947,72 @@ async function saveUserEditDetails() {
         if (type === 'driver' || target?.type === 'driver') {
           await Promise.allSettled([
             dRef.ref('drivers/' + targetPhone + '/name').set(name),
+            dRef.ref('drivers/' + targetPhone + '/phone').set(targetPhone),
             dRef.ref('drivers/' + targetPhone + '/vehicleType').set(vehicle),
+            dRef.ref('drivers/' + targetPhone + '/vehicle').set(vehicle),
             dRef.ref('drivers/' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'APPROVED'),
+            dRef.ref('drivers/' + targetPhone + '/isBlocked').set(status === 'blocked'),
+            dRef.ref('drivers/' + targetPhone + '/updatedAt').set(Date.now()),
             dRef.ref('drivers/DRIVER_' + targetPhone + '/name').set(name),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/phone').set(targetPhone),
             dRef.ref('drivers/DRIVER_' + targetPhone + '/vehicleType').set(vehicle),
-            dRef.ref('drivers/DRIVER_' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'APPROVED')
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/vehicle').set(vehicle),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'APPROVED'),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/isBlocked').set(status === 'blocked'),
+            dRef.ref('drivers/DRIVER_' + targetPhone + '/updatedAt').set(Date.now())
           ]);
+          if (oldPhone) {
+            dRef.ref('drivers/' + oldPhone).remove().catch(()=>{});
+            dRef.ref('drivers/DRIVER_' + oldPhone).remove().catch(()=>{});
+          }
         } else {
           await Promise.allSettled([
             dRef.ref('users/' + targetPhone + '/name').set(name),
-            dRef.ref('users/' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'ACTIVE')
+            dRef.ref('users/' + targetPhone + '/phone').set(targetPhone),
+            dRef.ref('users/' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'ACTIVE'),
+            dRef.ref('users/' + targetPhone + '/isBlocked').set(status === 'blocked'),
+            dRef.ref('users/' + targetPhone + '/updatedAt').set(Date.now())
           ]);
+          if (oldPhone) {
+            dRef.ref('users/' + oldPhone).remove().catch(()=>{});
+          }
         }
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn("Firebase edit update error:", e);
+    }
   }
 
   closeEditUserModal();
-  alert("✅ ব্যবহারকারীর বিবরণ সফলভাবে সেভ হয়েছে!");
+  alert("✅ ব্যবহারকারীর বিবরণ সফলভাবে সেভ হয়েছে এবং লাইভ আপডেট কার্যকর করা হয়েছে!");
 }
 
 async function deleteUserRecord(email, phone, type) {
   if (!confirm("⚠️ আপনি কি সত্যিই এই ব্যবহারকারীর রেকর্ড ডিলিট করতে চান? এটি পূর্বাবস্থায় ফেরানো যাবে না!")) return;
 
+  const cleanP = (phone || '').replace(/[^0-9]/g, '').slice(-10);
+
   // Remove from local cache
   manageAllUsersCache = manageAllUsersCache.filter(u => !(
     (email && u.email && u.email.toLowerCase() === email.toLowerCase()) ||
-    (phone && u.phone === phone)
+    (cleanP && u.phone === cleanP)
   ));
   updateManageStats();
   filterManageUsersList();
 
   // Call GAS delete
-  if (email) {
-    fetch(GAS_MANAGE_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'delete',
-        email: email
-      })
-    }).catch(e => console.warn('GAS delete notice:', e));
-  }
+  fetch(GAS_MANAGE_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'delete',
+      email: email || '',
+      phone: cleanP
+    })
+  }).catch(e => console.warn('GAS delete notice:', e));
 
   // Remove from Firebase
-  const cleanP = (phone || '').replace(/[^0-9]/g, '');
   if (cleanP) {
     try {
       const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));

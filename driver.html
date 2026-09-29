@@ -534,7 +534,10 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
     <div class="driver-drawer-profile">
       <div id="drawerDriverAvatar" class="driver-drawer-avatar">🛺</div>
       <div>
-        <div id="drawerDriverName" style="font-weight:900;font-size:15px;color:#fff;letter-spacing:0.3px">ড্রাইভার পার্টনার</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div id="drawerDriverName" style="font-weight:900;font-size:15px;color:#fff;letter-spacing:0.3px">ড্রাইভার পার্টনার</div>
+          <button type="button" onclick="editDriverProfileName()" style="background:rgba(255,255,255,0.15);color:#facc15;border:none;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800;cursor:pointer" title="নাম পরিবর্তন করুন">✏️</button>
+        </div>
         <div id="drawerDriverPhone" style="font-size:12px;color:#fde047;font-weight:700;margin-top:2px">+91 Loading...</div>
         <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
           <span id="drawerDriverVehicleBadge" style="background:#22c55e;color:#fff;font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:10px">TOTO</span>
@@ -851,7 +854,10 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
           👤
         </div>
         <div style="flex:1;overflow:hidden">
-          <div id="idCardDriverName" style="font-size:16px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Driver Name</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div id="idCardDriverName" style="font-size:16px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Driver Name</div>
+            <button type="button" onclick="editDriverProfileName()" style="background:rgba(255,255,255,0.15);color:#facc15;border:none;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800;cursor:pointer" title="নাম পরিবর্তন করুন">✏️</button>
+          </div>
           <div id="idCardDriverId" style="font-size:11px;color:#facc15;font-weight:700;margin-top:2px">ID: DRIVER_XXXXXXXXXX</div>
           <div style="font-size:11.5px;color:#cbd5e1;margin-top:4px">
             📱 <span id="idCardPhone">+91 XXXXXXXXXX</span>
@@ -4851,22 +4857,147 @@ window.handleCustomOptionActionDriver = function(opt) {
   }
 };
 
+// ==============================================================
+// 🔄 REAL-TIME DRIVER PROFILE & ADMIN-SYNC CONTROLLER
+// Automatically updates driver name & vehicle live when Admin edits in Admin Panel
+// Enforces instant lockout if Admin blocks the driver account
+// ==============================================================
 function listenDriverProfile() {
-  if (!DRIVER_PHONE) return;
-  onValue(ref(db, 'drivers/' + DRIVER_PHONE), snap => {
-    let d = snap.val();
+  let p = DRIVER_PHONE || localStorage.getItem('driverPhone') || '';
+  let cleanP = String(p).replace(/[^0-9]/g, '').slice(-10);
+  if (!cleanP || cleanP.length !== 10) return;
+
+  const handleDriverSnapshot = snap => {
+    let d = snap ? snap.val() : null;
     if (!d) return;
-    if (d.name) {
-      DRIVER_NAME = d.name;
-      localStorage.setItem('driverName', d.name);
+
+    // 1. Instant Lockout if Blocked by Admin
+    if (d.status === 'BLOCKED' || d.isBlocked === true) {
+      let lockEl = document.getElementById('lockScreen');
+      if (lockEl) lockEl.classList.add('show');
+      if (isOnline) {
+        isOnline = false;
+        try { setStatusOfflineUI(); } catch(e) {}
+      }
+      return;
+    } else if (d.status === 'APPROVED' || d.status === 'active') {
+      let lockEl = document.getElementById('lockScreen');
+      if (lockEl) lockEl.classList.remove('show');
+      let pBlock = document.getElementById('pendingBlock');
+      if (pBlock) {
+        pBlock.classList.remove('show');
+        pBlock.style.display = 'none';
+      }
     }
-    if (d.vehicle) {
-      DRIVER_VEHICLE = d.vehicle;
-      localStorage.setItem('driverVehicle', d.vehicle);
+
+    // 2. Real-time Name & Vehicle Updates
+    let updated = false;
+    if (d.name && d.name.trim().length >= 2) {
+      DRIVER_NAME = d.name.trim();
+      localStorage.setItem('driverName', DRIVER_NAME);
+      updated = true;
     }
-    document.getElementById('driverInfo').innerText = `👋 ${DRIVER_NAME} | ${DRIVER_PHONE} (${DRIVER_VEHICLE})`;
-  });
+    let veh = d.vehicleType || d.vehicle;
+    if (veh) {
+      DRIVER_VEHICLE = normalizeVehicleCategory(veh);
+      localStorage.setItem('driverVehicle', DRIVER_VEHICLE);
+      updated = true;
+    }
+
+    if (updated || d.name) {
+      let dInfo = document.getElementById('driverInfo');
+      if (dInfo) dInfo.innerText = `👋 ${DRIVER_NAME} | ${cleanP} (${DRIVER_VEHICLE})`;
+
+      let drwName = document.getElementById('drawerDriverName');
+      if (drwName) drwName.innerText = DRIVER_NAME;
+
+      let drwPhone = document.getElementById('drawerDriverPhone');
+      if (drwPhone) drwPhone.innerText = `+91 ${cleanP}`;
+
+      let drwVehBadge = document.getElementById('drawerDriverVehicleBadge');
+      if (drwVehBadge) drwVehBadge.innerText = DRIVER_VEHICLE;
+
+      let idName = document.getElementById('idCardDriverName');
+      if (idName) idName.innerText = DRIVER_NAME;
+
+      let idVeh = document.getElementById('idCardVehicle');
+      if (idVeh) idVeh.innerText = DRIVER_VEHICLE;
+
+      let lName = document.getElementById('loginName');
+      if (lName) lName.value = DRIVER_NAME;
+
+      let lVeh = document.getElementById('loginVehicle');
+      if (lVeh) lVeh.value = DRIVER_VEHICLE;
+    }
+  };
+
+  try {
+    if (typeof onValue === 'function' && typeof ref === 'function' && db) {
+      onValue(ref(db, 'drivers/' + cleanP), handleDriverSnapshot);
+      onValue(ref(db, 'drivers/DRIVER_' + cleanP), handleDriverSnapshot);
+    } else if (typeof firebase !== 'undefined' && firebase.database) {
+      firebase.database().ref('drivers/' + cleanP).on('value', handleDriverSnapshot);
+      firebase.database().ref('drivers/DRIVER_' + cleanP).on('value', handleDriverSnapshot);
+    }
+  } catch(e) {
+    console.warn('listenDriverProfile error:', e);
+  }
 }
+window.listenDriverProfile = listenDriverProfile;
+
+window.editDriverProfileName = function() {
+  let p = DRIVER_PHONE || localStorage.getItem('driverPhone') || '';
+  let cleanP = String(p).replace(/[^0-9]/g, '').slice(-10);
+  let currentName = DRIVER_NAME || localStorage.getItem('driverName') || '';
+
+  let newName = prompt("✏️ আপনার নাম পরিবর্তন করুন / Enter new driver name (letters only):", currentName);
+  if (newName === null) return;
+  newName = newName.replace(/[^a-zA-Z\s\u0980-\u09FF]/g, '').trim();
+
+  if (!newName || newName.length < 2) {
+    alert("❌ সঠিক নাম লিখুন (কমপক্ষে ২ অক্ষর)! / Please enter valid name");
+    return;
+  }
+  if (/[0-9]/.test(newName)) {
+    alert("❌ নামের মধ্যে সংখ্যা দেওয়া যাবে না! / Numbers not allowed in name");
+    return;
+  }
+
+  DRIVER_NAME = newName;
+  localStorage.setItem('driverName', newName);
+
+  let dInfo = document.getElementById('driverInfo');
+  if (dInfo && cleanP) dInfo.innerText = `👋 ${newName} | ${cleanP} (${DRIVER_VEHICLE})`;
+  let drwName = document.getElementById('drawerDriverName');
+  if (drwName) drwName.innerText = newName;
+  let idName = document.getElementById('idCardDriverName');
+  if (idName) idName.innerText = newName;
+  let lName = document.getElementById('loginName');
+  if (lName) lName.value = newName;
+
+  if (cleanP && cleanP.length === 10) {
+    try {
+      if (typeof update === 'function' && typeof ref === 'function' && db) {
+        update(ref(db, 'drivers/' + cleanP), { name: newName, updatedAt: Date.now() });
+        update(ref(db, 'drivers/DRIVER_' + cleanP), { name: newName, updatedAt: Date.now() });
+      } else if (typeof firebase !== 'undefined' && firebase.database) {
+        firebase.database().ref('drivers/' + cleanP).update({ name: newName, updatedAt: Date.now() });
+        firebase.database().ref('drivers/DRIVER_' + cleanP).update({ name: newName, updatedAt: Date.now() });
+      }
+    } catch(e) {}
+
+    syncDriverToGoogleSheet({
+      action: 'update',
+      type: 'driver',
+      name: newName,
+      phone: cleanP,
+      vehicle: DRIVER_VEHICLE,
+      status: 'active'
+    });
+  }
+
+  alert("✅ আপনার নাম সফলভাবে পরিবর্তন করা হয়েছে: " + newName);
+};
 
 // === TRIP HISTORY (EXCEL & PDF WITH PER-RIDE COMMISSION) ===
 function listenHistory() {

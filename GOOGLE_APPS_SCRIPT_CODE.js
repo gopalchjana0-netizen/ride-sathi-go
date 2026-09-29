@@ -54,77 +54,84 @@ function doPost(e) {
     }
     
     var action = (body.action || "").toLowerCase().trim();
-    var targetEmail = (body.email || "").toLowerCase().trim();
+    var targetEmail = (body.email || body.origEmail || "").toLowerCase().trim();
+    var targetPhone = body.phone ? String(body.phone).replace(/[^0-9]/g, '').slice(-10) : "";
+    var origPhone = body.origPhone ? String(body.origPhone).replace(/[^0-9]/g, '').slice(-10) : "";
     var allData = sheet.getDataRange().getValues();
+
+    // Match helper: matches row by Email OR Phone OR OrigPhone
+    function isRowMatch(row) {
+      var rEmail = String(row[3] || "").toLowerCase().trim();
+      var rPhone = String(row[4] || "").replace(/[^0-9]/g, '').slice(-10);
+      if (targetEmail && rEmail && rEmail === targetEmail) return true;
+      if (targetPhone && rPhone && rPhone === targetPhone) return true;
+      if (origPhone && rPhone && rPhone === origPhone) return true;
+      return false;
+    }
 
     // -------------------------------------------------------------
     // ACTION 1: EDIT / UPDATE EXISTING USER
     // -------------------------------------------------------------
-    if (action === "update" && targetEmail) {
+    if (action === "update") {
       for (var i = 1; i < allData.length; i++) {
-        var rowEmail = String(allData[i][3] || "").toLowerCase().trim();
-        if (rowEmail === targetEmail) {
+        if (isRowMatch(allData[i])) {
           var rowNum = i + 1;
-          if (body.name !== undefined) sheet.getRange(rowNum, 3).setValue(body.name);
-          if (body.phone !== undefined) sheet.getRange(rowNum, 5).setValue(body.phone);
-          if (body.vehicle !== undefined) sheet.getRange(rowNum, 7).setValue(body.vehicle);
-          if (body.status !== undefined) sheet.getRange(rowNum, 8).setValue(body.status);
+          if (body.name !== undefined && body.name !== "") sheet.getRange(rowNum, 3).setValue(body.name);
+          if (body.phone !== undefined && body.phone !== "") sheet.getRange(rowNum, 5).setValue(body.phone);
+          if (body.vehicle !== undefined && body.vehicle !== "") sheet.getRange(rowNum, 7).setValue(body.vehicle);
+          if (body.status !== undefined && body.status !== "") sheet.getRange(rowNum, 8).setValue(body.status);
           
           return ContentService.createTextOutput(JSON.stringify({
             status: "success",
             message: "User details updated successfully",
-            email: targetEmail
+            target: targetEmail || targetPhone || origPhone
           })).setMimeType(ContentService.MimeType.JSON);
         }
       }
       return ContentService.createTextOutput(JSON.stringify({
         status: "not_found",
-        message: "Email not found for update"
+        message: "Record not found for update"
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // -------------------------------------------------------------
     // ACTION 2: TOGGLE / SET BLOCK STATUS
     // -------------------------------------------------------------
-    if ((action === "toggleblock" || action === "setstatus") && targetEmail) {
+    if (action === "toggleblock" || action === "setstatus") {
       var newStatus = body.status || "blocked";
       for (var i = 1; i < allData.length; i++) {
-        var rowEmail = String(allData[i][3] || "").toLowerCase().trim();
-        if (rowEmail === targetEmail) {
+        if (isRowMatch(allData[i])) {
           var rowNum = i + 1;
           sheet.getRange(rowNum, 8).setValue(newStatus);
           return ContentService.createTextOutput(JSON.stringify({
             status: "success",
             message: "Status updated to " + newStatus,
-            email: targetEmail,
             newStatus: newStatus
           })).setMimeType(ContentService.MimeType.JSON);
         }
       }
       return ContentService.createTextOutput(JSON.stringify({
         status: "not_found",
-        message: "Email not found to update status"
+        message: "Record not found to update status"
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // -------------------------------------------------------------
     // ACTION 3: DELETE SINGLE USER RECORD
     // -------------------------------------------------------------
-    if (action === "delete" && targetEmail) {
+    if (action === "delete") {
       for (var i = 1; i < allData.length; i++) {
-        var rowEmail = String(allData[i][3] || "").toLowerCase().trim();
-        if (rowEmail === targetEmail) {
+        if (isRowMatch(allData[i])) {
           sheet.deleteRow(i + 1);
           return ContentService.createTextOutput(JSON.stringify({
             status: "success",
-            message: "Record deleted successfully",
-            email: targetEmail
+            message: "Record deleted successfully"
           })).setMimeType(ContentService.MimeType.JSON);
         }
       }
       return ContentService.createTextOutput(JSON.stringify({
         status: "not_found",
-        message: "Email not found to delete"
+        message: "Record not found to delete"
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
