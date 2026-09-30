@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-30T12:19:25.944Z",
+  "updated_at": "2026-09-30T18:16:17.616Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -2098,7 +2098,7 @@
     },
     {
       "b": "Buyindusvalley",
-      "d": "Pay Day Sale: Pay Day Sale – Up to 50% + Extra 10% Off!",
+      "d": "Pay Day Sale: Pay Day Sale �� Up to 50% + Extra 10% Off!",
       "c": "PAYDAY10",
       "cat": "Health",
       "l": "https://www.buyindusvalley.in/",
@@ -2515,17 +2515,6 @@
       "rank": 20
     },
     {
-      "b": "TrueBasics",
-      "d": "Huge Savings! Clean Whey Protein for Rs.500 Less + Extra 5% Off!",
-      "c": "CLEAN5",
-      "cat": "Health",
-      "l": "https://www.truebasics.com/sale/clean-whey-protein-isolate",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.truebasics.com%2Fsale%2Fclean-whey-protein-isolate&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3719/medium/Truebsia.png?1593148676",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
       "b": "Firstcry",
       "d": "Baby Skin Care Sale: Up to 60% Off Sunscreens + Bonus 40% Off for New Customers!",
       "c": "NEW40CT",
@@ -2603,17 +2592,6 @@
       "rank": 20
     },
     {
-      "b": "TrueBasics",
-      "d": "Save 22% + Extra 5% on Your 1 kg Clean Plant Protein Pack of Two!",
-      "c": "CLEAN5",
-      "cat": "Health",
-      "l": "https://www.truebasics.com/sv/truebasics-clean-plant-protein/SP-136871?navKey=VRNT-288769",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.truebasics.com%2Fsv%2Ftruebasics-clean-plant-protein%2FSP-136871%3FnavKey%3DVRNT-288769&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3719/medium/Truebsia.png?1593148676",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
       "b": "Air India Express",
       "d": "Amazing Student Deal: Up to 15% Off Flights + Bonus Baggage!",
       "c": "VIBES",
@@ -2681,7 +2659,7 @@
     },
     {
       "b": "Firstcry",
-      "d": "Unlock Flat ₹500 Off on Orders Over ₹1111 + Enjoy Free Shipping!",
+      "d": "Unlock Flat ₹500 Off on Orders Over ��1111 + Enjoy Free Shipping!",
       "c": "FIRSTCRY500",
       "cat": "Shopping",
       "l": "https://www.firstcry.com/",
@@ -2951,6 +2929,28 @@
       "l": "https://jivisa.in/collections/teas-infusions-products",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fjivisa.in%2Fcollections%2Fteas-infusions-products&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/11251/medium/Screenshot_2025-04-11_121302.png?1744353822",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Klook",
+      "d": "Explore Hokkaido with a 15% Exclusive Offer – Book Now!",
+      "c": "HOKKAIDOTOUR15OFF",
+      "cat": "Travel",
+      "l": "https://www.klook.com/en-IN/promotion/program/439364925/?spm=CouponHowToUse.ApplicableAid&clickId=93e0322da8",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2Fen-IN%2Fpromotion%2Fprogram%2F439364925%2F%3Fspm%3DCouponHowToUse.ApplicableAid%26clickId%3D93e0322da8&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Havells",
+      "d": "Summer Savings Alert: Get Up to 60% Off + Extra 2% Off on Havells Fans",
+      "c": "EXTRA2",
+      "cat": "Food",
+      "l": "https://havells.com/fans.html?availability_filter=5555",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhavells.com%2Ffans.html%3Favailability_filter%3D5555&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3568/medium/Havelles.png?1579861918",
       "badge": "Coupon",
       "rank": 20
     }
