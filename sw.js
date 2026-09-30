@@ -18,13 +18,15 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const title = event.data.title || 'RideSathiGo Alert';
+    const isSilent = Boolean(event.data.silent);
     const options = {
       body: event.data.body || '',
       icon: event.data.icon || '/logo.png',
       badge: event.data.badge || '/logo.png',
       tag: event.data.tag || 'ridesathi-alert',
-      renotify: true,
-      vibrate: event.data.vibrate || [300, 100, 300, 100, 300],
+      renotify: isSilent ? false : (event.data.renotify !== undefined ? event.data.renotify : true),
+      silent: isSilent,
+      vibrate: isSilent ? [] : (event.data.vibrate || [300, 100, 300, 100, 300]),
       data: event.data.data || { url: '/' }
     };
     event.waitUntil(self.registration.showNotification(title, options));

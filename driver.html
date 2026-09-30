@@ -3322,11 +3322,31 @@ function renderAllIncoming() {
       box.prepend(card);
     });
 
+  window._notifiedDriverRideKeys = window._notifiedDriverRideKeys || new Set();
+  function notifyDriverCustomerBooking(key, d) {
+    if (!key || !d || window._notifiedDriverRideKeys.has(key)) return;
+    window._notifiedDriverRideKeys.add(key);
+
+    const custName = d.name || d.customerName || d.customer || 'Customer';
+    const pickup = d.from || d.pickup || d.pickupLocation || d.pickup_location || '';
+    const drop = d.to || d.drop || d.dropLocation || d.drop_location || '';
+    const locTxt = (pickup && drop) ? ` (${pickup} ➔ ${drop})` : (pickup ? ` (${pickup})` : '');
+    const fareTxt = d.fare ? ` | ভাড়া: ₹${d.fare}` : '';
+
+    const title = `🚗 নতুন রাইড বুকিং! কাস্টমার: ${custName}`;
+    const body = `যাত্রী ${custName} একটি রাইড বুক করেছেন${locTxt}${fareTxt}। এখনই গ্রহণ করুন।`;
+
+    sendNativeNotification(title, body, 'driver-ride-' + key, '/driver.html');
+  }
+
     document.getElementById('liveCount').innerText = count;
     if (count > 0 && isOnline) {
       let latestKey = Array.from(activeRequestMap.keys()).pop() || null;
       playSound(latestKey);
-      sendNativeNotification('🚨 নতুন রাইডের অনুরোধ! / New Ride Request!', 'যাত্রী গাড়ির অপেক্ষা করছেন। এখনই একসেপ্ট করুন।', 'ride-driver-alert', '/driver.html');
+      // Strictly notify driver with customer name ONLY once per new booking (no spam)
+      activeRequestMap.forEach((reqD, reqK) => {
+        notifyDriverCustomerBooking(reqK, reqD);
+      });
     } else {
       stopSound();
     }
@@ -3416,6 +3436,7 @@ function renderAllIncoming() {
 
   // 5. AUTO-DELETE LOGIC (Uber/Ola style): Instant dismissal when accepted by any driver
   function dismissTakenRide(k) {
+    if (window._notifiedDriverRideKeys) window._notifiedDriverRideKeys.delete(k);
     if (activeRequestMap.has(k)) {
       activeRequestMap.delete(k);
     }
@@ -3495,7 +3516,7 @@ function renderAllIncoming() {
               activeRequestMap.set(req.id, req);
               if (typeof renderRequestCards === 'function') renderRequestCards();
               if (typeof playSound === 'function') playSound();
-              sendNativeNotification('🚨 নতুন রাইডের অনুরোধ! / New Ride Request!', 'যাত্রী গাড়ির অপেক্ষা করছেন। ভাড়া দেখতে ট্যাপ করুন।', 'ride-driver-alert', '/driver.html');
+              notifyDriverCustomerBooking(req.id, req);
             }
           });
         }
@@ -3685,9 +3706,10 @@ async function acceptRide(key) {
     let custPhoneClean = cleanPhone(d.mobile || d.customerMobile || d.customerPhone || d.phone || '');
     if (custPhoneClean) {
       push(ref(db, 'notifications/customer/' + custPhoneClean), {
-        title: '🚗 চালক রাইড গ্রহণ করেছেন!',
-        msg: `চালক ${DRIVER_NAME || 'পার্টনার'} (${DRIVER_VEHICLE || 'TOTO'}) আপনার রাইড গ্রহণ করেছেন। ওটিপি: ${d.otp || ''}`,
-        message: `চালক ${DRIVER_NAME || 'পার্টনার'} (${DRIVER_VEHICLE || 'TOTO'}) আপনার রাইড গ্রহণ করেছেন। ওটিপি: ${d.otp || ''}`,
+        title: '🔐 গোপন বুকিং OTP: ' + (d.otp || ''),
+        msg: `চালক ${DRIVER_NAME || 'পার্টনার'} (${DRIVER_VEHICLE || 'TOTO'}) রাইড গ্রহণ করেছেন। চালককে দেওয়ার গোপন OTP: ${d.otp || ''}`,
+        message: `চালক ${DRIVER_NAME || 'পার্টনার'} (${DRIVER_VEHICLE || 'TOTO'}) রাইড গ্রহণ করেছেন। চালককে দেওয়ার গোপন OTP: ${d.otp || ''}`,
+        type: 'OTP',
         driverName: DRIVER_NAME,
         driverPhone: DRIVER_PHONE,
         driverVehicle: DRIVER_VEHICLE,
@@ -4174,10 +4196,11 @@ function completeRide(key) {
     let cPhone = cleanPhone(d.mobile || d.customerMobile);
     if (cPhone) {
       push(ref(db, 'notifications/customer/' + cPhone), {
-        title: '✅ রাইড সম্পন্ন হয়েছে!',
-        message: `আপনার রাইড সম্পন্ন হয়েছে! সর্বমোট ভাড়া: ₹${full}। ইনভয়েস ডাউনলোড করা হয়েছে।`,
-        msg: `আপনার রাইড সম্পন্ন হয়েছে! সর্বমোট ভাড়া: ₹${full}। ইনভয়েস ডাউনলোড করা হয়েছে।`,
+        title: '🎉 আপনার রাইড সম্পন্ন হয়েছে!',
+        message: `আপনার যাত্রা সফলভাবে শেষ হয়েছে। অনুগ্রহ করে চালককে আপনার মূল্যবান রেটিং দিন ⭐ (মোট ভাড়া: ₹${full})`,
+        msg: `আপনার যাত্রা সফলভাবে শেষ হয়েছে। অনুগ্রহ করে চালককে আপনার মূল্যবান রেটিং দিন ⭐ (মোট ভাড়া: ₹${full})`,
         status: 'COMPLETED',
+        type: 'COMPLETED',
         fare: full,
         rideId: key,
         time: Date.now(),
@@ -4255,10 +4278,11 @@ async function confirmDriverCancel() {
 
     if (custPhone) {
       await push(ref(db, 'notifications/customer/' + custPhone), {
-        title: 'Ride Cancelled by Driver',
-        message: '⚠️ চালক রাইডটি বাতিল করেছেন! দয়া করে অন্য চালক খুঁজুন।',
-        msg: '⚠️ চালক রাইডটি বাতিল করেছেন! দয়া করে অন্য চালক খুঁজুন।',
+        title: '❌ রাইড বাতিল হয়েছে',
+        message: 'আপনার রাইডটি বাতিল হয়ে গেছে। নিচে বাটনে চাপ দিয়ে অন্য চালক খুঁজুন।',
+        msg: 'আপনার রাইডটি বাতিল হয়ে গেছে। নিচে বাটনে চাপ দিয়ে অন্য চালক খুঁজুন।',
         status: 'CANCELLED_BY_DRIVER',
+        type: 'CANCELLED',
         rideId: key,
         time: Date.now(),
         timestamp: Date.now()
@@ -6187,24 +6211,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const myVehicleType = (dVal?.vehicleType || dVal?.vehicle || localStorage.getItem('driverVehicle') || 'toto').toLowerCase();
 
-    // STEP 5: Realtime driver notifications and coupons
-    firebase.database().ref('notifications/driver/' + myPhone).on('child_added', s => {
+    // STEP 5: Realtime driver notifications
+    firebase.database().ref('notifications/driver/' + myPhone).limitToLast(5).on('child_added', s => {
       const n = s.val();
-      if (n && (n.status === 'CANCELLED_BY_CUSTOMER' || n.status === 'cancelled')) {
+      if (!n) return;
+      const nTime = Number(n.time || n.timestamp || 0);
+      if (nTime > 0 && Date.now() - nTime > 45000) return; // Skip historical old notices
+      if (n.status === 'CANCELLED_BY_CUSTOMER' || n.status === 'cancelled') {
         alert('⚠️ ' + (n.message || n.msg || 'যাত্রী রাইডটি বাতিল করেছেন! (Customer Cancelled)'));
         window.hasActiveOngoingRide = false;
         window.activeTripKey = null;
         let box = document.getElementById('acceptedBox');
         if (box) box.innerHTML = '';
-      } else if (n) {
-        alert('🔔 ড্রাইভার নোটিশ: ' + (n.message || JSON.stringify(n)));
+      } else if (n.message) {
+        if (typeof showDriverToast === 'function') {
+          showDriverToast('🔔 ' + n.message);
+        }
       }
-    });
-    firebase.database().ref('coupons/driver').on('child_added', s => {
-      alert('🎁 ড্রাইভার অফার: ' + (s.val().code || s.val().name || JSON.stringify(s.val())));
-    });
-    firebase.database().ref('coupons/all').on('child_added', s => {
-      alert('🎁 নতুন কুপন: ' + (s.val().code || s.val().name || JSON.stringify(s.val())));
     });
 
     // STEP 3: OLA LOGIC 100% - Listen ONLY to matching vehicleType

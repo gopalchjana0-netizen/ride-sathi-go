@@ -1504,20 +1504,22 @@ if ('serviceWorker' in navigator) {
 }
 
 // Native Web Notification Helper for Customer System Alerts (Background & Foreground)
-// STRICTLY LIMITED TO 3 CUSTOMER EVENTS ONLY:
-// 1. Welcome notification (cust-welcome)
-// 2. Booking OTP notification (cust-booking-otp)
-// 3. Trip Completed notification (cust-completed)
+// STRICTLY LIMITED TO 4 CUSTOMER NOTIFICATION EVENTS ONLY (NO SPAM / NO REDUNDANT ALERTS):
+// 1. Welcome notification on Login (cust-welcome) - One-time only with customer name
+// 2. Booking Confirmed + Secret OTP notification (cust-booking-otp)
+// 3. Trip Completed + Rate Driver notification (cust-completed) - SILENT (NO SOUND)
+// 4. Trip Cancelled notification (cust-cancelled)
 window.sendNativeNotification = function(title, body, tag = 'ride-status-customer', url = '/') {
   try {
     const t = String(title || '');
     const tg = String(tag || '');
     const isWelcome = tg.includes('welcome') || t.includes('স্বাগতম') || t.includes('Welcome') || t.includes('स्वागत');
-    const isOtp = tg.includes('otp') || t.includes('OTP') || t.includes('ওটিপি') || t.includes('বুকিং');
+    const isOtp = tg.includes('otp') || t.includes('OTP') || t.includes('ওটিপি') || t.includes('গোপন') || t.includes('বুকিং');
     const isCompleted = tg.includes('completed') || t.includes('সম্পন্ন') || t.includes('Completed');
+    const isCancelled = tg.includes('cancel') || t.includes('বাতিল') || t.includes('Cancelled') || t.includes('रद्द');
 
-    if (!isWelcome && !isOtp && !isCompleted) {
-      // Suppress frequent in-between spam notifications
+    // Strict constraint: Discard ANY notification that is not one of the 4 approved events
+    if (!isWelcome && !isOtp && !isCompleted && !isCancelled) {
       return;
     }
 
@@ -1531,14 +1533,16 @@ window.sendNativeNotification = function(title, body, tag = 'ride-status-custome
           data: { url: url },
           icon: '/logo.png',
           badge: '/logo.png',
-          vibrate: [300, 100, 300, 100, 300]
+          silent: isCompleted ? true : false,
+          vibrate: isCompleted ? [] : [250, 100, 250]
         });
         return;
       }
       new Notification(title, {
         body: body,
         icon: '/logo.png',
-        tag: tag
+        tag: tag,
+        silent: isCompleted ? true : false
       });
     }
   } catch(e) {}
@@ -2483,6 +2487,7 @@ window.logoutCustomer = function() {
     localStorage.removeItem('customerCurrentStep');
     localStorage.removeItem('activeBookingKey');
     localStorage.removeItem('activeBookingOtp');
+    sessionStorage.removeItem('rsg_welcome_notif_sent');
   } catch(e) {}
 
   var cName = document.getElementById('custName');
@@ -7331,6 +7336,22 @@ window.confirmCustomerCancel = async function() {
 
     closeCustomerCancelModal();
 
+    // 4. Trip Cancelled Notification (Customer Panel Milestone)
+    try {
+      const curLang = localStorage.getItem('appLang') || 'bn';
+      if (typeof window.sendNativeNotification === 'function') {
+        window.sendNativeNotification(
+          curLang === 'bn' ? '❌ রাইড বাতিল হয়েছে' : (curLang === 'hi' ? '❌ राइड रद्द कर दी गई' : '❌ Ride Cancelled'),
+          curLang === 'bn' ? 'আপনার রাইডটি বাতিল হয়ে গেছে।' : 'Your ride has been cancelled.',
+          'cust-cancelled',
+          '/'
+        );
+      }
+      if (typeof window.showToast === 'function') {
+        window.showToast(curLang === 'bn' ? '❌ আপনার রাইডটি বাতিল হয়ে গেছে।' : 'Your ride has been cancelled.');
+      }
+    } catch(e) {}
+
     // Reset customer UI cleanly and switch back to booking screen
     if (typeof window.resetToNewBooking === 'function') {
       window.resetToNewBooking();
@@ -7657,11 +7678,7 @@ window.loadBookingHistory = function() {
 };
 
 // === 1.C IMMEDIATE NOTIFICATION & COUPON LISTENERS ===
-onValue(ref(db, 'notifications/customer'), s => {
-  if (s.exists() && s.val()) {
-    showNotificationPopup(s.val());
-  }
-});
+// Customer notifications are cleanly scoped to the logged-in customer's phone in listenActiveCustomerNotifications
 
 onValue(ref(db, 'coupons/customer'), s => {
   if (s.exists()) {
@@ -8355,6 +8372,7 @@ window.logoutCustomer = function() {
     localStorage.removeItem('currentBookingKey');
     localStorage.removeItem('restoredBookingKey');
     localStorage.removeItem('restoredBookingOtp');
+    sessionStorage.removeItem('rsg_welcome_notif_sent');
   } catch(e) {}
 
   const cName = document.getElementById('custName');
@@ -9690,17 +9708,22 @@ function listenForDriver(key, otp) {
 
       try {
         const curLang = localStorage.getItem('appLang') || 'bn';
-        if (typeof window.sendNativeNotification === 'function') {
-          window.sendNativeNotification(
-            curLang === 'bn' ? '✅ রাইড সম্পন্ন হয়েছে!' : '✅ Trip Completed!',
-            curLang === 'bn' ? 'আপনার যাত্রা সম্পূর্ণ হয়েছে। চালককে রেটিং দিন।' : 'Your trip is complete. Please rate your driver.',
-            'ride-completed-customer',
-            '/'
-          );
+        if (!window._completedNotifiedKey || window._completedNotifiedKey !== completedKey) {
+          window._completedNotifiedKey = completedKey;
+          if (typeof window.sendNativeNotification === 'function') {
+            window.sendNativeNotification(
+              curLang === 'bn' ? '🎉 আপনার রাইড সম্পন্ন হয়েছে!' : '🎉 Trip Completed!',
+              curLang === 'bn' ? 'আপনার যাত্রা সফলভাবে শেষ হয়েছে। অনুগ্রহ করে চালককে আপনার রেটিং দিন ⭐' : 'Your trip is complete. Please rate your driver ⭐',
+              'cust-completed',
+              '/'
+            );
+          }
+          if (typeof window.showToast === 'function') {
+            window.showToast(curLang === 'bn' ? '🎉 রাইড সম্পন্ন! চালককে রেটিং দিন ⭐' : '🎉 Trip Completed! Please rate your driver ⭐');
+          }
         }
-        if (typeof window.playTriLingualTripCompletedVoice === 'function') {
-          window.playTriLingualTripCompletedVoice(completedKey);
-        }
+        // User requested: "ebong notification-e bolbe rating deowar jonno (kono sound jano na hoy)"
+        // Mute loud speech synthesis/chimes because user requested: "(kono sound jano na hoy)"
       } catch(e) {}
       return;
     }
@@ -9709,7 +9732,19 @@ function listenForDriver(key, otp) {
     if (rawSt === 'CANCELLED_BY_DRIVER' || rawSt === 'REJECTED' || rawSt === 'CANCELLED') {
       if (!window._driverCancelNotified) {
         window._driverCancelNotified = true;
-        alert('⚠️ চালক রাইডটি বাতিল করেছেন! দয়া করে নিচে বাটনে চাপ দিয়ে অন্য চালক খুঁজুন।');
+        const curLang = localStorage.getItem('appLang') || 'bn';
+        if (typeof window.sendNativeNotification === 'function') {
+          window.sendNativeNotification(
+            curLang === 'bn' ? '❌ রাইড বাতিল হয়েছে' : '❌ Ride Cancelled',
+            curLang === 'bn' ? 'আপনার রাইডটি বাতিল হয়ে গেছে। নিচে বাটনে চাপ দিয়ে অন্য চালক খুঁজুন।' : 'Your ride has been cancelled. Please search for another driver.',
+            'cust-cancelled',
+            '/'
+          );
+        }
+        if (typeof window.showToast === 'function') {
+          window.showToast(curLang === 'bn' ? '❌ আপনার রাইডটি বাতিল হয়ে গেছে।' : 'Your ride has been cancelled.');
+        }
+        alert(curLang === 'bn' ? '⚠️ আপনার রাইডটি বাতিল হয়ে গেছে! দয়া করে নিচে বাটনে চাপ দিয়ে অন্য চালক খুঁজুন।' : '⚠️ Your ride has been cancelled! Please search for another driver.');
       }
       if (cancelBtn) cancelBtn.style.display = 'none';
       if (drvDetails) drvDetails.style.display = 'none';
@@ -10433,23 +10468,27 @@ function listenActiveCustomerNotifications() {
       const title = v.title || '🔔 Ride Sathi Go';
       const body = v.message || v.msg || 'আপনার রাইডের তথ্য আপডেট হয়েছে।';
 
-      // STRICT 3-NOTIFICATION FILTER FOR CUSTOMER
+      // STRICT 4-NOTIFICATION FILTER FOR CUSTOMER
       const isWelcome = title.includes('স্বাগতম') || title.includes('Welcome') || v.type === 'WELCOME';
-      const isOtp = title.includes('OTP') || title.includes('ওটিপি') || v.type === 'BOOKED' || v.type === 'OTP';
+      const isOtp = title.includes('OTP') || title.includes('ওটিপি') || title.includes('গোপন') || v.type === 'BOOKED' || v.type === 'OTP';
       const isCompleted = title.includes('সম্পন্ন') || title.includes('Completed') || v.type === 'COMPLETED';
+      const isCancelled = title.includes('বাতিল') || title.includes('Cancel') || v.type === 'CANCELLED';
 
-      if (!isWelcome && !isOtp && !isCompleted) {
+      if (!isWelcome && !isOtp && !isCompleted && !isCancelled) {
         return; // Suppress all background / polling spam
       }
 
-      playCustomerNotificationChime();
+      // User instruction: For completed/rating notification, NO SOUND!
+      if (!isCompleted) {
+        playCustomerNotificationChime();
+      }
 
       if (typeof window.showToast === 'function') {
         window.showToast(`${title}: ${body}`);
       }
 
       if (typeof window.sendNativeNotification === 'function') {
-        const notifTag = isWelcome ? 'cust-welcome' : (isOtp ? 'cust-booking-otp' : 'cust-completed');
+        const notifTag = isWelcome ? 'cust-welcome' : (isOtp ? 'cust-booking-otp' : (isCompleted ? 'cust-completed' : 'cust-cancelled'));
         window.sendNativeNotification(title, body, notifTag);
       }
     });
