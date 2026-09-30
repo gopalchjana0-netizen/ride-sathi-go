@@ -2767,6 +2767,59 @@ window.addEventListener('load', function() {
       </div>
     </div>
 
+    <!-- SECTION 2.8: PARTNER SERVICES & REVENUE HUB (Zero Booking Impact) -->
+    <div>
+      <div class="drawer-section-title">💼 পার্টনার সার্ভিস ও সুযোগ-সুবিধা</div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden">
+        <!-- 1. Advertise with us -->
+        <button type="button" onclick="closeNavDrawer(); openAdSponsorshipModal();" class="drawer-menu-item">
+          <div class="drawer-item-icon" style="background:#fef3c7;color:#d97706">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div>
+            <div style="font-weight:700">📢 আপনার ব্যবসার বিজ্ঞাপন দিন</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal">লোকাল দোকানের প্রচার • মাত্র ₹৪৯৯/মাস থেকে শুরু</div>
+          </div>
+        </button>
+        <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
+        
+        <!-- 2. Driver 0% commission pass -->
+        <button type="button" onclick="closeNavDrawer(); openDriverPassModal();" class="drawer-menu-item">
+          <div class="drawer-item-icon" style="background:#dcfce7;color:#16a34a">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div>
+            <div style="font-weight:700">💳 চালক ০% কমিশন সাবস্ক্রিপশন পাস</div>
+            <div style="font-size:11px;color:#16a34a;font-weight:bold">১০০% ভাড়া আপনার • দৈনিক ₹১০ বা মাসিক ₹১৯৯</div>
+          </div>
+        </button>
+        <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
+
+        <!-- 3. Rider Shop -->
+        <button type="button" onclick="closeNavDrawer(); openRiderShopModal();" class="drawer-menu-item">
+          <div class="drawer-item-icon" style="background:#e0e7ff;color:#4f46e5">
+            <i class="fa-solid fa-motorcycle"></i>
+          </div>
+          <div>
+            <div style="font-weight:700">🛵 রাইডার ও বাইকার শপ</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal">আইএসআই হেলমেট, মোবাইল হোল্ডার ও অ্যাক্সেসরিজ</div>
+          </div>
+        </button>
+        <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
+
+        <!-- 4. Insurance & Loan -->
+        <button type="button" onclick="closeNavDrawer(); openInsuranceModal();" class="drawer-menu-item">
+          <div class="drawer-item-icon" style="background:#fee2e2;color:#dc2626">
+            <i class="fa-solid fa-shield-heart"></i>
+          </div>
+          <div>
+            <div style="font-weight:700">🛡️ বাইক ও গাড়ির ইন্স্যুরেন্স ও লোন</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal">২ মিনিটে অনলাইনে রিনিউ ও সহজ কিস্তির সুবিধা</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
     <!-- SECTION 3: SAFETY & SERVICES -->
     <div>
       <div class="drawer-section-title" data-i18n="drawerTitleSafety">🚨 নিরাপত্তা ও সাপোর্ট</div>
@@ -3740,6 +3793,233 @@ window.addEventListener('load', function() {
     </div>
     <div id="notifListWrap" style="font-size:13px">
       <div style="text-align:center;padding:16px;color:#64748b">লোড হচ্ছে...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 1. AD SPONSORSHIP MODAL -->
+<div id="adSponsorshipModal" class="modal-overlay">
+  <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:480px;width:95%;padding:18px;border-radius:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">📢</span>
+        <div>
+          <h3 style="margin:0;color:#0f172a;font-size:17px;font-weight:900">আপনার ব্যবসার বিজ্ঞাপন দিন</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#64748b">মেদিনীপুর ও আশেপাশের হাজার হাজার যাত্রীর কাছে পৌঁছান</p>
+        </div>
+      </div>
+      <button onclick="closeAdSponsorshipModal()" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;color:#64748b">&times;</button>
+    </div>
+
+    <div style="background:#fffbeb;border:1.5px dashed #f59e0b;padding:12px;border-radius:14px;margin-bottom:14px">
+      <div style="font-weight:800;color:#92400e;font-size:13px;margin-bottom:4px">🎯 কেন রাইড সাথী গো-তে বিজ্ঞাপন দেবেন?</div>
+      <div style="font-size:12px;color:#b45309;line-height:1.5">
+        প্রতিদিন শত শত মানুষ অফিস, কলেজ, হাসপাতাল ও বাজারে যাওয়ার জন্য আমাদের অ্যাপ ব্যবহার করেন। আপনার হোটেল, দোকান, রেস্তোরাঁ, কোচিং বা গ্যারেজের সেরা প্রচার করুন।
+      </div>
+    </div>
+
+    <!-- Package Cards -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;background:#f8fafc">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:800;color:#0f172a;font-size:13.5px">🥉 সিলভার প্ল্যান (Silver Plan)</div>
+          <span style="background:#e2e8f0;color:#334155;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:900">₹৪৯৯ / মাস</span>
+        </div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:4px">✓ হোমপেজ ব্যানার স্লট • ফটো ও ঠিকানা ডিসপ্লে</div>
+      </div>
+
+      <div style="border:2px solid #f59e0b;border-radius:14px;padding:12px;background:#fffbeb;box-shadow:0 2px 8px rgba(245,158,11,0.15)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:900;color:#92400e;font-size:13.5px">🥇 গোল্ড পার্টনার (Gold Plan)</div>
+          <span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:900">₹৯৯৯ / মাস</span>
+        </div>
+        <div style="font-size:11.5px;color:#b45309;margin-top:4px">✓ টপ হোম ব্যানার • সরাসরি কল ও WhatsApp বাটন • পুশ নোটিফিকেশন প্রচার</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <a href="https://wa.me/918768447312?text=নমস্কার,%20আমি%20RIDE%20SATHI%20GO%20প্ল্যাটফর্মে%20আমার%20দোকান/ব্যবসার%20বিজ্ঞাপন%20দিতে%20চাই।" target="_blank" rel="noopener noreferrer" style="background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;text-align:center;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(37,211,102,0.3)">
+        <i class="fab fa-whatsapp" style="font-size:18px"></i> <span>হোয়াটসঅ্যাপে বিজ্ঞাপন বুক করুন</span>
+      </a>
+      <a href="tel:8768447312" style="background:#0f172a;color:#fff;text-decoration:none;padding:11px;border-radius:12px;font-weight:700;text-align:center;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+        📞 হেল্পলাইনে কথা বলুন (8768447312)
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 2. DRIVER SUBSCRIPTION PASS MODAL -->
+<div id="driverPassModal" class="modal-overlay">
+  <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:480px;width:95%;padding:18px;border-radius:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">💳</span>
+        <div>
+          <h3 style="margin:0;color:#0f172a;font-size:17px;font-weight:900">চালক ০% কমিশন সাবস্ক্রিপশন পাস</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#16a34a;font-weight:700">১০০% ভাড়ার টাকা সরাসরি আপনার হাতে!</p>
+        </div>
+      </div>
+      <button onclick="closeDriverPassModal()" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;color:#64748b">&times;</button>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;padding:12px;border-radius:14px;margin-bottom:14px">
+      <div style="font-weight:900;color:#14532d;font-size:13.5px;margin-bottom:4px">🚫 কোনো কমিশন কাটা হবে না!</div>
+      <div style="font-size:12px;color:#166534;line-height:1.5">
+        অন্যান্য কোম্পানিতে ২০-২৫% কমিশন দিতে হয়। রাইড সাথী গো-তে প্রতিদিন মাত্র ₹১০ টাকা বা মাসে মাত্র ₹১৯৯ টাকা দিন—যত খুশি রাইড নিন, পুরো ভাড়া আপনার!
+      </div>
+    </div>
+
+    <!-- Pass Types -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="border:1.5px solid #cbd5e1;border-radius:14px;padding:12px;background:#fff;text-align:center">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase">ডেইলি পাস</div>
+        <div style="font-size:20px;font-weight:900;color:#0f172a;margin:4px 0">₹১০ <span style="font-size:12px;color:#64748b;font-weight:normal">/ দিন</span></div>
+        <div style="font-size:11px;color:#15803d;font-weight:700">২৪ ঘণ্টা আনলিমিটেড বুকিং</div>
+      </div>
+
+      <div style="border:2px solid #16a34a;border-radius:14px;padding:12px;background:#f0fdf4;text-align:center;box-shadow:0 3px 10px rgba(22,163,74,0.12)">
+        <div style="font-size:11px;font-weight:800;color:#15803d;text-transform:uppercase">🌟 মান্থলি সুপার পাস</div>
+        <div style="font-size:20px;font-weight:900;color:#15803d;margin:4px 0">₹১৯৯ <span style="font-size:12px;color:#15803d;font-weight:normal">/ মাস</span></div>
+        <div style="font-size:11px;color:#166534;font-weight:800">৩০ দিন সম্পূর্ণ ফ্রি ট্রিপ</div>
+      </div>
+    </div>
+
+    <!-- Benefits list -->
+    <div style="font-size:12px;color:#334155;line-height:1.6;margin-bottom:14px;padding-left:4px">
+      <div>✓ কাস্টমার সরাসরি আপনাকে ক্যাশ বা UPI দেবে</div>
+      <div>✓ কোনো অতিরিক্ত হিডেন চার্জ নেই</div>
+      <div>✓ ২৪ ঘণ্টা হেল্পলাইন ও লোকাল সাপোর্ট</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <a href="https://wa.me/918768447312?text=নমস্কার,%20আমি%20রাইড%20সাথী%20ড্রাইভার%20পার্টনার%20হিসেবে%20০%20কমিশন%20পাস%20নিতে%20চাই।" target="_blank" rel="noopener noreferrer" style="background:#16a34a;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;text-align:center;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(22,163,74,0.25)">
+        <i class="fab fa-whatsapp" style="font-size:18px"></i> <span>পাস চালু করতে WhatsApp করুন</span>
+      </a>
+      <a href="driver-registration.html" style="background:#0f172a;color:#fff;text-decoration:none;padding:11px;border-radius:12px;font-weight:700;text-align:center;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+        🏍️ নতুন চালক রেজিস্টার করুন
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 3. RIDER ESSENTIALS SHOP MODAL -->
+<div id="riderShopModal" class="modal-overlay">
+  <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:480px;width:95%;padding:18px;border-radius:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">🛵</span>
+        <div>
+          <h3 style="margin:0;color:#0f172a;font-size:17px;font-weight:900">রাইডার ও চালক শপ (Rider Essentials)</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#64748b">নিরাপদ যাত্রা ও সুরক্ষার সেরা সামগ্রী</p>
+        </div>
+      </div>
+      <button onclick="closeRiderShopModal()" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;color:#64748b">&times;</button>
+    </div>
+
+    <!-- Items Grid -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <!-- Item 1: Helmet -->
+      <a href="https://www.amazon.in/s?k=bike+helmet+isi+marked" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;transition:transform 0.15s">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:28px;background:#f1f5f9;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">🪖</div>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:13px">আইএসআই (ISI) সার্টিফাইড হেলমেট</div>
+            <div style="font-size:11px;color:#64748b">ট্রাফিক ফাইন থেকে বাঁচুন ও সুরক্ষিত থাকুন</div>
+            <div style="font-size:11.5px;font-weight:900;color:#16a34a;margin-top:2px">₹৭৯৯ থেকে শুরু • সেরা ব্র্যান্ড</div>
+          </div>
+        </div>
+        <div style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:800;white-space:nowrap">কিনুন ➔</div>
+      </a>
+
+      <!-- Item 2: Mobile Holder -->
+      <a href="https://www.amazon.in/s?k=waterproof+bike+mobile+holder+with+charger" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;transition:transform 0.15s">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:28px;background:#f1f5f9;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">📱</div>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:13px">ওয়াটারপ্রুফ মোবাইল হোল্ডার</div>
+            <div style="font-size:11px;color:#64748b">বাইক ও টোটোর জন্য ৩৬০° জিপিএস মাউন্ট</div>
+            <div style="font-size:11.5px;font-weight:900;color:#16a34a;margin-top:2px">₹২৪৯ থেকে শুরু • ওয়াটারপ্রুফ</div>
+          </div>
+        </div>
+        <div style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:800;white-space:nowrap">কিনুন ➔</div>
+      </a>
+
+      <!-- Item 3: Fast Bike Charger -->
+      <a href="https://www.amazon.in/s?k=fast+usb+bike+charger" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;transition:transform 0.15s">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:28px;background:#f1f5f9;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">🔌</div>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:13px">ফাস্ট ইউএসবি বাইক চার্জার</div>
+            <div style="font-size:11px;color:#64748b">চলার পথেই মোবাইল ফুল চার্জ রাখুন</div>
+            <div style="font-size:11.5px;font-weight:900;color:#16a34a;margin-top:2px">₹১৯৯ থেকে শুরু</div>
+          </div>
+        </div>
+        <div style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:800;white-space:nowrap">কিনুন ➔</div>
+      </a>
+
+      <!-- Item 4: Raincoat -->
+      <a href="https://www.amazon.in/s?k=bike+riding+raincoat+waterproof" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;transition:transform 0.15s">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:28px;background:#f1f5f9;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center">🌧️</div>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:13px">হেভি ডিউটি রেইনকোট</div>
+            <div style="font-size:11px;color:#64748b">বর্ষার দিনেও নিশ্চিন্তে রাইড চালান</div>
+            <div style="font-size:11.5px;font-weight:900;color:#16a34a;margin-top:2px">₹৩৯৯ থেকে শুরু</div>
+          </div>
+        </div>
+        <div style="background:#0f172a;color:#fff;padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:800;white-space:nowrap">কিনুন ➔</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 4. INSURANCE & LOAN MODAL -->
+<div id="insuranceModal" class="modal-overlay">
+  <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:480px;width:95%;padding:18px;border-radius:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">🛡️</span>
+        <div>
+          <h3 style="margin:0;color:#0f172a;font-size:17px;font-weight:900">গাড়ির ইন্স্যুরেন্স ও লোন সহায়তা</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#64748b">বাইক, টোটো ও কার ইন্স্যুরেন্স রিনিউ ২ মিনিটে</p>
+        </div>
+      </div>
+      <button onclick="closeInsuranceModal()" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;color:#64748b">&times;</button>
+    </div>
+
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;padding:12px;border-radius:14px;margin-bottom:14px">
+      <div style="font-weight:800;color:#15803d;font-size:13px;margin-bottom:2px">⚡ ঘরে বসেই সর্বনিম্ন প্রিমিয়ামে ইন্স্যুরেন্স পান</div>
+      <div style="font-size:11.5px;color:#166534">কাগজপত্র জমা দেওয়ার ঝামেলা ছাড়াই তৎক্ষণাৎ ডিজিটাল পলিসি ডাউনলোড করুন।</div>
+    </div>
+
+    <!-- Options -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="border:1px solid #e2e8f0;border-radius:12px;padding:11px;background:#f8fafc">
+        <div style="font-weight:800;color:#0f172a;font-size:13px">🏍️ বাইক ইন্স্যুরেন্স (1st & 3rd Party)</div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:2px">বার্ষিক মাত্র ₹৫৩৮ থেকে শুরু • পলিসি সঙ্গে সঙ্গে রেডি</div>
+      </div>
+
+      <div style="border:1px solid #e2e8f0;border-radius:12px;padding:11px;background:#f8fafc">
+        <div style="font-weight:800;color:#0f172a;font-size:13px">🛺 টোটো ও অটো কমার্শিয়াল ইন্স্যুরেন্স</div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:2px">বাণিজ্যিক যানবাহনের জন্য সহজ রিনিউ ও ক্লেইম সাপোর্ট</div>
+      </div>
+
+      <div style="border:1px solid #e2e8f0;border-radius:12px;padding:11px;background:#f8fafc">
+        <div style="font-weight:800;color:#0f172a;font-size:13px">💳 নতুন গাড়ি ও টোটো লোন গাইড</div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:2px">সহজ মাসিক কিস্তি ও স্বল্প সুদে লোনের সঠিক তথ্য</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <a href="https://www.amazon.in/insurance" target="_blank" rel="noopener noreferrer" style="background:#0284c7;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;text-align:center;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px">
+        🔍 অনলাইনে ইন্স্যুরেন্স প্রিমিয়াম চেক করুন ➔
+      </a>
+      <a href="https://wa.me/918768447312?text=নমস্কার,%20আমি%20গাড়ি/বাইকের%20ইন্স্যুরেন্স%20বা%20লোন%20সহায়তা%20সম্পর্কে%20জানতে%20চাই।" target="_blank" rel="noopener noreferrer" style="background:#25D366;color:#fff;text-decoration:none;padding:11px;border-radius:12px;font-weight:700;text-align:center;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+        <i class="fab fa-whatsapp" style="font-size:18px"></i> <span>হেল্পডেস্কে WhatsApp করুন</span>
+      </a>
     </div>
   </div>
 </div>
@@ -7345,6 +7625,43 @@ window.openReferralModal = function() {
 };
 window.closeReferralModal = function() {
   document.getElementById('referModal').classList.remove('show');
+};
+
+// Revenue & Partner Modals
+window.openAdSponsorshipModal = function() {
+  var m = document.getElementById('adSponsorshipModal');
+  if (m) m.classList.add('show');
+};
+window.closeAdSponsorshipModal = function() {
+  var m = document.getElementById('adSponsorshipModal');
+  if (m) m.classList.remove('show');
+};
+
+window.openDriverPassModal = function() {
+  var m = document.getElementById('driverPassModal');
+  if (m) m.classList.add('show');
+};
+window.closeDriverPassModal = function() {
+  var m = document.getElementById('driverPassModal');
+  if (m) m.classList.remove('show');
+};
+
+window.openRiderShopModal = function() {
+  var m = document.getElementById('riderShopModal');
+  if (m) m.classList.add('show');
+};
+window.closeRiderShopModal = function() {
+  var m = document.getElementById('riderShopModal');
+  if (m) m.classList.remove('show');
+};
+
+window.openInsuranceModal = function() {
+  var m = document.getElementById('insuranceModal');
+  if (m) m.classList.add('show');
+};
+window.closeInsuranceModal = function() {
+  var m = document.getElementById('insuranceModal');
+  if (m) m.classList.remove('show');
 };
 window.shareReferralWhatsApp = function() {
   const code = (document.getElementById('userReferCode') ? document.getElementById('userReferCode').innerText : '') || userReferralCode || 'RSGO-SPECIAL';
