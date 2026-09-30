@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>Driver Partner App & Live Console (driver.html) - RIDE SATHI GO</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;700;900&display=swap');
+  @page {
+    size: A4;
+    margin: 12mm 15mm;
+  }
+  body {
+    font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1e293b;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    font-size: 13px;
+  }
+  .header {
+    border-bottom: 3px solid #16a34a;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand {
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+  .brand span {
+    color: #16a34a;
+  }
+  .badge {
+    display: inline-block;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #86efac;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 20px;
+    color: #0f172a;
+    margin: 0 0 6px;
+    font-weight: 900;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card p {
+    margin: 0;
+    font-size: 11.5px;
+    color: #475569;
+  }
+  .feature-box {
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    border-left: 4px solid #16a34a;
+    padding-left: 8px;
+    margin: 16px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  th {
+    background: #0f172a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 700;
+  }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  .highlight-box {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1.5px solid #86efac;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 14px 0;
+  }
+  .highlight-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #166534;
+    margin-bottom: 4px;
+  }
+  .marketing-template {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    margin: 10px 0;
+  }
+  .footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: #94a3b8;
+  }
+</style>
+
+</head>
+<body>
+  <div class="header">
+    <div class="brand">RIDE SATHI <span>GO</span></div>
+    <div class="badge">Marketing Feature Document #2</div>
+  </div>
+  <h1>Driver Partner App & Live Console (driver.html)</h1>
+  <div class="subtitle">বাইক, টোটো, অটো ও গাড়ি চালকদের যুক্ত করার আকর্ষণীয় সুবিধাসমূহ</div>
+  
+      <div class="highlight-box">
+        <div class="highlight-title">🎯 ড্রাইভার অনবোর্ডিং স্লোগান (Key Recruitment Pitch)</div>
+        <div>"কোম্পানিকে ৩০% কমিশন দিয়ে নিজের রোজগার নষ্ট করবেন না! রাইড সাথীতে আসুন — স্বচ্ছ ভাড়া, দ্রুত ক্যাশ পেমেন্ট এবং নিজের এলাকায় বেশি ট্রিপ!"</div>
+      </div>
+
+      <div class="section-title">১. চালক ভাইদের জন্য প্রধান সুবিধাসমূহ (Driver Panel Features)</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🟢 অনলাইন / অফলাইন কন্ট্রোল</div>
+          <p>চালকের নিজের মর্জি অনুযায়ী যখন খুশি ডিউটি শুরু (ONLINE) এবং যখন খুশি ছুটি (OFFLINE)। কোনো জোরজবরদস্তি নেই।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🔔 জোরালো বেল ও সাউন্ড অ্যালার্ট</div>
+          <p>বুকিং এলেই ফোনের পকেটে থাকলেও উচ্চ-শব্দের অডিও সাইরেন বেজে ওঠে, যাতে কোনো রাইড মিস না হয়।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🗺️ ইন-বিল্ট গুগল ম্যাপস নেভিগেশন</div>
+          <p>১-ট্যাপেই গুগল ম্যাপস খুলে যায় এবং পিকআপ ও ড্রপের সোজা রাস্তা দেখিয়ে দেয়। পথ হারানোর কোনো ভয় নেই।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🔐 ৪-ডিজিটের ওটিপি (OTP) ভেরিফিকেশন</div>
+          <p>যাত্রীর ফোন থেকে ওটিপি না মেলালে ট্রিপ শুরু হবে না। ফলে ভুল প্যাসেঞ্জার বা ভুয়ো রাইডের কোনো সুযোগ নেই।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">📞 প্যাসেঞ্জারকে কল ও হোয়াটসঅ্যাপ</div>
+          <p>সরাসরি চালক প্যানেল থেকেই এক ট্যাপে যাত্রীকে ফোন করা বা হোয়াটসঅ্যাপ মেসেজ পাঠানোর বোতাম রয়েছে।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">💰 দৈনিক আয় ও ট্রিপ কাউন্টার</div>
+          <p>সারাদিনে মোট কত টাকা রোজগার হলো, কটা ট্রিপ সফল হলো এবং কত কমিশন বকেয়া — স্ক্রিনেই জ্বলজ্বল করে।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🪟 ফ্ল্যাটিং বাবল / শর্টকাট মোড</div>
+          <p>অন্য কাজ করার সময়ও স্ক্রিনে ছোট বাবল ভাসমান থাকে, বুকিং এলে সাথে সাথে এক ক্লিকে অ্যাকসেপ্ট করা যায়।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ দ্রুত ইনস্টলেশন ও ০ ডেটা খরচ</div>
+          <p>হালকা কোডিং থাকায় ফোন স্লো হয় না, ইন্টারনেট ডেটা খুব সামান্য কাটে এবং ব্যাটারি দীর্ঘস্থায়ী থাকে।</p>
+        </div>
+      </div>
+
+      <div class="section-title">২. চালকরা কেন বড় কোম্পানির চেয়ে রাইড সাথী পছন্দ করবেন?</div>
+      <table>
+        <tr>
+          <th>তুলনার বিষয়</th>
+          <th>অন্যান্য ক্যাব কোম্পানি</th>
+          <th>RIDE SATHI GO চালক সাথী</th>
+        </tr>
+        <tr>
+          <td>কোম্পানি কমিশন</td>
+          <td>২৫% থেকে ৩৫% কেটে নেয়</td>
+          <td><b>খুবই সামান্য লোকাল কমিশন — বেশি আয় চালকের ঘরে</b></td>
+        </tr>
+        <tr>
+          <td>ভাড়া প্রাপ্তি</td>
+          <td>সপ্তাহে একবার ব্যাংকে আটকে রাখে</td>
+          <td><b>যাত্রীর থেকে সাথে সাথে ক্যাশ বা নিজের UPI-তে সরাসরি টাকা</b></td>
+        </tr>
+        <tr>
+          <td>টোটো চালকদের সুযোগ</td>
+          <td>টোটো বা লোকাল ভ্যান চলে না</td>
+          <td><b>টোটো, অটো, বাইক ও প্রাইভেট কার সবার সমাদর</b></td>
+        </tr>
+        <tr>
+          <td>লোকাল সাপোর্ট</td>
+          <td>রোবট ও চ্যাটবট দিয়ে ভোগান্তি</td>
+          <td><b>সরাসরি লোকাল অ্যাডমিন হেল্পলাইন ও সমাধান</b></td>
+        </tr>
+      </table>
+
+      <div class="section-title">৩. ড্রাইভার যুক্ত করার জন্য হোয়াটসঅ্যাপ ক্যাম্পেন মেসেজ</div>
+      <div class="marketing-template">
+🏍️🛺 *টোটো, অটো, বাইক ও গাড়ি চালক ভাইদের জন্য সুবর্ণ সুযোগ!*
+
+বড় কোম্পানিতে ৩০% কমিশন আর পেমেন্টের ঝামেলা ছেড়ে আজই যোগ দিন পশ্চিমবঙ্গের নিজের প্ল্যাটফর্ম — *RIDE SATHI GO*-তে!
+
+✅ প্রতিদিনের রোজগারের টাকা সাথে সাথে আপনার হাতে
+✅ নিজের এলাকায় বেশি বেশি ভাড়া
+✅ কোনো জটিল নিয়ম নেই — ফোন থেকেই বুকিং গ্রহণ ও সমাপ্তি
+✅ টোটো ও লোকাল অটো চালকদের জন্য বিশেষ সুযোগ
+
+👉 চালক হতে এখনই যোগাযোগ বা রেজিস্টার করুন:
+🔗 লিঙ্ক: https://ride-sathi-go.web.app/driver-registration.html
+📞 চালক হেল্পলাইন: 8768447312
+      </div>
+    
+  <div class="footer">
+    <div>RIDE SATHI GO — পশ্চিমবঙ্গের নির্ভরযোগ্য রাইড ও পার্সেল সার্ভিস</div>
+    <div>অফিসিয়াল পোর্টাল: ride-sathi-go.web.app | হেল্পলাইন: 8768447312</div>
+  </div>
+</body>
+</html>

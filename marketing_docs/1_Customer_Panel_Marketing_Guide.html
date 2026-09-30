@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>Customer Web App & Booking Portal (index.html) - RIDE SATHI GO</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;600;700;900&display=swap');
+  @page {
+    size: A4;
+    margin: 12mm 15mm;
+  }
+  body {
+    font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1e293b;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    font-size: 13px;
+  }
+  .header {
+    border-bottom: 3px solid #16a34a;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand {
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+  }
+  .brand span {
+    color: #16a34a;
+  }
+  .badge {
+    display: inline-block;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #86efac;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 20px;
+    color: #0f172a;
+    margin: 0 0 6px;
+    font-weight: 900;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card p {
+    margin: 0;
+    font-size: 11.5px;
+    color: #475569;
+  }
+  .feature-box {
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+    border-left: 4px solid #16a34a;
+    padding-left: 8px;
+    margin: 16px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  th {
+    background: #0f172a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 700;
+  }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  .highlight-box {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1.5px solid #86efac;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 14px 0;
+  }
+  .highlight-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #166534;
+    margin-bottom: 4px;
+  }
+  .marketing-template {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    margin: 10px 0;
+  }
+  .footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: #94a3b8;
+  }
+</style>
+
+</head>
+<body>
+  <div class="header">
+    <div class="brand">RIDE SATHI <span>GO</span></div>
+    <div class="badge">Marketing Feature Document #1</div>
+  </div>
+  <h1>Customer Web App & Booking Portal (index.html)</h1>
+  <div class="subtitle">যাত্রী ও গ্রাহকদের কাছে RIDE SATHI GO প্রচার ও আকর্ষণের সমস্ত সুবিধাসমূহ</div>
+  
+      <div class="highlight-box">
+        <div class="highlight-title">🎯 মূল স্লোগান (Key Marketing Pitch)</div>
+        <div>"প্লে-স্টোর খোঁজার দরকার নেই, মাত্র ১ MB-তে ফোনে রাখুন — কম ভাড়ায় নির্ভরযোগ্য বাইক, টোটো ও গাড়ি পান আপনার দোরগোড়ায়!"</div>
+      </div>
+
+      <div class="section-title">১. যাত্রী প্যানেলের প্রধান ফিচারসমূহ (Step-by-Step Breakdown)</div>
+      
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📲 ১-ক্লিকে ইনস্টলেশন (PWA)</div>
+          <p>প্লে-স্টোরে ৫০-৬০ MB ডেটা খরচ না করে ব্রাউজার থেকেই মাত্র ১ MB-তে ফোনের হোমস্ক্রিনে অ্যাপ ইনস্টল হয়ে যায়। সম্পূর্ণ ফ্রি ও ফাস্ট।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🌐 ত্রিভাষিক সুবিধা (BN / HI / EN)</div>
+          <p>বাংলা, হিন্দি এবং ইংরেজি — এক ক্লিকে সম্পূর্ণ অ্যাপের ভাষা বদলে নেওয়া যায়। গ্রামীণ ও বয়স্ক যাত্রীদের জন্য সেরা।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🎤 ভয়েস সার্চ ও জিপিএস</div>
+          <p>টাইপ করতে না পারলে মুখে বাংলায় বললেই (Voice Mic) গন্তব্য সেট হয়ে যায়। সাথে ১-ট্যাপ কারেন্ট জিপিএস লোকেশন সনাক্তকরণ।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">✏️ ম্যানুয়াল কিমি (KM) ওভাররাইড</div>
+          <p>অজ পাড়াগাঁ বা আনম্যাপড এলাকায় ম্যাপে নাম না আসলেও গ্রাহক নিজে কিমি লিখলেই স্বয়ংক্রিয়ভাবে নির্ভুল ভাড়া বের হয়ে যায়।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🚖 বহুবিধ গাড়ির বিকল্প</div>
+          <p>বাইক (Bike), টোটো (Toto), অটো (Auto), চারচাকা ক্যাব (Car), এবং জরুরি পার্সেল ডেলিভারি — সব একই অ্যাপে।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">💳 ক্যাশ বা অনলাইন UPI</div>
+          <p>সরাসরি চালককে ক্যাশ দিন, অথবা PhonePe, GPay, Paytm দিয়ে ইনস্ট্যান্ট Dynamic QR কোড স্ক্যান করে পে করুন।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🛡️ পরিবারের সাথে লাইভ ট্রিপ শেয়ার</div>
+          <p>রাইড চলাকালীন ১-ক্লিকে পরিবারের হোয়াটসঅ্যাপে যাত্রী, চালক, গাড়ির নম্বর ও লাইভ ট্র্যাকিং পাঠানো যায়। নারী ও শিশুদের সর্বোচ্চ নিরাপত্তা।</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🎁 রেফার ও আয় (Refer & Earn)</div>
+          <p>বন্ধুদের হোয়াটসঅ্যাপে রেফারেল কোড পাঠালেই যাত্রী পেয়ে যায় ₹১০ ফ্ল্যাট ডিসকাউন্ট কুপন (SATHI10)। ভাইরাল মার্কেটিং ড্রাইভ।</p>
+        </div>
+      </div>
+
+      <div class="section-title">২. ওলা, উবার ও র‌্যাপিডোর চেয়ে কেন আমরা এগিয়ে? (Comparison)</div>
+      <table>
+        <tr>
+          <th>সুবিধা (Feature)</th>
+          <th>Ola / Uber / Rapido</th>
+          <th>RIDE SATHI GO (রাইড সাথী)</th>
+        </tr>
+        <tr>
+          <td>অ্যাপ সাইজ ও ডাউনলোড</td>
+          <td>৫০ MB - ৭০ MB প্লে স্টোর ডাউনলোড</td>
+          <td><b>মাত্র ১ MB (PWA) — কোনো প্লে-স্টোর লাগে না</b></td>
+        </tr>
+        <tr>
+          <td>টোটো (Toto) ও লোকাল অটো</td>
+          <td>বেশিরভাগ মফস্বলে নেই</td>
+          <td><b>পশ্চিমবঙ্গের প্রতিটি পাড়ায় টোটো ও অটো বুকিং</b></td>
+        </tr>
+        <tr>
+          <td>অফ-রুট বা গ্রামের লোকেশন</td>
+          <td>ম্যাপে না পেলে বুকিং নেয় না</td>
+          <td><b>ম্যানুয়াল কিমি লিখে সরাসরি বুকিং সুবিধা</b></td>
+        </tr>
+        <tr>
+          <td>পরিবারকে ট্রিপ শেয়ার</td>
+          <td>জটিল প্রসেস</td>
+          <td><b>১-ক্লিক সহজ WhatsApp ফ্যামিলি শেয়ার</b></td>
+        </tr>
+      </table>
+
+      <div class="section-title">৩. সোশ্যাল মিডিয়া ও হোয়াটসঅ্যাপ মার্কেটিং টেমপ্লেট</div>
+      <div class="marketing-template">
+📢 *মফস্বল ও শহরের সেরা সাশ্রয়ী রাইড সেবা — RIDE SATHI GO!* 🚖
+
+এখন প্লে-স্টোর ছাড়াই সরাসরি ব্রাউজারে মাত্র ১-ক্লিকে বাইক, টোটো বা গাড়ি বুক করুন।
+✅ কোনো বাড়তি চার্জ নেই, স্বচ্ছ ভাড়া
+✅ ১-ক্লিকে পরিবারের হোয়াটসঅ্যাপে লাইভ ট্রিপ শেয়ার
+✅ প্রথম রাইডেই পান ₹১০ ছাড়! কুপন কোড: *SATHI10*
+
+👉 এখনই বুক করুন: https://ride-sathi-go.web.app/
+📞 হেল্পলাইন: 8768447312
+      </div>
+    
+  <div class="footer">
+    <div>RIDE SATHI GO — পশ্চিমবঙ্গের নির্ভরযোগ্য রাইড ও পার্সেল সার্ভিস</div>
+    <div>অফিসিয়াল পোর্টাল: ride-sathi-go.web.app | হেল্পলাইন: 8768447312</div>
+  </div>
+</body>
+</html>
