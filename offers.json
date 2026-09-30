@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-30T00:20:07.663Z",
+  "updated_at": "2026-09-30T06:18:11.326Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,39 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Wonderchef",
+      "d": "Unmissable Wonderchef Festive Sale: Save Up to 80% + Extra 15% Off!",
+      "c": "FESTIVE15",
+      "cat": "Shopping",
+      "l": "https://www.wonderchef.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.wonderchef.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/1529/medium/Wonderchef.png?1487944566",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Wonderchef",
+      "d": "Get 10% Off Instantly on Wonderchef Kitchen Essentials!",
+      "c": "FESTIVE10",
+      "cat": "Shopping",
+      "l": "https://www.wonderchef.com/collections/monsoon-bonanza",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.wonderchef.com%2Fcollections%2Fmonsoon-bonanza&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/1529/medium/Wonderchef.png?1487944566",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Wonderchef",
+      "d": "Exclusive 5% Off on Rs. 2499+ Purchases | Festive Treats Await!",
+      "c": "FESTIVE5",
+      "cat": "Shopping",
+      "l": "https://www.wonderchef.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.wonderchef.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/1529/medium/Wonderchef.png?1487944566",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Trip.com",
@@ -2912,45 +2945,12 @@
     },
     {
       "b": "Firstcry",
-      "d": "Don’t Miss Out: 40% Off on Kids’ Apparel - Up to Rs. 6000 Off!",
+      "d": "Don���t Miss Out: 40% Off on Kids’ Apparel - Up to Rs. 6000 Off!",
       "c": "BTQSSS",
       "cat": "Shopping",
       "l": "https://www.firstcry.com/boutique/new-arrivals-up-to-14y/39669?ref2=homepage&c=BTQSSS",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.firstcry.com%2Fboutique%2Fnew-arrivals-up-to-14y%2F39669%3Fref2%3Dhomepage%26c%3DBTQSSS&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/47/medium/FC-Logo-big_store_tagline.png?1582718962",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Neemans",
-      "d": "Flat 10% Off on Stylish Street Collection Sneakers!",
-      "c": "STREET10",
-      "cat": "Shopping",
-      "l": "https://neemans.com/pages/street-collection-sneakers",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fneemans.com%2Fpages%2Fstreet-collection-sneakers&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3730/medium/neems.png?1594360814",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Digihaat",
-      "d": "Save Up to Rs. 50 with 20% Off on Farmerette Food Products!",
-      "c": "EXTRASAVE",
-      "cat": "Food",
-      "l": "https://digihaat.in/en/store?domain=ONDC%3ARET10&provider_id=956b30aa1c93448b89ae71265073d553&bpp_id=ondcseller-prod.costbo.com&locationId=956b30aa1c93448b89ae71265073d553-loc1",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fdigihaat.in%2Fen%2Fstore%3Fdomain%3DONDC%3ARET10%26provider_id%3D956b30aa1c93448b89ae71265073d553%26bpp_id%3Dondcseller-prod.costbo.com%26locationId%3D956b30aa1c93448b89ae71265073d553-loc1&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Fyva",
-      "d": "Save 15% Instantly on Pinacolada Clothing Orders Over Rs. 1599!",
-      "c": "STEAL15",
-      "cat": "Shopping",
-      "l": "https://fyva.in/collections/pinacolada",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Ffyva.in%2Fcollections%2Fpinacolada&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
       "badge": "Coupon",
       "rank": 20
     }
