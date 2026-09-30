@@ -7569,14 +7569,24 @@ function renderAdminChatMessages(msgs) {
     if (isAdmin) {
       badge = '<div style="font-size:11px;font-weight:900;color:#f3e8ff;margin-bottom:4px;display:flex;align-items:center;gap:4px">👤 সাপোর্ট অ্যাডমিন (আপনি)</div>';
     } else if (isAi) {
-      badge = '<div style="font-size:11px;font-weight:900;color:#059669;margin-bottom:4px;display:flex;align-items:center;gap:4px">🤖 Ride Sathi AI সহকারী</div>';
+      badge = '<div style="font-size:11px;font-weight:900;color:#059669;margin-bottom:4px;display:flex;align-items:center;gap:6px"><img src="ai-avatar.png" alt="AI" style="width:18px;height:18px;border-radius:50%;object-fit:cover;border:1px solid #10b981;vertical-align:middle" onerror="this.style.display=\'none\'"><span style="vertical-align:middle">Ride Sathi AI সহকারী</span></div>';
     } else {
       badge = '<div style="font-size:11px;font-weight:900;color:#2563eb;margin-bottom:4px;display:flex;align-items:center;gap:4px">👤 কাস্টমার (' + (m.senderName || 'Rider') + ')</div>';
+    }
+
+    var fileHtml = '';
+    if (m.fileUrl) {
+      if (m.fileUrl.startsWith('data:image') || (m.fileType && m.fileType.startsWith('image/'))) {
+        fileHtml = '<div style="margin-top:8px"><a href="' + m.fileUrl + '" target="_blank" title="ক্লিক করে বড় করে দেখুন"><img src="' + m.fileUrl + '" alt="Attachment" style="max-width:100%;max-height:240px;border-radius:10px;border:1px solid #cbd5e1;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:block"></a><div style="font-size:10.5px;color:#64748b;margin-top:3px">📎 ছবি সংযুক্ত (ক্লিক করে ফুল সাইজে দেখুন)</div></div>';
+      } else {
+        fileHtml = '<div style="margin-top:8px"><a href="' + m.fileUrl + '" download="' + (m.fileName || 'document.pdf') + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#e0f2fe;padding:6px 12px;border-radius:8px;text-decoration:none;color:#0369a1;font-weight:700;font-size:12px;border:1px solid #bae6fd">📄 ' + (m.fileName || 'ডকুমেন্ট ডাউনলোড') + '</a></div>';
+      }
     }
 
     html += '<div class="admin-msg-bubble" style="align-self:' + align + ';background:' + bg + ';color:' + color + ';border:' + border + '">';
     html += badge;
     html += '<div style="font-size:13.5px;line-height:1.6">' + safeText + '</div>';
+    html += fileHtml;
     html += '<div style="font-size:10px;opacity:0.75;text-align:right;margin-top:6px">' + timeStr + '</div>';
     html += '</div>';
   });

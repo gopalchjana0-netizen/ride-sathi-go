@@ -10709,7 +10709,7 @@ window.connectLiveChatFirebase = function(chatId) {
     var key = snapshot.key;
     if (!msg || renderedMsgIds[key]) return;
     renderedMsgIds[key] = true;
-    window.appendChatMessageUI(msg.sender, msg.text, msg.timestamp, msg.senderName);
+    window.appendChatMessageUI(msg.sender, msg.text, msg.timestamp, msg.senderName, msg.fileUrl, msg.fileName, msg.fileType);
   });
 
   // Check if session is new, send greeting
@@ -10746,7 +10746,7 @@ window.connectLiveChatFirebase = function(chatId) {
   chatRef.child('meta/unreadByCustomer').set(0).catch(function(){});
 };
 
-window.appendChatMessageUI = function(sender, text, timestamp, senderName) {
+window.appendChatMessageUI = function(sender, text, timestamp, senderName, fileUrl, fileName, fileType) {
   var msgContainer = document.getElementById('liveChatMessages');
   if (!msgContainer) return;
 
@@ -10761,17 +10761,177 @@ window.appendChatMessageUI = function(sender, text, timestamp, senderName) {
 
   var headerBadge = '';
   if (sender === 'admin') {
-    headerBadge = '<div style="font-size:11px;font-weight:800;color:#7c3aed;margin-bottom:3px">👤 Ride Sathi সাপোর্ট টিম (Admin)</div>';
+    headerBadge = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><div style="width:20px;height:20px;border-radius:50%;background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px">👤</div><span style="font-size:11.5px;font-weight:800;color:#7c3aed">Ride Sathi সাপোর্ট টিম (Admin)</span></div>';
   } else if (sender === 'ai') {
-    headerBadge = '<div style="font-size:11px;font-weight:800;color:#059669;margin-bottom:3px">🤖 Ride Sathi AI সহকারী</div>';
+    headerBadge = '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><img src="ai-avatar.png" alt="AI" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid #10b981;box-shadow:0 1px 4px rgba(0,0,0,0.15)" onerror="this.style.display=\'none\'"><span style="font-size:11.5px;font-weight:800;color:#059669">Ride Sathi AI সহকারী</span></div>';
+  } else {
+    headerBadge = '<div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:3px;text-align:right">আপনি (' + (senderName || 'Rider') + ')</div>';
   }
 
-  // Format bold text and linebreaks safely
-  var safeText = String(text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  // Format bold text, links and linebreaks safely
+  var safeText = String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/\n/g, '<br>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:inherit;text-decoration:underline;font-weight:bold">$1</a>');
 
-  bubble.innerHTML = headerBadge + '<div>' + safeText + '</div><div class="chat-time">' + timeStr + '</div>';
+  var fileHtml = '';
+  if (fileUrl) {
+    if (fileUrl.startsWith('data:image') || (fileType && fileType.startsWith('image/'))) {
+      fileHtml = '<div style="margin-top:8px"><a href="' + fileUrl + '" target="_blank" title="ক্লিক করে বড় করে দেখুন"><img src="' + fileUrl + '" alt="Attachment" style="max-width:100%;max-height:220px;border-radius:12px;border:1px solid #cbd5e1;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,0.1)"></a></div>';
+    } else {
+      fileHtml = '<div style="margin-top:8px"><a href="' + fileUrl + '" download="' + (fileName || 'document.pdf') + '" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;padding:6px 12px;border-radius:8px;text-decoration:none;color:#0284c7;font-weight:700;font-size:12px">📄 ' + (fileName || 'ডকুমেন্ট ডাউনলোড') + '</a></div>';
+    }
+  }
+
+  bubble.innerHTML = headerBadge + '<div>' + safeText + '</div>' + fileHtml + '<div class="chat-time">' + timeStr + '</div>';
   msgContainer.appendChild(bubble);
   msgContainer.scrollTop = msgContainer.scrollHeight;
+};
+
+// ATTACHMENT / DOCUMENT UPLOADER WITH IN-BROWSER RESIZING FOR 100% FREE TIER
+window.handleLiveChatDocUpload = function(event) {
+  var file = event && event.target && event.target.files && event.target.files[0];
+  if (!file) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert("ফাইলটি খুব বড়। অনুগ্রহ করে ৫ মেগাবাইট (5MB)-এর কম সাইজের ছবি নির্বাচন করুন।");
+    if (event.target) event.target.value = '';
+    return;
+  }
+
+  var chatId = window.liveChatSessionId || window.getChatCustomerId();
+  var rtdb = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.rtdb || null);
+  if (!rtdb) return;
+
+  var chatRef = rtdb.ref('support_chats/' + chatId);
+  var custName = localStorage.getItem('customerName') || 'Guest Rider';
+
+  window.showChatTyping(true);
+
+  var reader = new FileReader();
+
+  if (file.type && file.type.startsWith('image/')) {
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var maxDim = 850;
+        var width = img.width;
+        var height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        var compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+
+        chatRef.child('messages').push({
+          sender: 'customer',
+          senderName: custName,
+          text: '📎 ছবি / পেমেন্ট স্ক্রিনশট পাঠানো হয়েছে',
+          fileUrl: compressedBase64,
+          fileName: file.name,
+          fileType: 'image/jpeg',
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        chatRef.child('meta').update({
+          phone: chatId,
+          name: custName,
+          status: 'OPEN',
+          lastMessage: '📎 [ছবি] ' + (file.name || 'Screen/Photo'),
+          lastSender: 'customer',
+          lastTimestamp: firebase.database.ServerValue.TIMESTAMP,
+          unreadByAdmin: firebase.database.ServerValue.increment(1)
+        });
+
+        setTimeout(function() {
+          var aiReply = (window.currentLang === 'hi') ? 
+            "धन्यवाद! आपका दस्तावेज़/स्क्रीनशॉट प्राप्त हो गया है। हमारी सपोर्ट टीम इसे देखकर आपकी पूरी मदद करेगी।" : 
+            ((window.currentLang === 'en') ? 
+              "Thank you! Your document/screenshot has been uploaded. Our support team is reviewing it." : 
+              "ধন্যবাদ! আপনার ছবি/স্ক্রিনশটটি সফলভাবে গৃহীত হয়েছে। আমাদের সাপোর্ট অ্যাডমিন টিম এটি খতিয়ে দেখে যথাযথ ব্যবস্থা নিচ্ছেন।");
+
+          chatRef.child('messages').push({
+            sender: 'ai',
+            senderName: 'Ride Sathi AI',
+            text: aiReply,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+          chatRef.child('meta').update({
+            lastMessage: aiReply,
+            lastSender: 'ai',
+            lastTimestamp: firebase.database.ServerValue.TIMESTAMP
+          });
+          window.showChatTyping(false);
+        }, 600);
+
+        if (event.target) event.target.value = '';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    if (file.size > 300 * 1024) {
+      alert("পিডিএফ ফাইলটি ৩০০ কেবি (300KB)-এর কম হতে হবে।");
+      window.showChatTyping(false);
+      if (event.target) event.target.value = '';
+      return;
+    }
+    reader.onload = function(e) {
+      var base64Doc = e.target.result;
+      chatRef.child('messages').push({
+        sender: 'customer',
+        senderName: custName,
+        text: '📎 ডকুমেন্ট ফাইল সংযুক্ত: ' + (file.name || 'document.pdf'),
+        fileUrl: base64Doc,
+        fileName: file.name,
+        fileType: file.type || 'application/pdf',
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      chatRef.child('meta').update({
+        phone: chatId,
+        name: custName,
+        status: 'OPEN',
+        lastMessage: '📎 [ডকুমেন্ট] ' + (file.name || ''),
+        lastSender: 'customer',
+        lastTimestamp: firebase.database.ServerValue.TIMESTAMP,
+        unreadByAdmin: firebase.database.ServerValue.increment(1)
+      });
+
+      setTimeout(function() {
+        var aiReply = (window.currentLang === 'hi') ? 
+          "दस्तावेज़ सुरक्षित रूप से प्राप्त हो गया है। हमारे अधिकारी जल्द ही जांच कर सहायता करेंगे।" : 
+          ((window.currentLang === 'en') ? 
+            "Document received securely. Support officers are reviewing it." : 
+            "আপনার ডকুমেন্টটি সফলভাবে পাওয়া গেছে। আমাদের অ্যাডমিন টিম নথিটি যাচাই করছেন।");
+
+        chatRef.child('messages').push({
+          sender: 'ai',
+          senderName: 'Ride Sathi AI',
+          text: aiReply,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        window.showChatTyping(false);
+      }, 600);
+
+      if (event.target) event.target.value = '';
+    };
+    reader.readAsDataURL(file);
+  }
 };
 
 window.sendQuickChatMessage = function(text) {
@@ -10924,149 +11084,307 @@ window.toggleLiveChatVoiceInput = function() {
   }
 };
 
-// MULTI-LINGUAL AI KNOWLEDGE MATCHER (BN, HI, EN)
+// MULTI-LINGUAL AI KNOWLEDGE & CUSTOMER SUPPORT ENGINE (BN, HI, EN, Benglish, Hinglish)
 window.generateAiCustomerResponse = function(query, lang) {
-  var q = String(query || '').toLowerCase().trim();
+  var raw = String(query || '').trim();
+  var q = raw.toLowerCase();
 
-  // 1. FARES & RATES (ভাড়া / किराया / Fare)
-  if (q.includes('ভাড়া') || q.includes('rate') || q.includes('fare') || q.includes('cost') || q.includes('কত টাকা') || q.includes('টাকা') || q.includes('price') || q.includes('किराया') || q.includes('रेट') || q.includes('दाम')) {
-    if (lang === 'hi') {
-      return "💰 **Ride Sathi GO पारदर्शी किराया दरें:**\n\n🏍️ **Bike:** बेस फेयर ₹15 + ₹5/किमी\n🛺 **Toto / Auto:** बेस फेयर ₹20 + ₹7/किमी\n🚗 **Car / Cab:** बेस फेयर ₹40 + ₹12/किमी\n📦 **Parcel Delivery:** न्यूनतम ₹25 से शुरू\n\n✨ *कोई छिपा हुआ शुल्क या सर्ज प्राइसिंग नहीं! केवल तय दूरी का सही किराया।*";
-    } else if (lang === 'en') {
-      return "💰 **Ride Sathi GO Transparent Fare Rates:**\n\n🏍️ **Bike:** Base fare ₹15 + ₹5/km\n🛺 **Toto / Auto:** Base fare ₹20 + ₹7/km\n🚗 **Car / Cab:** Base fare ₹40 + ₹12/km\n📦 **Parcel Delivery:** Starting from ₹25\n\n✨ *Zero hidden surge charges! Metered distance based pricing.*";
+  // 1. SMART DYNAMIC LANGUAGE DETECTION (Bengali, Hindi, English, Benglish, Hinglish)
+  var userLang = (function() {
+    // Bengali Unicode script (\u0980-\u09FF)
+    if (/[\u0980-\u09FF]/.test(raw)) return 'bn';
+    // Devanagari Hindi Unicode script (\u0900-\u097F)
+    if (/[\u0900-\u097F]/.test(raw)) return 'hi';
+
+    // Phonetic Benglish words
+    var bnPhonetic = [
+      'bhara', 'vara', 'koto', 'taka', 'kivabe', 'ki vabe', 'asche', 'aschhe', 'dhorche', 'dhorchena',
+      'fele', 'eshechi', 'chaiche', 'amar', 'apnar', 'gari', 'chalu', 'pabo', 'hobe', 'thik',
+      'shuru', 'korbo', 'jabo', 'khobor', 'lagbe', 'chai', 'dorkar', 'bari', 'thake', 'ekhane',
+      'kothay', 'bolun', 'bolte', 'shunchen', 'khabar', 'deben', 'neben', 'beshi', 'bhalo',
+      'kharap', 'somoy', 'ghonta', 'pouchhabo', 'medinipur', 'pingla', 'kharagpur', 'kolkata',
+      'digha', 'haldia', 'tamluk', 'dada', 'bhaiya', 'bhai', 'oto', 'eto', 'hoyeche', 'debo'
+    ];
+    for (var i = 0; i < bnPhonetic.length; i++) {
+      if (new RegExp('\\b' + bnPhonetic[i] + '\\b', 'i').test(q)) return 'bn';
+    }
+
+    // Phonetic Hinglish words
+    var hiPhonetic = [
+      'kiraya', 'kitna', 'kaise', 'kare', 'karna', 'chahiye', 'mang', 'mangta', 'meri', 'mera',
+      'gadi', 'mil', 'sakta', 'bhaiya', 'batao', 'hoga', 'kab', 'tak', 'bhul', 'gaya', 'paisa',
+      'paise', 'rupaye', 'rupay', 'madad', 'bataye', 'jaldi', 'aao', 'aaye', 'ruko', 'chalao',
+      'pahuchna', 'pahuchenge', 'mujhe', 'humko', 'kaha', 'hai'
+    ];
+    for (var j = 0; j < hiPhonetic.length; j++) {
+      if (new RegExp('\\b' + hiPhonetic[j] + '\\b', 'i').test(q)) return 'hi';
+    }
+
+    // English keywords
+    var enKeywords = [
+      'how', 'what', 'when', 'where', 'why', 'price', 'fare', 'cost', 'ride', 'driver',
+      'late', 'delay', 'book', 'booking', 'cancel', 'refund', 'parcel', 'safety', 'sos',
+      'otp', 'contact', 'help', 'admin', 'complaint', 'support', 'service', 'area',
+      'money', 'charge', 'expensive', 'urgent', 'hospital', 'emergency'
+    ];
+    for (var k = 0; k < enKeywords.length; k++) {
+      if (new RegExp('\\b' + enKeywords[k] + '\\b', 'i').test(q)) return 'en';
+    }
+
+    if (lang === 'hi') return 'hi';
+    if (lang === 'en') return 'en';
+    return 'bn';
+  })();
+
+  // 2. OVERCHARGING / EXTRA MONEY DEMAND
+  if (q.includes('বেশি টাকা') || q.includes('বেশি চাইছে') || q.includes('বেশি নিচ্ছে') || q.includes('বাড়তি টাকা') || q.includes('অতিরিক্ত টাকা') || q.includes('জাদা প্যায়সা') || q.includes('ज्यादा पैसे') || q.includes('अधिक पैसे') || q.includes('extra money') || q.includes('overcharge') || q.includes('extra cash') || q.includes('extra taka') || q.includes('beshi taka') || q.includes('besi taka') || q.includes('अतिरिक्त') || (q.includes('extra') && (q.includes('mange') || q.includes('mang'))) || q.includes('extra paise') || q.includes('extra paisa') || q.includes('jyada paise') || q.includes('zyada paise') || q.includes('jada paise') || q.includes('extra charges') || q.includes('extra charge') || (q.includes('extra') && (q.includes('paise') || q.includes('paisa') || q.includes('taka') || q.includes('charge')))) {
+    if (userLang === 'hi') {
+      return "⚠️ **अतिरिक्त पैसे मांगने पर सख्त नीति:**\n\n• **कड़ाई से मना करें:** राइड खत्म होने पर ऐप स्क्रीन पर जो किराया दिखाई दे, केवल वही भुगतान करें। किसी भी अतिरिक्त या ऑफलाइन पैसे की मांग बिल्कुल न मानें!\n• **सख्त कार्रवाई:** यदि कोई ड्राइवर अतिरिक्त पैसे मांगता है, तो तुरंत उसका गाड़ी नंबर व राइड का समय हमें बताएं। हम तुरंत ड्राइवर की आईडी की जांच करेंगे।\n• **शिकायत दर्ज करें:** आप इस चैट में 📎 बटन से स्क्रीनशॉट भेज सकते हैं या तुरंत हमारे आपातकालीन हेल्पलाइन **+91 8768447312** पर कॉल करें!";
+    } else if (userLang === 'en') {
+      return "⚠️ **Strict Zero-Overcharging Policy:**\n\n• **Pay Only App Fare:** Please pay strictly the exact fare shown on your Ride Sathi app screen upon reaching the destination. Never pay extra cash demanded offline!\n• **Immediate Action:** If any driver asks for extra money, note their vehicle number and report it to us immediately. Strict corrective action will be taken.\n• **File Complaint:** Upload a screenshot using the 📎 button in this chat or call our 24x7 control desk directly at **+91 8768447312**.";
     } else {
-      return "💰 **Ride Sathi GO স্বচ্ছ ভাড়া তালিকা:**\n\n🏍️ **বাইক (Bike):** বেস ভাড়া ₹১৫ + ₹৫/কিমি\n🛺 **টোটো / অটো (Toto):** বেস ভাড়া ₹২০ + ₹৭/কিমি\n🚗 **কার / ক্যাব (Car):** বেস ভাড়া ₹৪০ + ₹১২/কিমি\n📦 **পার্সেল ডেলিভারি:** সর্বনিম্ন ₹২৫ থেকে শুরু\n\n✨ *কোনো লুকানো চার্জ বা বাড়তি সার্জ নেই! কিলোমিটার অনুযায়ী ন্যায্য ভাড়া।*";
+      return "⚠️ **বাড়তি বা অতিরিক্ত টাকা চাওয়ার বিরুদ্ধে কঠোর নীতি:**\n\n• **অ্যাপের সঠিক ভাড়া দিন:** গন্তব্যে পৌঁছানোর পর রাইড সাথী অ্যাপের স্ক্রিনে যে ভাড়া উঠবে, চালককে ঠিক সেটাই দেবেন। কোনো অবস্থাতেই অফলাইনে অতিরিক্ত টাকা দেবেন না!\n• **তাৎক্ষণিক ব্যবস্থা:** কোনো চালক অতিরিক্ত টাকা দাবি করলে গাড়ি নম্বর ও রাইডের সময় জানিয়ে অবিলম্বে অভিযোগ করুন। চালকের বিরুদ্ধে দ্রুত ব্যবস্থা নেওয়া হবে।\n• **অভিযোগ করার নিয়ম:** এই চ্যাটে 📎 পেপারক্লিপ বাটনে চাপ দিয়ে স্ক্রিনশট পাঠাতে পারেন অথবা হেল্পলাইন **+91 8768447312** নম্বরে সরাসরি কল করুন!";
     }
   }
 
-  // 2. HOW TO BOOK (বুকিং / बुकिंग / Book)
-  if (q.includes('বুকিং') || q.includes('book') || q.includes('রাইড') || q.includes('বুকে') || q.includes('बुकिंग') || q.includes('गाड़ी') || q.includes('গাড়ি')) {
-    if (lang === 'hi') {
-      return "🚕 **राइड बुक करने का आसान तरीका:**\n\n1. होम स्क्रीन पर अपना **पिकअप** और **ड्रॉप लोकेशन** चुनें।\n2. बाइक, टोटो या कार में से अपनी पसंद का वाहन चुनें।\n3. **'Book Ride'** पर क्लिक करें।\n4. स्क्रीन पर 4 अंकों का गोपनीय OTP आएगा।\n5. ड्राइवर आने पर OTP बताएं और सुरक्षित सफर शुरू करें!";
-    } else if (lang === 'en') {
-      return "🚕 **How to Book a Ride in 4 Easy Steps:**\n\n1. Set your **Pickup** and **Drop Location** on the home screen.\n2. Select your vehicle: Bike, Toto, or Car.\n3. Tap **'Book Ride'**.\n4. You will receive a secret 4-digit OTP.\n5. Share OTP with driver when they arrive to start the ride safely!";
+  // 3. DRIVER NOT PICKING UP CALL
+  if (q.includes('ফোন ধরছে না') || q.includes('ফোন তুলছে না') || q.includes('কল ধরছে না') || q.includes('ফোন কাটছে') || q.includes('ফোন রিসিভ') || q.includes('ফোন সুইচড অফ') || q.includes('फोन नहीं उठा') || q.includes('कॉल नहीं उठा') || q.includes('फोन काट दिया') || q.includes('phone nahi utha') || q.includes('call nahi utha') || q.includes('not picking') || q.includes('not answering') || (q.includes('phone') && (q.includes('nahi utha') || q.includes('dhorche na'))) || q.includes('phone dhorche na') || q.includes('call dhorche na') || q.includes('not picking') || q.includes('not answering')) {
+    if (userLang === 'hi') {
+      return "📞 **ड्राइवर कॉल नहीं उठा रहा है?**\n\n1. **लाइव लोकेशन देखें:** स्क्रीन पर देखें कि ड्राइवर की गाड़ी आपकी तरफ आ रही है या नहीं (ड्राइविंग के समय कभी-कभी ड्राइवर तुरंत फोन नहीं उठा पाते)।\n2. **दोबारा कॉल करें:** 1 मिनट बाद 'Call Driver' बटन दबाकर दोबारा कोशिश करें।\n3. **राइड री-बुक करें:** यदि 3-4 मिनट तक कोई संपर्क न हो, तो आप बेझिझक राइड कैंसिल करके तुरंत नई गाड़ी बुक कर सकते हैं (कोई कैंसिलेशन चार्ज नहीं लगेगा)।\n4. **सहायता:** किसी भी समस्या पर तुरंत कॉल करें: **+91 8768447312**।";
+    } else if (userLang === 'en') {
+      return "📞 **Driver Not Answering Your Call?**\n\n1. **Check Live GPS:** See if the vehicle is moving towards your pickup point on the map (drivers may avoid answering while navigating traffic).\n2. **Retry Call:** Tap 'Call Driver' again after 1 minute.\n3. **Cancel & Re-book:** If unresponsive for 3-4 minutes, cancel the trip with ZERO fee and book another nearby driver immediately.\n4. **Support Desk:** For instant help, call our hotline: **+91 8768447312**.";
     } else {
-      return "🚕 **সহজে রাইড বুকিং করার নিয়ম:**\n\n১. হোমপেজে আপনার **পিকআপ** ও **ড্রপ লোকেশন** সিলেক্ট করুন।\n২. আপনার পছন্দের গাড়ি (বাইক, টোটো বা কার) বেছে নিন।\n৩. **'Book Ride'** বাটনে চাপ দিন।\n৪. স্ক্রিনে একটি ৪ সংখ্যার গোপন OTP দেখতে পাবেন।\n৫. ড্রাইভার আপনার কাছে পৌঁছালে OTP মিলিয়ে নিশ্চিন্তে যাত্রা শুরু করুন!";
+      return "📞 **ড্রাইভার ফোন রিসিভ করছে না বা কেটে দিচ্ছে?**\n\n১. **লাইভ ম্যাপ দেখুন:** স্ক্রিনে ড্রাইভারের গাড়ির মুভমেন্ট লক্ষ্য করুন। গাড়ি চালানোর সময় অনেক সময় চালকরা ফোন ধরতে পারেন না।\n২. **পুনরায় কল করুন:** ১ মিনিট পর আবার 'Call Driver' বাটনে চাপ দিয়ে চেষ্টা করুন।\n৩. **নতুন গাড়ি বুক করুন:** ৩-৪ মিনিট ধরে কোনো সাড়া না পেলে আপনি নিশ্চিন্তে রাইড বাতিল করে সাথে সাথে নতুন গাড়ি বুক করতে পারেন (০ ক্যান্সেলেশন ফি)।\n৪. **জরুরি হেল্পলাইন:** প্রয়োজনে সরাসরি কল করুন: **+91 8768447312**।";
     }
   }
 
-  // 3. OTP & SAFETY (ওটিপি / নিরাপত্তা / सुरक्षा / OTP)
-  if (q.includes('otp') || q.includes('ওটিপি') || q.includes('সেফটি') || q.includes('নিরাপত্তা') || q.includes('सुरक्षा') || q.includes('ওটিপ')) {
-    if (lang === 'hi') {
-      return "🔒 **सुरक्षा व OTP निर्देशिका:**\n\n• राइड बुक होते ही आपको 4 अंकों का OTP मिलता है।\n• ड्राइवर के आने से पहले किसी को भी OTP न बताएं।\n• आपातकालीन स्थिति में ऐप के लाल **🆘 SOS** बटन पर क्लिक करें, पुलिस और हमारी टीम को तुरंत अलर्ट जाएगा।\n• हमारे सभी ड्राइवर्स सरकारी दस्तावेज व दैनिक लाइव सेल्फी द्वारा सत्यापित हैं।";
-    } else if (lang === 'en') {
-      return "🔒 **Safety & OTP Guidelines:**\n\n• A 4-digit secret OTP is generated when you book a ride.\n• Never share your OTP until your driver arrives in person.\n• In case of emergency, tap the red **🆘 SOS** button to alert police and dispatch team instantly.\n• All drivers are verified with government ID and daily facial scans.";
+  // 4. FARES & RATES
+  if (q.includes('ভাড়া') || q.includes('ভাড়া') || q.includes('কত টাকা') || q.includes('টাকা কত') || q.includes('দর') || q.includes('রেট') || q.includes('খরচ') || q.includes('কিরায়া') || q.includes('किराया') || q.includes('रेट') || q.includes('दाम') || q.includes('कितना') || q.includes('fare') || q.includes('rate') || q.includes('price') || q.includes('cost') || q.includes('charges') || q.includes('bhara') || q.includes('vara') || q.includes('koto') || q.includes('kiraya')) {
+    if (userLang === 'hi') {
+      return "💰 **Ride Sathi GO पारदर्शी किराया सूची (पश्चिम बंगाल):**\n\n🏍️ **Bike Ride:** बेस फेयर ₹15 + ₹5 प्रति किलोमीटर\n🛺 **Toto / Auto:** बेस फेयर ₹20 + ₹7 प्रति किलोमीटर\n🚗 **Car / Cab:** बेस फेयर ₹40 + ₹12 प्रति किलोमीटर\n📦 **Parcel Delivery:** न्यूनतम ₹25 से शुरू (दूरी व वजन अनुसार)\n\n✨ **हमारी विशेषता:**\n• कोई छिपा हुआ शुल्क (Zero Hidden Charges) नहीं।\n• कोई पीक ऑवर सर्ज प्राइसिंग नहीं—हमेशा वास्तविक किलोमीटर आधारित सही किराया।\n• राइड बुक करते समय स्क्रीन पर सटीक किराया देख सकते हैं!";
+    } else if (userLang === 'en') {
+      return "💰 **Ride Sathi GO Transparent Fare Chart (West Bengal):**\n\n🏍️ **Bike Taxi:** Base fare ₹15 + ₹5 per km\n🛺 **Toto / Auto:** Base fare ₹20 + ₹7 per km\n🚗 **Car / Cab:** Base fare ₹40 + ₹12 per km\n📦 **Parcel Delivery:** Starting from ₹25 (by distance & weight)\n\n✨ **Key Benefits:**\n• Zero hidden fees or surge pricing gouging.\n• Transparent distance-metered calculation.\n• Upfront estimated fare shown before booking confirmation!";
     } else {
-      return "🔒 **নিরাপত্তা ও OTP নির্দেশিকা:**\n\n• রাইড বুকিংয়ের সাথে সাথে ৪ ডিজিটের একটি গোপন OTP পাবেন।\n• ড্রাইভার আসার আগে কাউকে এই OTP বলবেন না।\n• জরুরি প্রয়োজনে স্ক্রিনের লাল **🆘 SOS** বাটনে চাপুন—পুলিশ ও আমাদের অ্যাডমিন টিম সাথে সাথে সাহায্য পাঠাবে।\n• আমাদের প্রতিটি চালক আধার, ড্রাইভিং লাইসেন্স এবং লাইভ ফেস ভেরিফায়েড।";
+      return "💰 **Ride Sathi GO স্বচ্ছ ও সাশ্রয়ী ভাড়া তালিকা (পশ্চিমবঙ্গ):**\n\n🏍️ **বাইক (Bike Taxi):** বেস ভাড়া ₹১৫ + প্রতি কিমি ₹৫\n🛺 **টোটো / অটো (Toto):** বেস ভাড়া ₹২০ + প্রতি কিমি ₹৭\n🚗 **কার / ক্যাব (Car / Cab):** বেস ভাড়া ₹৪০ + প্রতি কিমি ₹১২\n📦 **পার্সেল ডেলিভারি:** সর্বনিম্ন ₹২৫ থেকে শুরু (দূরত্ব ও ওজন অনুযায়ী)\n\n✨ **আমাদের প্রতিশ্রুতি:**\n• কোনো লুকানো চার্জ বা পিক আওয়ারের বাড়তি সার্জ নেই।\n• রিয়েল-টাইম কিলোমিটার ভিত্তিক শতভাগ সৎ হিসাব।\n• বুকিংয়ের আগেই স্ক্রিনে নির্দিষ্ট ভাড়া দেখতে পাবেন!";
     }
   }
 
-  // 4. PARCEL DELIVERY (পার্সেল / पार्सल / Parcel)
-  if (q.includes('পার্সেল') || q.includes('parcel') || q.includes('কুরিয়ার') || q.includes('ডেলিভারি') || q.includes('पार्सल') || q.includes('डिलीवरी')) {
-    if (lang === 'hi') {
-      return "📦 **Ride Sathi GO पार্সल एक्सप्रेस:**\n\n• शहर व ग्रामीण इलाकों में 15 किलो तक का कोई भी सामान, दस्तावेज या पार्सल तुरंत भेजें।\n• लाइव जीपीएस ट्रैकिंग और रिसीवर फोन नंबर सुरक्षा उपलब्ध है।\n• पार্সल भेजने के लिए होम स्क्रीन पर **'Parcel'** टैब चुनें!";
-    } else if (lang === 'en') {
-      return "📦 **Ride Sathi GO Parcel Express:**\n\n• Send packages, food, medicine, or documents up to 15 kg anywhere across West Bengal.\n• Real-time GPS tracking and receiver call verification included.\n• Switch to the **'Parcel'** tab on the home screen to send a parcel!";
+  // 5. TOTO & AUTO AVAILABILITY
+  if (q.includes('টোটো') || q.includes('অটো') || q.includes('টোটো পাব') || q.includes('টোটো আছে') || q.includes('টোটোর ভাড়া') || q.includes('টোটো বুক') || q.includes('टोटो') || q.includes('ऑटो') || q.includes('toto') || q.includes('auto') || q.includes('rickshaw') || q.includes('e-rickshaw')) {
+    if (userLang === 'hi') {
+      return "🛺 **Ride Sathi GO टोटो एवं ऑटो सेवा:**\n\n• **उपलब्धता:** हमारे पास शहर, कस्बे एवं ग्रामीण क्षेत्रों में बड़ी संख्या में सत्यापित टोटो व ऑटो उपलब्ध हैं।\n• **किराया:** बेस फेयर केवल ₹20 + ₹7/किमी।\n• **क्षमता:** स्थानीय बाजार, स्टेशन, स्कूल या अस्पताल जाने के लिए 4 सवारियों तक आराम से सफर कर सकते हैं।\n• **बुकिंग:** होमपेज पर पिकअप व ड्रॉप डालकर **'Toto'** चुनें और 'Book Ride' पर क्लिक करें!";
+    } else if (userLang === 'en') {
+      return "🛺 **Ride Sathi GO Toto & Auto-Rickshaw Service:**\n\n• **Availability:** Extensive network of verified Toto & Auto drivers across towns and rural areas of West Bengal.\n• **Fares:** Pocket-friendly base fare ₹20 + ₹7/km.\n• **Capacity:** Accommodates up to 4 passengers—perfect for railway stations, markets, schools, and hospitals.\n• **How to Book:** Set Pickup & Drop locations on the home screen, select **'Toto'**, and tap 'Book Ride'!";
     } else {
-      return "📦 **Ride Sathi GO পার্সেল সেবা:**\n\n• জরুরি নথিপত্র, ওষুধ, মিষ্টি বা ১৫ কেজি পর্যন্ত যেকোনো পার্সেল দ্রুত পৌঁছে দেওয়া হয়।\n• লাইভ জিপিএস ট্র্যাকিং ও রিসিভার ফোন নম্বর সুবিধা রয়েছে।\n• পার্সেল পাঠাতে হোমপেজের উপরে **'পার্সেল' (Parcel)** অপশন বেছে নিন!";
+      return "🛺 **Ride Sathi GO টোটো ও অটো সেবা:**\n\n• **সহজলভ্যতা:** শহর, বাজার এবং প্রত্যন্ত গ্রাম জুড়ে আমাদের ভেরিফায়েড টোটো ও অটোর বিশাল নেটওয়ার্ক রয়েছে।\n• **ভাড়া:** নামমাত্র বেস ভাড়া ₹২০ + প্রতি কিমি মাত্র ₹৭।\n• **সুবিধা:** ৪ জন পর্যন্ত যাত্রী নিয়ে বাজার, স্টেশন, স্কুল বা ডাক্তারের কাছে সাশ্রয়ে যাওয়ার জন্য সেরা মাধ্যম।\n• **বুকিংয়ের উপায়:** হোমপেজে পিকআপ ও গন্তব্য দিয়ে **'টোটো' (Toto)** অপশনটি সিলেক্ট করে 'Book Ride'-এ ক্লিক করুন!";
     }
   }
 
-  // 5. DRIVER DELAY / NOT COMING (দেরি / আসছে না / लेट / Driver Delay)
-  if (q.includes('দেরি') || q.includes('আসছে না') || q.includes('লেট') || q.includes('driver') || q.includes('ড্রাইভার') || q.includes('late') || q.includes('delay') || q.includes('ড্রাইভার কোথায়')) {
-    if (lang === 'hi') {
-      return "📞 **ड्राइवर लेट या आने में समस्या?**\n\n1. आप अपनी राइड स्क्रीन पर दिए गए **'Call Driver'** बटन से ड्राइवर को सीधे कॉल कर सकते हैं।\n2. यदि ड्राइवर बहुत दूर है, तो आप 'Cancel' करके तुरंत नई राइड बुक कर सकते हैं।\n3. तत्काल सहायता के लिए हमारे हेल्पलाइन **8768447312** पर कॉल करें।";
-    } else if (lang === 'en') {
-      return "📞 **Driver Delayed or Not Moving?**\n\n1. Tap the **'Call Driver'** button on your active ride card to contact your driver directly.\n2. If needed, you can cancel without penalty before pickup and re-book.\n3. Our 24x7 control room helpline is also available: **+91 8768447312**.";
+  // 6. HOW TO BOOK
+  if (!q.includes('cancel') && !q.includes('refund') && !q.includes('বাতিল') && !q.includes('রদ') && !q.includes('रद्द') && (q.includes('বুকিং') || q.includes('বুক করব') || q.includes('গাড়ি বুক') || q.includes('কিভাবে বুক') || q.includes('কীভাবে বুক') || q.includes('बुकिंग') || q.includes('गाड़ी बुक') || q.includes('राइड कैसे') || q.includes('book') || q.includes('booking') || q.includes('kivabe book') || q.includes('gari book') || q.includes('बुक') || q.includes('kaise book') || q.includes('book kaise') || (q.includes('ride') && (q.includes('karna') || q.includes('leni') || q.includes('chahiye'))))) {
+    if (userLang === 'hi') {
+      return "🚕 **Ride Sathi GO पर राइड बुक करने के 4 आसान चरण:**\n\n1. **लोकेशन सेट करें:** होमपेज पर अपना **Pickup** (कहाँ से) और **Drop** (कहाँ जाना है) स्थान दर्ज करें या मैप पर चुनें।\n2. **वाहन चुनें:** अपनी पसंद अनुसार **Bike**, **Toto** या **Car** चुनें।\n3. **'Book Ride' दबाएं:** सिस्टम तुरंत आपके सबसे नजदीकी ड्राइवर को असाइन करेगा।\n4. **OTP बताएं:** स्क्रीन पर 4 अंकों का गोपनीय OTP आएगा। ड्राइवर पहुंचने पर OTP बताएं और निश्चिंत होकर सुरक्षित सफर शुरू करें!";
+    } else if (userLang === 'en') {
+      return "🚕 **How to Book a Ride in 4 Simple Steps:**\n\n1. **Set Locations:** Enter your **Pickup** and **Drop** destination on the home screen or pin directly on the map.\n2. **Select Vehicle:** Choose from **Bike**, **Toto**, or **Car** based on your comfort and luggage.\n3. **Tap 'Book Ride':** Our smart engine instantly matches you with the nearest top-rated verified driver.\n4. **Share OTP:** A secret 4-digit OTP will appear on your screen. Share it only after boarding to begin your trip!";
     } else {
-      return "📞 **ড্রাইভার দেরি করছে বা পৌঁছাচ্ছে না?**\n\n১. আপনার অ্যাক্টিভ রাইড কার্ডে থাকা **'Call Driver'** বাটনে চাপ দিয়ে চালকের সাথে সরাসরি কথা বলুন।\n২. প্রয়োজনে আপনি রাইড বাতিল করে নতুন চালক খুঁজতে পারেন (কোনো ক্যান্সেলেশন ফি নেই)।\n৩. সার্বক্ষণিক সহায়তায় আমাদের হেল্পলাইন **8768447312** নম্বরে কল করতে পারেন।";
+      return "🚕 **Ride Sathi GO-তে সহজে রাইড বুকিংয়ের ৪টি সহজ ধাপ:**\n\n১. **লোকেশন নির্বাচন:** হোমপেজে আপনার **পিকআপ** (কোথা থেকে উঠবেন) এবং **ড্রপ** (কোথায় যাবেন) দিন অথবা সরাসরি ম্যাপে চিহ্নিত করুন।\n২. **গাড়ি বেছে নিন:** প্রয়োজন অনুযায়ী **বাইক**, **টোটো** বা **কার** সিলেক্ট করুন।\n৩. **'Book Ride'-এ চাপ দিন:** সিস্টেম সাথে সাথে আপনার নিকটতম ভেরিফায়েড চালককে খুঁজে দেবে।\n৪. **গোপন OTP দিন:** স্ক্রিনে ৪ সংখ্যার একটি ওটিপি দেখতে পাবেন। ড্রাইভার আপনার কাছে এলে ওটিপি মিলিয়ে সুরক্ষিতভাবে যাত্রা শুরু করুন!";
     }
   }
 
-  // 6. CANCELLATION & REFUND (বাতিল / ক্যানসেল / रद्द / Cancel)
-  if (q.includes('বাতিল') || q.includes('ক্যানসেল') || q.includes('cancel') || q.includes('refund') || q.includes('রদবদল') || q.includes('রদ্দ')) {
-    if (lang === 'hi') {
-      return "❌ **कैंसिलेशन व रिफंड पॉलिसी:**\n\n• राइड शुरू होने से पहले कैंसिलेशन 100% फ्री है।\n• अगर ड्राइवर मना करता है, तो आप बिना किसी परेशानी के तुरंत दूसरी गाड़ी बुक कर सकते हैं।\n• ऑनलाइन पेमेंट कटने और राइड कैंसिल होने पर पूरा रिफंड 24 घंटे के अंदर वापस मिल जाता है।";
-    } else if (lang === 'en') {
-      return "❌ **Cancellation & Refund Policy:**\n\n• Free cancellation before the driver starts the trip with OTP.\n• If a driver declines, you can re-book immediately with zero cancellation fee.\n• In case of any online payment deduction, refund is processed within 24 hours.";
+  // 7. DRIVER DELAY / LATE / NOT MOVING
+  if (q.includes('দেরি') || q.includes('আসছে না') || q.includes('পৌঁছাচ্ছে না') || q.includes('ড্রাইভার কোথায়') || q.includes('লেট') || q.includes('देरी') || q.includes('गाड़ी नहीं आ रही') || q.includes('गाड़ी कब आएगी') || q.includes('late') || q.includes('delay') || q.includes('not moving') || q.includes('where is driver') || q.includes('deri') || q.includes('asche na')) {
+    if (userLang === 'hi') {
+      return "📞 **ड्राइवर लेट या पहुंचने में देरी हो रही है?**\n\n1. **लाइव ट्रैकिंग:** आपकी एक्टिव राइड स्क्रीन पर ड्राइवर की लाइव जीपीएस लोकेशन और अनुमानित समय (ETA) लगातार अपडेट हो रहा है।\n2. **ड्राइवर से बात करें:** स्क्रीन पर दिए गए **'Call Driver'** बटन से ड्राइवर को सीधे कॉल करके ट्रैफिक या रास्ता समझ सकते हैं।\n3. **कैंसिलेशन फ्री:** यदि ड्राइवर बहुत दूर है या आगे नहीं बढ़ रहा, तो आप 'Cancel' करके 0 चार्ज में तुरंत नई गाड़ी बुक कर सकते हैं।\n4. **हेल्पलाइन:** 24x7 कंट्रोल रूम कॉल: **+91 8768447312**।";
+    } else if (userLang === 'en') {
+      return "📞 **Driver Delayed or Not Moving?**\n\n1. **Live GPS Tracking:** Your active ride card displays the real-time location and estimated arrival time (ETA) of the driver.\n2. **Contact Driver:** Tap **'Call Driver'** to communicate directly regarding pickup landmarks or traffic hurdles.\n3. **Free Re-booking:** If the delay is significant, cancel at ZERO penalty and book another nearby driver immediately.\n4. **Control Room Desk:** Call 24x7 support at **+91 8768447312**.";
     } else {
-      return "❌ **বাতিল ও রিফান্ড নীতি:**\n\n• যাত্রা শুরু হওয়ার পূর্বে রাইড বাতিল সম্পূর্ণ বিনামূল্যে করা যায় (০ ক্যান্সেলেশন ফি)।\n• ড্রাইভার অপারগ হলে আপনি সঙ্গে সঙ্গে অন্য গাড়ি বুক করতে পারেন।\n• অনলাইনে টাকা কেটে থাকলে এবং যাত্রা না হলে ২৪ ঘণ্টার মধ্যে সম্পূর্ণ রিফান্ড পাওয়া যায়।";
+      return "📞 **ড্রাইভার দেরি করছে বা পৌঁছাতে সময় নিচ্ছে?**\n\n১. **লাইভ ট্র্যাকিং দেখুন:** আপনার রাইড স্ক্রিনে চালকের রিয়েল-টাইম লাইভ জিপিএস লোকেশন ও সম্ভাব্য সময় (ETA) দেখতে পাবেন।\n২. **চালকের সাথে কথা বলুন:** স্ক্রিনের **'Call Driver'** বাটনে চাপ দিয়ে চালকের সাথে সরাসরি কথা বলে ট্রাফিক বা পথের অবস্থান জেনে নিন।\n৩. **নতুন বুকিং:** যদি চালক খুব দূরে থাকেন, তবে কোনো জরিমানা ছাড়াই রাইড বাতিল করে সাথে সাথে নতুন গাড়ি বুক করতে পারেন।\n৪. **কন্ট্রোল রুম হেল্পলাইন:** যেকোনো সহায়তায় ফোন করুন: **+91 8768447312**।";
     }
   }
 
-  // 7. LOST ITEMS (হারানো / জিনিস / सामान / Lost)
-  if (q.includes('হারানো') || q.includes('ফেলে') || q.includes('জিনিস') || q.includes('सामान') || q.includes('खोया') || q.includes('lost') || q.includes('bag')) {
-    if (lang === 'hi') {
-      return "🎒 **गाड़ी में सामान छूट गया है? चिंता न करें!**\n\n1. मेनू में जाकर **'Ride History'** चेक करें, वहां ड्राइवर का नंबर व गाड़ी नंबर उपलब्ध है।\n2. तुरंत हमारे 24x7 हेल्पलाइन **8768447312** पर कॉल करें और अपनी राइड का समय व रूट बताएं।\n3. हमारी टीम ड्राइवर से संपर्क कर सामान सुरक्षित वापस दिलाएगी।";
-    } else if (lang === 'en') {
-      return "🎒 **Lost Item in Vehicle? Don't worry!**\n\n1. Open Drawer Menu -> **'Ride History'** to see your driver contact & vehicle number.\n2. Call our 24x7 support desk immediately at **+91 8768447312** with your ride details.\n3. Our safety team will coordinate with the driver to return your belonging securely.";
+  // 8. PAYMENT & UPI / QR / CASH
+  if (q.includes('পেমেন্ট') || q.includes('টাকা কীভাবে') || q.includes('টাকা দেব') || q.includes('ক্যাশ') || q.includes('ইউপিআই') || q.includes('কিউআর') || q.includes('অনলাইন পেমেন্ট') || q.includes('पेमेंट') || q.includes('कैश') || q.includes('यूपीआई') || q.includes('गूगल पे') || q.includes('फोनपे') || q.includes('क्यूआर') || q.includes('payment') || q.includes('pay') || q.includes('upi') || q.includes('qr') || q.includes('cash') || q.includes('gpay') || q.includes('phonepe') || q.includes('paytm')) {
+    if (userLang === 'hi') {
+      return "💳 **Ride Sathi GO भुगतान विधियां (Payment Methods):**\n\n1. 💵 **नकद (Cash):** यात्रा पूरी होने पर ड्राइवर को सीधे नकद दे सकते हैं।\n2. 📱 **UPI / QR Code:** Google Pay, PhonePe, Paytm, BHIM या किसी भी बैंकिंग ऐप से ड्राइवर का QR कोड स्कैन करके या ऐप स्कैनर से तुरंत ऑनलाइन पेमेंट करें।\n3. 🔒 **सुरक्षित एवं 0 अतिरिक्त शुल्क:** कोई अतिरिक्त कन्वीनियंस चार्ज नहीं काटा जाता।\n\n💡 *राइड शुरू होने से पहले कोई अग्रिम भुगतान करने की आवश्यकता नहीं है।*";
+    } else if (userLang === 'en') {
+      return "💳 **Ride Sathi GO Flexible Payment Options:**\n\n1. 💵 **Cash on Delivery:** Pay cash directly to your driver after safely completing your trip.\n2. 📱 **UPI & QR Scanner:** Scan driver's QR code or use Google Pay, PhonePe, Paytm, or BHIM.\n3. 🔒 **Zero Convenience Fee:** Zero transaction surcharge on UPI payments.\n\n💡 *No advance payment is needed before the ride starts.*";
     } else {
-      return "🎒 **গাড়িতে কোনো জিনিস ফেলে এসেছেন? চিন্তা করবেন না!**\n\n১. মেনু থেকে **'রাইড হিস্ট্রি'** দেখুন—সেখানে ড্রাইভারের ফোন ও গাড়ির নম্বর আছে।\n২. অবিলম্বে আমাদের হেল্পলাইন **8768447312** নম্বরে কল করে আপনার রাইডের সময় ও রুট জানান।\n৩. আমাদের সাপোর্ট টিম চালকের সাথে যোগাযোগ করে আপনার জিনিস ফিরিয়ে দেওয়ার ব্যবস্থা করবে।";
+      return "💳 **Ride Sathi GO পেমেন্ট বা টাকা পরিশোধের নিয়ম:**\n\n১. 💵 **ক্যাশ (Cash):** গন্তব্যে পৌঁছানোর পর চালকের হাতে সরাসরি নগদ টাকা দিতে পারেন।\n২. 📱 **অনলাইন UPI / QR স্ক্যানার:** Google Pay, PhonePe, Paytm বা যেকোনো UPI অ্যাপের মাধ্যমে ড্রাইভারের কিউআর কোড স্ক্যান করে মুহূর্তেই নিরাপদে পেমেন্ট করতে পারেন।\n৩. 🔒 **অতিরিক্ত কোনো চার্জ নেই:** অনলাইনে পেমেন্টে কোনো বাড়তি ফি বা কমিশন নেওয়া হয় না।\n\n💡 *যাত্রা শুরুর আগে কোনো অগ্রিম টাকা দেওয়ার প্রয়োজন নেই।*";
     }
   }
 
-  // 8. SERVICE LOCATIONS (এলাকা / জেলা / সার্ভিস / Location / Area)
-  if (q.includes('এলাকা') || q.includes('মেদিনীপুর') || q.includes('পিংলা') || q.includes('খড়গপুর') || q.includes('কোথায়') || q.includes('জায়গা') || q.includes('location') || q.includes('area') || q.includes('जगह') || q.includes('जिले')) {
-    if (lang === 'hi') {
-      return "📍 **Ride Sathi GO सेवा क्षेत्र:**\n\nपूरे पश्चिम बंगाल में, विशेष रूप से:\n• **पश्चिम मेदिनीपुर:** पिंगला, खड़गपुर, मेदिनीपुर शहर, डेबरा, सबंग, घाटाल।\n• **पूर्व मेदिनीपुर:** तमलुक, हल्दिया, कांथी, दीघा, मेचेदा, कोलाघाट।\n• कोलकाता एवं आसपास के सभी ग्रामीण व शहरी क्षेत्र।";
-    } else if (lang === 'en') {
-      return "📍 **Ride Sathi GO Service Areas:**\n\nAvailable across West Bengal, especially:\n• **Paschim Medinipur:** Pingla, Kharagpur, Midnapore City, Debra, Sabang, Ghatal.\n• **Purba Medinipur:** Tamluk, Haldia, Contai, Digha, Mecheda, Kolaghat.\n• Kolkata & connecting rural and highway routes.";
+  // 9. OTP & SAFETY / SOS
+  if (q.includes('otp') || q.includes('ওটিপি') || q.includes('সেফটি') || q.includes('নিরাপত্তা') || q.includes('সুরক্ষা') || q.includes('সুরক্ষিত') || q.includes('পুলিশ') || q.includes('sos') || q.includes('safety') || q.includes('police')) {
+    if (userLang === 'hi') {
+      return "🔒 **Ride Sathi GO उच्च स्तरीय सुरक्षा व OTP प्रणाली:**\n\n• **4-अंकों का सुरक्षित OTP:** हर राइड पर जनरेट होता है। ड्राइवर के आपके पास पहुंचने और वाहन की पहचान करने के बाद ही OTP बताएं।\n• **सत्यापित चालक:** सभी ड्राइवर्स के आधार कार्ड, ड्राइविंग लाइसेंस, पुलिस वेरिफिकेशन और दैनिक फेस-वेरिफिकेशन जांची जाती है।\n• **🆘 आपातकालीन SOS बटन:** संकट की स्थिति में ऐप के लाल SOS बटन पर क्लिक करें—तुरंत पुलिस और हमारी कंट्रोल टीम को आपकी लाइव लोकेशन के साथ अलर्ट पहुंच जाएगा।\n• **लाइव राइड शेयरिंग:** अपने परिवार या मित्रों के साथ लाइव यात्रा लिंक साझा कर सकते हैं।";
+    } else if (userLang === 'en') {
+      return "🔒 **Ride Sathi GO Enterprise-Grade Safety & OTP System:**\n\n• **4-Digit Secret OTP:** Auto-generated for every booking. Share OTP only after driver arrives and you verify vehicle details.\n• **Verified Drivers:** 100% verified with government IDs, driving licenses, police records, and daily facial authentication.\n• **🆘 Emergency SOS Button:** One tap instantly alerts emergency contacts, police dispatch, and 24x7 control monitoring.\n• **Share Trip:** Live location tracking shareable with loved ones.";
     } else {
-      return "📍 **Ride Sathi GO সার্ভিস এলাকা:**\n\nসমগ্র পশ্চিমবঙ্গ জুড়ে, বিশেষত:\n• **পশ্চিম মেদিনীপুর:** পিংলা, খড়গপুর, মেদিনীপুর শহর, ডেবরা, সবং, ঘাটাল।\n• **পূর্ব মেদিনীপুর:** তমলুক, হলদিয়া, কাঁথি, দিঘা, মেচেদা, কোলাঘাট।\n• কলকাতা ও সংযোগকারী সকল গ্রামীণ ও জাতীয় সড়ক অঞ্চলে আমাদের সেবা চালু রয়েছে।";
+      return "🔒 **Ride Sathi GO সর্বোচ্চ যাত্রী নিরাপত্তা ও OTP ব্যবস্থা:**\n\n• **৪ ডিজিটের গোপন ওটিপি:** প্রতিটি রাইড বুক করার সাথে সাথে তৈরি হয়। চালক সশরীরে পৌঁছানোর পর গাড়ি নম্বর মিলিয়ে তবেই ওটিপি বলুন।\n• **শতভাগ ভেরিফায়েড চালক:** আধার কার্ড, ড্রাইভিং লাইসেন্স, পুলিশ রেকর্ড এবং প্রতিদিনের লাইভ ফেস স্ক্যান দ্বারা প্রতিটি চালক কঠোরভাবে পরীক্ষিত।\n• **🆘 জরুরি SOS বোতাম:** বিপদের মুহূর্তে লাল SOS বাটনে চাপ দিলে পুলিশ ও আমাদের অ্যাডমিন কন্ট্রোল রুমের কাছে লাইভ লোকেশন সহ জরুরি অ্যালার্ট পৌঁছে যাবে।\n• **লাইভ রাইড শেয়ারিং:** আপনার পরিবারের সাথে সুরক্ষিত লাইভ ট্র্যাকিং লিংক শেয়ার করার সুবিধা রয়েছে।";
     }
   }
 
-  // 9. HELPLINE & OFFICE (যোগাযোগ / হেল্পলাইন / ফোন / संपर्क / Phone)
-  if (q.includes('হেল্পলাইন') || q.includes('ফোন') || q.includes('যোগাযোগ') || q.includes('helpline') || q.includes('phone') || q.includes('contact') || q.includes('অফিস') || q.includes('नंबर') || q.includes('कॉल') || q.includes('call')) {
-    if (lang === 'hi') {
-      return "📞 **संपर्क व हेल्पलाइन विवरण:**\n\n• 24x7 हेल्पलाइन कॉल: **+91 8768447312**\n• व्हाट्सएप चैट: [WhatsApp Help](https://wa.me/918768447312)\n• सपोर्ट ईमेल: **support.ridesathi@gmail.com**\n• मुख्य कार्यालय: नरंगा दीघी, पिंगला, पश्चिम मेदिनीपुर - 721155";
-    } else if (lang === 'en') {
-      return "📞 **Contact & Helpdesk Details:**\n\n• 24x7 Helpline Call: **+91 8768447312**\n• WhatsApp Desk: [WhatsApp Help](https://wa.me/918768447312)\n• Email: **support.ridesathi@gmail.com**\n• Office: Naranga Dighi, Pingla, Paschim Medinipur - 721155";
+  // 10. EMERGENCY / HOSPITAL / MEDICAL
+  if (q.includes('হাসপাতাল') || q.includes('জরুরি') || q.includes('এমার্জেন্সি') || q.includes('ডাক্তার') || q.includes('অসুস্থ') || q.includes('অ্যাম্বুলেন্স') || q.includes('अस्पताल') || q.includes('इमरजेंसी') || q.includes('डॉक्टर') || q.includes('मरीज') || q.includes('emergency') || q.includes('hospital') || q.includes('doctor') || q.includes('medical') || q.includes('ambulance') || q.includes('urgent')) {
+    if (userLang === 'hi') {
+      return "🚨 **आपातकालीन व अस्पताल यात्रा सहायता (Priority Dispatch):**\n\n• **प्राथमिकता बुकिंग:** यदि आपको तुरंत अस्पताल या डॉक्टर के पास जाना है, तो ऐप पर **Car** या **Toto** चुनें—सिस्टम निकटतम उपलब्ध ड्राइवर को प्राथमिकता देगा।\n• **सीधा कॉल डेस्क:** अत्यधिक आपात स्थिति में तुरंत हमारे 24x7 कंट्रोल रूम **+91 8768447312** पर कॉल करें, हमारी टीम तुरंत नजदीकी वाहन की व्यवस्था कराएगी।\n• **🆘 SOS इमरजेंसी:** यात्रा के दौरान किसी भी स्वास्थ्य या सुरक्षा संबंधी परेशानी के लिए स्क्रीन पर लाल SOS बटन का उपयोग करें।";
+    } else if (userLang === 'en') {
+      return "🚨 **Emergency & Hospital Priority Dispatch:**\n\n• **Priority Rides:** For hospital or clinic transit, select **Car** or **Toto** on the home screen. Our dispatch engine prioritizes urgent medical pickups.\n• **Direct Hotline:** For critical medical urgencies, call our 24x7 emergency helpline immediately at **+91 8768447312** for priority vehicle assignment.\n• **In-Trip 🆘 SOS:** Instant police & emergency alert system built into your active trip screen.";
     } else {
-      return "📞 **যোগাযোগ ও হেল্পডেস্ক তথ্য:**\n\n• ২৪x৭ হেল্পলাইন কল: **+91 8768447312**\n• অফিসিয়াল হোয়াটসঅ্যাপ: [WhatsApp Help](https://wa.me/918768447312)\n• ইমেইল: **support.ridesathi@gmail.com**\n• হেড অফিস: নারাঙ্গা দিঘী, পিংলা, পশ্চিম মেদিনীপুর - ৭২১১৫৫";
+      return "🚨 **জরুরি চিকিৎসা ও হাসপাতাল যাত্রা সহায়তা (Priority Dispatch):**\n\n• **অগ্রাধিকার বুকিং:** অসুস্থ রোগী বা হাসপাতালে যাওয়ার প্রয়োজনে দ্রুত **কার (Car)** বা **টোটো (Toto)** সিলেক্ট করুন—আমাদের ইঞ্জিন নিকটবর্তী গাড়িকে দ্রুত পাঠাবে।\n• **জরুরি হটলাইন:** অতি জরুরি অবস্থায় অবিলম্বে আমাদের ২৪x৭ কন্ট্রোল ডেস্কে কল করুন: **+91 8768447312**—অ্যাডমিন টিম তৎক্ষণাৎ গাড়ির ব্যবস্থা করবেন।\n• **🆘 SOS ফিচার:** যাত্রাপথে যেকোনো জরুরি প্রয়োজনে স্ক্রিনের লাল SOS বোতাম ব্যবহার করে পুলিশ ও মেডিকেল সহায়তা অ্যালার্ট পাঠানো সম্ভব।";
     }
   }
 
-  // 10. DRIVER JOIN (ড্রাইভার হতে চাই / ड्राइवर बनना है / Join Driver)
-  if (q.includes('ড্রাইভার হতে') || q.includes('গাড়ি চালাতে') || q.includes('ইনকাম') || q.includes('driver join') || q.includes('ड्राइवर बनना') || q.includes('रजिस्ट्रेशन')) {
-    if (lang === 'hi') {
-      return "🚕 **Ride Sathi पार्टनर बनें और रोज कमाएं:**\n\n• अपनी बाइक, टोटो বা कार रजिस्टर करें।\n• 0% कमीशन पर पहले हफ्ते फ्री राइड्स!\n• ऐप मेनू से **'ড্রাইভার হিসেবে যোগ দিন'** पर क्लिक करें अथवा driver.html खोलकर आधार ও डीएल अपलोड करें।\n• सहायता के लिए कॉल करें: 8768447312";
-    } else if (lang === 'en') {
-      return "🚕 **Join as Ride Sathi Driver Partner:**\n\n• Register your Bike, Toto, or Car in 2 minutes.\n• Enjoy lowest platform fee and weekly bonus incentives.\n• Open menu and click 'Join as Driver' or visit driver.html to upload documents.\n• Partner helpline: +91 8768447312";
+  // 11. CANCELLATION & REFUND
+  if (q.includes('বাতিল') || q.includes('ক্যানসেল') || q.includes('টাকা ফেরত') || q.includes('রিফান্ড') || q.includes('রদবদল') || q.includes('রদ্দ') || q.includes('कैंसिल') || q.includes('रिफंड') || q.includes('वापसी') || q.includes('cancel') || q.includes('refund') || q.includes('cancellation')) {
+    if (userLang === 'hi') {
+      return "❌ **100% फ्री कैंसिलेशन व रिफंड पॉलिसी:**\n\n• **फ्री कैंसिलेशन:** यात्रा शुरू होने (OTP सत्यापन) से पहले राइड कैंसिल करना पूरी तरह मुफ़्त है। आपसे 1 रुपया भी कैंसिलेशन चार्ज नहीं लिया जाएगा।\n• **ड्राइवर द्वारा मना करने पर:** यदि ड्राइवर आने से मना करता है, तो आप तुरंत बिना किसी शुल्क के दूसरी गाड़ी बुक कर सकते हैं।\n• **रिफंड गारंटी:** यदि ऑनलाइन भुगतान कटा है और राइड पूरी नहीं हुई, तो 24 घंटे के भीतर आपका पूरा पैसा आपके बैंक खाते/UPI में स्वतः वापस जमा हो जाएगा।";
+    } else if (userLang === 'en') {
+      return "❌ **100% Free Cancellation & Instant Refund Policy:**\n\n• **Zero Cancellation Fee:** Cancelling a ride before OTP verification is 100% free of charge. No penalty fee will ever be deducted.\n• **Driver Decline:** If a driver declines or cannot arrive, re-book immediately with zero cancellation charge.\n• **Refund Assurance:** If an online payment was deducted and the ride did not take place, your full amount will be credited back to your original source account within 24 hours.";
     } else {
-      return "🚕 **Ride Sathi ড্রাইভার পার্টনার হিসেবে যোগ দিন:**\n\n• আপনার বাইক, টোটো বা কার দিয়ে প্রতিদিন আকর্ষণীয় আয় করুন।\n• নামমাত্র কমিশন ও দ্রুত ভেরিফিকেশন সুবিধা।\n• মেনু থেকে **'ড্রাইভার হিসেবে যোগ দিন'** ক্লিক করুন অথবা driver.html ভিজিট করে আধার ও ডিএল আপলোড করুন।\n• পার্টনার হেল্পলাইন: 8768447312";
+      return "❌ **১০০% বিনামূল্যে বাতিল ও দ্রুত রিফান্ড নীতি:**\n\n• **জিরো ক্যান্সেলেশন ফি:** যাত্রা শুরু হওয়ার (OTP ভেরিফিকেশন) পূর্বে যেকোনো সময় রাইড বাতিল সম্পূর্ণ বিনামূল্যে। আপনার থেকে কোনো জরিমানা নেওয়া হবে না।\n• **ড্রাইভার অপারগ হলে:** চালক আসতে না পারলে আপনি বিনা দ্বিধায় সাথে সাথে অন্য গাড়ি বুক করতে পারেন।\n• **রিফান্ড নিশ্চয়তা:** কোনো কারণে অনলাইনে টাকা কেটে থাকলে এবং যাত্রা সম্পন্ন না হলে পরবর্তী ২৪ ঘণ্টার মধ্যে সম্পূর্ণ টাকা আপনার ব্যাংক বা UPI অ্যাকাউন্টে ফেরত আসবে।";
     }
   }
 
-  // 11. HUMAN HANDOVER / TALK TO ADMIN (অ্যাডমিন / কথা / মানুষ / बात / Admin)
-  if (q.includes('অ্যাডমিন') || q.includes('এডমিন') || q.includes('admin') || q.includes('মানুষ') || q.includes('agent') || q.includes('बात') || q.includes('কথা বলতে')) {
-    if (lang === 'hi') {
-      return "👤 **लाइव एडमिन सहायता:**\n\nमैंने हमारे लाइव सपोर्ट एडमिन को आपका संदेश भेज दिया है। हमारे अधिकारी जल्द ही आपसे इस चैट में जुड़ेंगे।\n\nজরুরি হলে সরাসরি হেল্পলাইনে কল করুন: **+91 8768447312**";
-    } else if (lang === 'en') {
-      return "👤 **Live Support Admin Assistance:**\n\nYour message has been escalated to our human support team. An admin officer will reply to you here shortly.\n\nFor immediate urgency, call our helpline: **+91 8768447312**.";
+  // 12. PARCEL & COURIER
+  if (!q.includes('छूट') && !q.includes('खो') && !q.includes('হারানো') && !q.includes('ফেলে') && !q.includes('lost') && (q.includes('পার্সেল') || q.includes('কুরিয়ার') || q.includes('ডেলিভারি') || q.includes('জিনিস পাঠাব') || q.includes('सामान') || q.includes('पार्सल') || q.includes('कूरियर') || q.includes('डिलीवरी') || q.includes('parcel') || q.includes('courier') || q.includes('package') || q.includes('delivery'))) {
+    if (userLang === 'hi') {
+      return "📦 **Ride Sathi GO एक्सप्रेस पार्सल डिलीवरी:**\n\n• **क्या भेज सकते हैं:** महत्वपूर्ण दस्तावेज, दवाइयां, उपहार, मिठाई, कपड़े या 15 किलोग्राम तक का कोई भी घरेलू/व्यावसायिक सामान।\n• **दरें:** मात्र ₹25 से न्यूनतम दरें शुरू।\n• **डोरस्टेप पिकअप व डिलीवरी:** ड्राइवर आपके घर से पार्सल उठाएगा और सीधे प्राप्तकर्ता के पते पर पहुंचाएगा।\n• **सुरक्षा:** लाइव जीपीएस ट्रैकिंग और रिसीवर का ओटीपी सत्यापन उपलब्ध है। होम स्क्रीन पर **'Parcel'** टैब चुनें!";
+    } else if (userLang === 'en') {
+      return "📦 **Ride Sathi GO Express Parcel Delivery Service:**\n\n• **What You Can Send:** Urgent documents, medicines, food, sweets, clothes, or packages up to 15 kg.\n• **Affordable Rates:** Starts from just ₹25 based on distance.\n• **Doorstep Pickup & Handover:** Driver picks up directly from your doorstep and delivers straight to recipient.\n• **Security:** Real-time GPS tracking and OTP verification upon delivery. Select the **'Parcel'** tab on the home screen!";
     } else {
-      return "👤 **লাইভ অ্যাডমিন সহায়তা:**\n\nআমি আমাদের লাইভ সাপোর্ট অ্যাডমিনকে আপনার বার্তাটি পাঠিয়ে দিয়েছি। কিছুক্ষণের মধ্যেই অ্যাডমিন টিম আপনাকে সরাসরি রিপ্লাই দেবেন।\n\nজরুরি প্রয়োজনে কল করুন: **+91 8768447312**।";
+      return "📦 **Ride Sathi GO এক্সপ্রেস পার্সেল ডেলিভারি সেবা:**\n\n• **কী কী পাঠাতে পারবেন:** জরুরি কাগজপত্র, ওষুধ, খাবার, মিষ্টির প্যাকেট, পোশাক বা ১৫ কেজি পর্যন্ত যেকোনো পার্সেল।\n• **স্বল্প খরচ:** দূরত্ব অনুযায়ী সর্বনিম্ন মাত্র ₹২৫ থেকে শুরু।\n• **ডোরস্টেপ পিকআপ ও ড্রপ:** চালক আপনার বাড়ি থেকে পার্সেল সংগ্রহ করে প্রাপকের দরজায় সুরক্ষিতভাবে পৌঁছে দেবেন।\n• **নিরাপত্তা:** লাইভ ট্র্যাকিং এবং ডেলিভারির সময় রিসিভার ওটিপি যাচাই ব্যবস্থা রয়েছে। হোমস্ক্রিনে **'পার্সেল' (Parcel)** অপশন বেছে নিন!";
     }
   }
 
-  // 12. GREETINGS (হ্যালো / নমস্কার / হাই / Hi / Hello)
-  if (q.includes('hi') || q.includes('hello') || q.includes('নমস্কার') || q.includes('হ্যালো') || q.includes('হাই') || q.includes('hey') || q.includes('नमस्ते') || q.includes('सलाम')) {
-    if (lang === 'hi') {
-      return "नमस्ते! 🙏 Ride Sathi GO में आपका स्वागत है। मैं आपकी क्या मदद कर सकता हूँ? आप किराया, राइड बुकिंग, ड्राइवर ट्रैकिंग या पार्सल के बारे में पूछ सकते हैं।";
-    } else if (lang === 'en') {
-      return "Hello! 🙏 Welcome to Ride Sathi GO. How can I assist you today? Feel free to ask about fares, booking a ride, parcel service, or safety.";
+  // 13. LOST ITEMS IN VEHICLE
+  if (q.includes('छूट गया') || q.includes('खो गया') || q.includes('chhut gaya') || q.includes('kho gaya') || q.includes('হারানো') || q.includes('ফেলে এসেছি') || q.includes('ফেলে গেছি') || q.includes('ব্যাগ ফেলে') || q.includes('ফোন ফেলে') || q.includes('হারিয়ে গেছে') || q.includes('सामान छूट गया') || q.includes('खोया') || q.includes('भूल गया') || q.includes('lost') || q.includes('forgot') || q.includes('bag') || q.includes('wallet') || q.includes('fele eshechi')) {
+    if (userLang === 'hi') {
+      return "🎒 **गाड़ी में सामान छूट गया है? घबराएं नहीं!**\n\n1. **ड्राइवर का विवरण:** ऐप के साइड मेनू (Drawer) में जाकर **'Ride History'** देखें। वहां पिछली यात्रा के ड्राइवर का नाम, फोन नंबर और गाड़ी नंबर दर्ज है।\n2. **तुरंत हेल्पलाइन पर संपर्क करें:** हमारे 24x7 सहायता नंबर **+91 8768447312** पर कॉल करें और अपनी राइड का समय व रूट बताएं।\n3. **सामान की वापसी:** हमारी सुरक्षा टीम तुरंत ड्राइवर से संपर्क कर आपका सामान सुरक्षित रूप से वापस दिलाने की पूरी व्यवस्था करेगी।";
+    } else if (userLang === 'en') {
+      return "🎒 **Left an Item or Bag in the Vehicle? Don't worry!**\n\n1. **Check Ride Details:** Go to the app side menu -> **'Ride History'** to see your driver's direct contact number and vehicle license plate.\n2. **Call 24x7 Helpdesk:** Call **+91 8768447312** immediately with your pickup time and route details.\n3. **Safety Coordination:** Our dispatch team coordinates directly with the driver to safeguard and return your belonging promptly.";
     } else {
-      return "নমস্কার! 🙏 Ride Sathi GO-তে আপনাকে স্বাগতম। আমি আপনাকে কীভাবে সাহায্য করতে পারি? আপনি ভাড়া, বুকিং নিয়ম, পার্সেল ডেলিভারি বা নিরাপত্তা সংক্রান্ত যেকোনো প্রশ্ন করতে পারেন।";
+      return "🎒 **গাড়িতে কোনো জিনিস বা ব্যাগ ফেলে এসেছেন? একদম চিন্তা করবেন না!**\n\n১. **ড্রাইভারের বিবরণ:** অ্যাপের মেনু খুলে **'রাইড হিস্ট্রি' (Ride History)** অপশনে যান। সেখানে আপনার চালকের ফোন নম্বর ও গাড়ির নম্বর লিপিবদ্ধ আছে।\n২. **হেল্পলাইনে জরুরি কল:** অবিলম্বে আমাদের ২৪x৭ হেল্পলাইন **+91 8768447312** নম্বরে কল করে রাইডের সময় ও স্থান জানান।\n৩. **নিরাপদ ফেরত:** আমাদের সাপোর্ট টিম চালকের সাথে যোগাযোগ করে আপনার হারানো জিনিস দ্রুত আপনার কাছে ফিরিয়ে দেওয়ার শতভাগ ব্যবস্থা করবে।";
     }
   }
 
-  // DEFAULT SMART INTENT RESPONSE
-  if (lang === 'hi') {
-    return "धन्यवाद आपके संदेश के लिए। आपकी सहायता के लिए:\n\n• **किराया जानकारी:** 'किराया कितना है' लिखें।\n• **बुकिंग सहायता:** 'बुकिंग कैसे करें' लिखें।\n• **कॉल सपोर्ट:** सीधे **8768447312** पर कॉल करें।\n\nहमारी टीम भी इस चैट को मॉनिटर कर रही है और आवश्यक होने पर तुरंत उत्तर देगी!";
-  } else if (lang === 'en') {
-    return "Thank you for your message. For quick assistance:\n\n• **Fare Info:** Type 'Fare rates'.\n• **Booking Help:** Type 'How to book'.\n• **Helpline Call:** Call **+91 8768447312** directly.\n\nOur support team is monitoring this thread and will reply if extra help is needed!";
+  // 14. SERVICE LOCATIONS & COVERAGE
+  if (q.includes('এলাকা') || q.includes('সার্ভিস কোথায়') || q.includes('মেদিনীপুর') || q.includes('পিংলা') || q.includes('খড়গপুর') || q.includes('তমলুক') || q.includes('দিঘা') || q.includes('হলদিয়া') || q.includes('কলকাতা') || q.includes('ডেবরা') || q.includes('সবং') || q.includes('ঘাটাল') || q.includes('सेवा क्षेत्र') || q.includes('कहाँ') || q.includes('लोकेशन') || q.includes('service area') || q.includes('cities') || q.includes('coverage') || q.includes('pingla') || q.includes('midnapore') || q.includes('kharagpur')) {
+    if (userLang === 'hi') {
+      return "📍 **Ride Sathi GO सेवा क्षेत्र (Service Network):**\n\nसंपूर्ण पश्चिम बंगाल में विशेष कवरेज:\n• **पश्चिम मेदिनीपुर:** पिंगला, खड़गपुर, मेदिनीपुर सिटी, डेबरा, सबंग, घाटाल, बेलदा, नारायणगढ़।\n• **पूर्व मेदिनीपुर:** तमलुक, हल्दिया, कांथी (Contai), दीघा, मेचेदा, कोलाघाट, पांशकुड़ा।\n• **कोलकाता एवं हावड़ा:** एयरपोर्ट, रेलवे स्टेशन, सॉल्ट लेक, न्यू टाउन तथा प्रमुख राष्ट्रीय राजमार्ग।\n• शहर से लेकर ग्रामीण इलाकों तक हर जगह हमारी गाड़ियां उपलब्ध हैं!";
+    } else if (userLang === 'en') {
+      return "📍 **Ride Sathi GO Active Coverage Network:**\n\nServing major urban hubs, towns, and rural corridors across West Bengal:\n• **Paschim Medinipur:** Pingla, Kharagpur, Midnapore Town, Debra, Sabang, Ghatal, Belda, Narayangarh.\n• **Purba Medinipur:** Tamluk, Haldia, Contai, Digha Beach, Mecheda, Kolaghat, Panskura.\n• **Kolkata & Howrah:** Airport, Railway Stations, Highways, and connecting intercity corridors.\n• Reliable on-demand rides from remote villages to metropolitan cities!";
+    } else {
+      return "📍 **Ride Sathi GO সক্রিয় সার্ভিস এলাকা:**\n\nপশ্চিমবঙ্গের প্রধান প্রধান শহর, উপশহর ও গ্রামীণ অঞ্চলে আমাদের সেবা পূর্ণমাত্রায় চালু রয়েছে:\n• **পশ্চিম মেদিনীপুর:** পিংলা, খড়গপুর, মেদিনীপুর সদর, ডেবরা, সবং, ঘাটাল, বেলদা, নারায়ণগড়।\n• **পূর্ব মেদিনীপুর:** তমলুক, হলদিয়া, কাঁথি, দিঘা সৈকত, মেচেদা, কোলাঘাট, পাঁশকুড়া।\n• **কলকাতা ও হাওড়া:** বিমানবন্দর, রেলস্টেশন, জাতীয় সড়ক ও দূরপাল্লার রুট।\n• গ্রাম থেকে শহর—যেকোনো জায়গায় রাইড বুক করতে পারেন নিশ্চিন্তে!";
+    }
+  }
+
+  // 15. OUTSTATION / INTERCITY RIDES
+  if (q.includes('লং ট্রিপ') || q.includes('আউটস্টেশন') || q.includes('দূরপাল্লা') || q.includes('কলকাতা যাব') || q.includes('দিঘা যাব') || q.includes('দীঘা যাব') || q.includes('বাইরে যাব') || q.includes('लंबा सफर') || q.includes('आउटस्टेशन') || q.includes('outstation') || q.includes('intercity') || q.includes('long trip') || q.includes('airport')) {
+    if (userLang === 'hi') {
+      return "🛣️ **Ride Sathi GO आउटस्टेशन व लंबी दूरी की कैब:**\n\n• **सुविधाजनक यात्रा:** कोलकाता, दीघा, हावड़ा, एयरपोर्ट या किसी भी अन्य जिले के लिए एसी सेडान ও एसयूवी गाड़ियां उपलब्ध हैं।\n• **एक तरफा या राउंड ट्रिप:** आप वन-वे ड्रॉप या आने-जाने (Round Trip) दोनों प्रकार की बुकिंग कर सकते हैं।\n• **पारदर्शी किराया:** कोई छिपा हुआ चार्ज नहीं, तय दूरी अनुसार सही रेट।\n• **बुकिंग:** ऐप पर पिकअप व ड्रॉप डालकर 'Car' चुनें अथवा हेल्पलाइन **+91 8768447312** पर प्री-बुक करें!";
+    } else if (userLang === 'en') {
+      return "🛣️ **Ride Sathi GO Outstation & Intercity Cabs:**\n\n• **Comfortable Travel:** AC Sedans & SUVs ready for long trips to Kolkata, Digha, Howrah, Airport, or across districts.\n• **One-Way or Round-Trip:** Flexible one-way drop or round-trip bookings at transparent rates.\n• **Advance Pre-Booking:** Set long distance Pickup & Drop on home screen or call our support desk at **+91 8768447312** to schedule in advance!";
+    } else {
+      return "🛣️ **Ride Sathi GO আউটস্টেশন ও দূরপাল্লার কার সেবা:**\n\n• **আরামদায়ক সফর:** কলকাতা, দিঘা, হাওড়া, এয়ারপোর্ট বা যেকোনো জেলায় যাওয়ার জন্য আধুনিক এসি সেডান ও এসইউভি গাড়ি প্রস্তুত।\n• **ওয়ান-ওয়ে বা রাউন্ড ট্রিপ:** একমুখী (One-way) অথবা যাওয়া-আসা (Round Trip) উভয় সুবিধাই স্বচ্ছ ভাড়ায় পাওয়া যায়।\n• **অগ্রিম বুকিং:** হোমপেজে গন্তব্য লিখে সরাসরি বুক করুন অথবা বিশেষ ব্যবস্থাপনায় অগ্রিম শিডিউল করতে হেল্পলাইনে কল করুন: **+91 8768447312**!";
+    }
+  }
+
+  // 16. DRIVER JOIN / PARTNER REGISTRATION
+  if (q.includes('ড্রাইভার হতে') || q.includes('ড্রাইভার হব') || q.includes('গাড়ি লাগাতে') || q.includes('ইনকাম করতে') || q.includes('পার্টনার') || q.includes('ড্রাইভার জয়েন') || q.includes('ड्राइवर बनना') || q.includes('गाड़ी लगानी') || q.includes('पार्टनर') || q.includes('ड्राइवर रजिस्ट्रेशन') || q.includes('join driver') || q.includes('become a driver') || q.includes('driver join') || q.includes('driver hote chai') || q.includes('driver partner')) {
+    if (userLang === 'hi') {
+      return "🚕 **Ride Sathi GO ड्राइवर पार्टनर बनें और रोज कमाएं:**\n\n• **आकर्षक कमाई:** अपनी बाइक, टोटो या कार से रोजाना ₹800 से ₹2500+ तक की कमाई करें।\n• **न्यूनतम कमीशन:** पश्चिम बंगाल में सबसे कम प्लेटफॉर्म फीस और साप्ताहिक बोनस।\n• **जरूरी दस्तावेज:** आधार कार्ड, ड्राइविंग लाइसेंस (बाइक/कार के लिए), गाड़ी का आरसी और स्मार्टफोन।\n• **रजिस्ट्रेशन कैसे करें:** ऐप मेनू से **'ড্রাইভার হিসেবে যোগ দিন'** पर क्लिक करें या `driver.html` पर जाएं।\n• पार्टनर हेल्पलाइन: **+91 8768447312**।";
+    } else if (userLang === 'en') {
+      return "🚕 **Join Ride Sathi GO as Driver Partner:**\n\n• **Attractive Earnings:** Earn ₹800 to ₹2500+ daily with your Bike, Toto, or Car.\n• **Lowest Platform Fee:** Best driver payout structure in West Bengal with zero onboarding charges.\n• **Required Documents:** Aadhaar Card, Driving License (for Bike/Car), Vehicle RC, and Smartphone.\n• **How to Apply:** Open app menu -> tap **'Join as Driver'** or visit `driver.html` to register in 2 minutes.\n• Partner Support Desk: **+91 8768447312**.";
+    } else {
+      return "🚕 **Ride Sathi GO ড্রাইভার পার্টনার হিসেবে যোগ দিন ও প্রতিদিন আয় করুন:**\n\n• **উচ্চ ইনকাম:** আপনার নিজস্ব বাইক, টোটো বা কার চালিয়ে প্রতিদিন ₹৮০০ থেকে ₹২৫০০+ পর্যন্ত আয় করার সুবর্ণ সুযোগ।\n• **নামমাত্র প্ল্যাটফর্ম ফি:** বাংলায় সবথেকে কম কমিশন রেট এবং নিশ্চিত সাপ্তাহিক বোনাস।\n• **প্রয়োজনীয় নথিপত্র:** আধার কার্ড, ড্রাইভিং লাইসেন্স (বাইক/কারের জন্য), গাড়ির আরসি ও একটি স্মার্টফোন।\n• **যুক্ত হওয়ার নিয়ম:** অ্যাপের মেনু থেকে **'ড্রাইভার হিসেবে যোগ দিন'** ক্লিক করুন অথবা সরাসরি `driver.html` পেজে গিয়ে ফর্ম পূরণ করুন।\n• পার্টনার হেল্পলাইন: **+91 8768447312**।";
+    }
+  }
+
+  // 17. PROMO CODE & OFFERS
+  if (q.includes('অফার') || q.includes('কুপন') || q.includes('ডিসকাউন্ট') || q.includes('প্রোমো কোড') || q.includes('ছাড়') || q.includes('डिस्काउंट') || q.includes('ऑफर') || q.includes('कूपन') || q.includes('offer') || q.includes('coupon') || q.includes('promo') || q.includes('discount')) {
+    if (userLang === 'hi') {
+      return "🎁 **Ride Sathi GO ऑफर्स व डिस्काउंट:**\n\n• **पहला सफर ऑफर:** प्रोमो कोड **FIRST50** इस्तेमाल करें और अपनी पहली राइड पर 50% तक की छूट पाएं!\n• **रेफरल बोनस:** दोस्तों को ऐप शेयर करें और हर सफल राइड पर वॉलेट बोनस कमाएं।\n• त्योहारों और सप्ताहांत पर विशेष डिस्काउंट कूपन ऐप के होमपेज बैनर पर उपलब्ध रहते हैं!";
+    } else if (userLang === 'en') {
+      return "🎁 **Ride Sathi GO Exclusive Offers & Discounts:**\n\n• **First Ride Special:** Apply coupon code **FIRST50** during checkout for up to 50% discount on your first journey!\n• **Refer & Earn:** Invite friends and earn instant ride credits when they complete their first ride.\n• Watch out for festive banners on the home screen for seasonal promotions!";
+    } else {
+      return "🎁 **Ride Sathi GO আকর্ষণীয় অফার ও ডিসকাউন্ট:**\n\n• **প্রথম রাইড অফার:** বুকিংয়ের সময় প্রোমো কোড **FIRST50** ব্যবহার করে আপনার প্রথম রাইডে পেয়ে যান ৫০% পর্যন্ত আকর্ষণীয় ছাড়!\n• **রেফার করে ইনকাম:** বন্ধুদের অ্যাপ রেফার করুন এবং তাদের প্রথম রাইডের পর আপনার অ্যাকাউন্টে ফ্রি রাইড বোনাস উপভোগ করুন।\n• এছাড়া উৎসব ও সাপ্তাহিক বিশেষ অফার সবসময় হোমস্ক্রিন ব্যানারে দেখতে পাবেন!";
+    }
+  }
+
+  // 18. NIGHT SERVICE & 24x7 TIMINGS
+  if (q.includes('রাত') || q.includes('রাতের রাইড') || q.includes('কখন চালু') || q.includes('সার্ভিস কখন') || q.includes('রাত পর্যন্ত') || q.includes('रात') || q.includes('टाइम') || q.includes('समय') || q.includes('night') || q.includes('timing') || q.includes('24x7') || q.includes('24 hours')) {
+    if (userLang === 'hi') {
+      return "🌙 **Ride Sathi GO 24x7 चौबीसों घंटे सेवा:**\n\n• हमारी सेवाएं दिन-रात 24 घंटे, सातों दिन चालू रहती हैं।\n• देर रात या तड़के सुबह स्टेशन, एयरपोर्ट या अस्पताल जाने के लिए गाड़ियां आसानी से मिल जाती हैं।\n• रात के समय हमारी सुरक्षा टीम जीपीएस ट्रैकिंग द्वारा विशेष निगरानी रखती है।\n• रात में भी किसी भी सहायता के लिए हेल्पलाइन **+91 8768447312** चालू रहती है!";
+    } else if (userLang === 'en') {
+      return "🌙 **Ride Sathi GO 24x7 Round-The-Clock Service:**\n\n• Our ride-hailing and parcel network operates 24 hours a day, 7 days a week, 365 days a year.\n• Late-night or early-morning trips to railway stations, airport, or hospitals are fully covered.\n• Enhanced real-time GPS night safety protocols are active.\n• 24x7 Emergency Helpline: **+91 8768447312**.";
+    } else {
+      return "🌙 **Ride Sathi GO ২৪x৭ দিন-রাত নিরবচ্ছিন্ন সেবা:**\n\n• আমাদের পরিষেবা দিনে ও রাতে ২৪ ঘণ্টাই সচল থাকে।\n• গভীর রাতে কিংবা ভোরবেলায় ট্রেন ধরা, এয়ারপোর্ট যাওয়া বা জরুরি হাসপাতালে পৌঁছানোর জন্য সহজেই গাড়ি পাওয়া যায়।\n• রাতের ভ্রমণে সুরক্ষায় লাইভ জিপিএস ট্র্যাকিং ও কন্ট্রোল রুম মনিটরিং সবসময় সতর্ক থাকে।\n• গভীর রাতেও যেকোনো সহায়তায় হেল্পলাইন **+91 8768447312** নম্বরে কল করতে পারেন!";
+    }
+  }
+
+  // 19. ATTACHMENT / DOCUMENT UPLOAD
+  if (q.includes('ডকুমেন্ট') || q.includes('ছবি') || q.includes('স্ক্রিনশট') || q.includes('রশিদ') || q.includes('কাগজ') || q.includes('দস্তাবেজ') || q.includes('दस्तावेज') || q.includes('स्क्रीनशॉट') || q.includes('रसीद') || q.includes('attachment') || q.includes('upload') || q.includes('screenshot') || q.includes('document')) {
+    if (userLang === 'hi') {
+      return "📎 **दस्तावेज़ या स्क्रीनशॉट कैसे भेजें?**\n\n• नीचे इनपुट बार में दिए गए **📎 (पेपरक्लिप)** बटन पर क्लिक करें।\n• अपनी गैलरी से यूपीआई पेमेंट का स्क्रीनशॉट, ड्राइवर की गाड़ी का फोटो या कोई दस्तावेज़ चुनें।\n• यह सीधे हमारे सपोर्ट एडमिन को सुरक्षित रूप से पहुंच जाएगा और हमारी टीम तुरंत देखकर आपकी मदद करेगी!";
+    } else if (userLang === 'en') {
+      return "📎 **How to Upload Documents or Screenshots:**\n\n• Tap the **📎 (Paperclip)** button next to the voice mic below.\n• Select your UPI payment screenshot, issue photo, or document.\n• It will instantly sync to our support admin desk for priority review and quick resolution!";
+    } else {
+      return "📎 **ডকুমেন্ট বা স্ক্রিনশট পাঠানোর নিয়ম:**\n\n• নিচের ইনপুট বক্সে থাকা **📎 (পেপারক্লিপ)** বাটনে চাপ দিন।\n• আপনার গ্যালারি থেকে পেমেন্টের স্ক্রিনশট, গাড়ির ছবি বা কোনো নথিপত্র সিলেক্ট করুন।\n• ছবিটি সরাসরি আমাদের সাপোর্ট অ্যাডমিনের কাছে সুরক্ষিতভাবে পৌঁছে যাবে এবং টিম দ্রুত প্রয়োজনীয় ব্যবস্থা নেবেন!";
+    }
+  }
+
+  // 20. TALK TO HUMAN ADMIN / AGENT
+  if (q.includes('অ্যাডমিন') || q.includes('এডমিন') || q.includes('মানুষ') || q.includes('কথা বলতে চাই') || q.includes('কথা বলব') || q.includes('কর্মকর্তা') || q.includes('সাপোর্ট টিম') || q.includes('कस्टमर केयर') || q.includes('बात करनी') || q.includes('अधिकारी') || q.includes('admin') || q.includes('human') || q.includes('agent') || q.includes('customer care') || q.includes('support team')) {
+    if (userLang === 'hi') {
+      return "👤 **लाइव सपोर्ट अधिकारी सहायता (Human Support):**\n\nआपका संदेश सीधे हमारे लाइव सपोर्ट एडमिन को भेज दिया गया है। हमारे अधिकारी कुछ ही पलों में इस चैट में आपसे संपर्क करेंगे।\n\n📞 **तत्काल बात करने के लिए:** आप सीधे हमारे 24x7 हेल्पलाइन नंबर **+91 8768447312** पर कॉल कर सकते हैं।";
+    } else if (userLang === 'en') {
+      return "👤 **Live Support Officer Assistance (Human Desk):**\n\nYour conversation has been flagged to our active human support administrator. An officer will reply to your query directly here shortly.\n\n📞 **Immediate Assistance:** You can also call our 24x7 central helpline directly at **+91 8768447312**.";
+    } else {
+      return "👤 **লাইভ সাপোর্ট অ্যাডমিন সহায়তা (Human Agent):**\n\nআপনার বার্তাটি সরাসরি আমাদের লাইভ সাপোর্ট অ্যাডমিন টিমের কাছে পৌঁছে দেওয়া হয়েছে। কিছুক্ষণের মধ্যেই একজন কর্মকর্তা এই চ্যাটে আপনার সাথে যোগাযোগ করবেন।\n\n📞 **সরাসরি কথা বলতে:** অবিলম্বে আমাদের ২৪x৭ হেল্পলাইন **+91 8768447312** নম্বরে কল করতে পারেন।";
+    }
+  }
+
+  // 21. HELPLINE & OFFICE CONTACT
+  if (q.includes('হেল্পলাইন') || q.includes('ফোন') || q.includes('নম্বর') || q.includes('যোগাযোগ') || q.includes('অফিস') || q.includes('কন্টাক্ট') || q.includes('हेल्पलाइन') || q.includes('फोन') || q.includes('नंबर') || q.includes('संपर्क') || q.includes('helpline') || q.includes('phone') || q.includes('contact') || q.includes('call') || q.includes('mobile') || q.includes('office') || q.includes('address')) {
+    if (userLang === 'hi') {
+      return "📞 **Ride Sathi GO संपर्क व हेल्पलाइन जानकारी:**\n\n• **24x7 हेल्पलाइन कॉल:** **+91 8768447312**\n• **व्हाट्सएप चैट सपोर्ट:** [WhatsApp Help](https://wa.me/918768447312)\n• **आधिकारिक ईमेल:** **support.ridesathi@gmail.com**\n• **कार्यालय का पता:** नरांगा दीघी, पिंगला, पश्चिम मेदिनीपुर, पिन - 721155\n\nहम साल के 365 दिन आपकी सेवा में तत्पर हैं!";
+    } else if (userLang === 'en') {
+      return "📞 **Ride Sathi GO Central Helpdesk & Contact:**\n\n• **24x7 Customer Helpline:** **+91 8768447312**\n• **Official WhatsApp Desk:** [WhatsApp Support](https://wa.me/918768447312)\n• **Support Email:** **support.ridesathi@gmail.com**\n• **Registered Office:** Naranga Dighi, Pingla, Paschim Medinipur, WB - 721155\n\nAvailable 24 hours a day, 365 days a year!";
+    } else {
+      return "📞 **Ride Sathi GO হেল্পডেস্ক ও যোগাযোগের তথ্য:**\n\n• **২৪x৭ কাস্টমার হেল্পলাইন:** **+91 8768447312**\n• **অফিসিয়াল হোয়াটসঅ্যাপ সাপোর্ট:** [WhatsApp Support](https://wa.me/918768447312)\n• **ইমেইল সহায়তা:** **support.ridesathi@gmail.com**\n• **প্রধান কার্যালয়:** নারাঙ্গা দিঘী, পিংলা, পশ্চিম মেদিনীপুর, পিন - ৭২১১৫৫\n\nবছরের ৩৬৫ দিন দিন-রাত আমরা আপনার সেবায় প্রস্তুত!";
+    }
+  }
+
+  // 22. GREETINGS & IDENTITY
+  if (q.includes('hi') || q.includes('hello') || q.includes('hey') || q.includes('নমস্কার') || q.includes('হ্যালো') || q.includes('হাই') || q.includes('কেমন আছেন') || q.includes('আপনি কে') || q.includes('পরিচয়') || q.includes('नमस्ते') || q.includes('प्रणाम') || q.includes('सलाम') || q.includes('आप कौन हैं') || q.includes('who are you') || q.includes('your name')) {
+    if (userLang === 'hi') {
+      return "नमस्ते! 🙏 **Ride Sathi GO** में आपका हार्दिक स्वागत है।\n\nमैं Ride Sathi का 24x7 इंटेलिजेंट वर्चुअल सपोर्ट असिस्टेंट हूँ। मैं आपकी राइड बुकिंग, किराया दर, ड्राइवर सहायता, सुरक्षा, पार्सल डिलीवरी या किसी भी समस्या में मदद के लिए तैयार हूँ।\n\nआप मुझसे क्या जानना चाहते हैं?";
+    } else if (userLang === 'en') {
+      return "Hello! 🙏 Welcome to **Ride Sathi GO Support**.\n\nI am your 24x7 AI Customer Support Specialist. How can I assist you today? You can ask me about live fare rates, how to book a ride, parcel courier service, driver location, or safety policies.";
+    } else {
+      return "নমস্কার! 🙏 **Ride Sathi GO** লাইভ সাপোর্টে আপনাকে আন্তরিক স্বাগতম।\n\nআমি Ride Sathi-র ২৪x৭ সার্বক্ষণিক ভার্চুয়াল এআই অ্যাসিস্ট্যান্ট। রাইড বুকিংয়ের নিয়ম, সঠিক ভাড়া, চালকের অবস্থান, ওটিপি নিরাপত্তা, পার্সেল ডেলিভারি বা যেকোনো সহায়তায় আমি প্রস্তুত।\n\nআপনি কী বিষয়ে জানতে চান আমাকে বলুন!";
+    }
+  }
+
+  // 23. GRATITUDE & CLOSING
+  if (q.includes('ধন্যবাদ') || q.includes('থ্যাংক') || q.includes('ঠিক আছে') || q.includes('ভালো') || q.includes('থ্যাঙ্কস') || q.includes('शुक्रिया') || q.includes('धन्यवाद') || q.includes('ठीक है') || q.includes('बहुत अच्छा') || q.includes('thank') || q.includes('thanks') || q.includes('ok') || q.includes('okay') || q.includes('good') || q.includes('great')) {
+    if (userLang === 'hi') {
+      return "आपका बहुत-बहुत धन्यवाद! 🙏 Ride Sathi GO आपके सुखद, सुरक्षित और समय पर सफर की कामना करता है। किसी भी अन्य सहायता के लिए बेझिझक संपर्क करें। आपका दिन शुभ हो! ✨";
+    } else if (userLang === 'en') {
+      return "You're most welcome! 🙏 Ride Sathi GO wishes you a safe, pleasant, and seamless journey ahead. We are always here to help. Have a wonderful day! ✨";
+    } else {
+      return "আপনাকে অসংখ্য ধন্যবাদ! 🙏 Ride Sathi GO-র সাথে আপনার প্রতিটি যাত্রা হোক নিরাপদ, আরামদায়ক ও আনন্দময়। যেকোনো প্রয়োজনে আমরা সবসময় আপনার পাশে আছি। ভালো থাকবেন! ✨";
+    }
+  }
+
+  // 24. INTELLIGENT CORPORATE MULTI-TOPIC FALLBACK
+  if (userLang === 'hi') {
+    return "धन्यवाद आपके संदेश के लिए! 🙏 आपकी बेहतर सहायता के लिए नीचे दिए गए विकल्पों में से चुनें:\n\n• 💰 **किराया जानने के लिए:** लिखें *'किराया कितना है'* (Bike ₹15+₹5/km, Toto ₹20+₹7/km, Car ₹40+₹12/km)\n• 🚕 **बुकिंग मदद:** लिखें *'बुकिंग कैसे करें'*\n• 📦 **पार्सल सेवा:** लिखें *'पार्सल भेजना है'*\n• 📎 **स्क्रीनशॉट/दस्तावेज़:** नीचे 📎 बटन से भेजें\n• 👤 **सीधे बात करें:** 24x7 हेल्पलाइन **+91 8768447312** पर कॉल करें!";
+  } else if (userLang === 'en') {
+    return "Thank you for reaching out! 🙏 For fast and accurate assistance, choose a topic below:\n\n• 💰 **Fare Chart:** Type *'Fare rates'* (Bike ₹15+₹5/km, Toto ₹20+₹7/km, Car ₹40+₹12/km)\n• 🚕 **Booking Guide:** Type *'How to book a ride'*\n• 📦 **Parcel Express:** Type *'Send a parcel'*\n• 📎 **Upload Attachment:** Tap the 📎 icon below for payment/issue screenshot\n• 👤 **Call Support:** 24x7 Hotline **+91 8768447312**!";
   } else {
-    return "আপনার বার্তার জন্য ধন্যবাদ! দ্রুত সমাধানের জন্য:\n\n• **ভাড়া জানতে:** 'ভাড়া কত' লিখুন।\n• **বুকিং সাহায্য:** 'বুকিং কীভাবে করব' লিখুন।\n• **সরাসরি হেল্পলাইন:** **8768447312** নম্বরে কল করুন।\n\nআমাদের অ্যাডমিন টিমও এই চ্যাটটি দেখছেন এবং প্রয়োজনে আপনাকে সাথে সাথে রিপ্লাই দেবেন!";
+    return "আপনার বার্তার জন্য ধন্যবাদ! 🙏 আপনাকে দ্রুত সাহায্য করার জন্য নিচের বিষয়গুলো দেখতে পারেন:\n\n• 💰 **ভাড়া তালিকা:** লিখুন *'ভাড়া কত'* (বাইক ₹১৫+₹৫/কিমি, টোটো ₹২০+₹৭/কিমি, কার ₹৪০+₹১২/কিমি)\n• 🚕 **বুকিং নির্দেশিকা:** লিখুন *'বুকিং কীভাবে করব'*\n• 📦 **পার্সেল সেবা:** লিখুন *'পার্সেল পাঠাব'*\n• 📎 **ছবি/স্ক্রিনশট:** নিচের 📎 বাটনে চাপ দিয়ে যেকোনো প্রমাণ বা রশিদ পাঠান\n• 👤 **সরাসরি কথা বলুন:** সার্বক্ষণিক হেল্পলাইন **+91 8768447312** নম্বরে কল করুন!";
   }
 };
 
@@ -11620,13 +11938,13 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     <div style="background:linear-gradient(135deg,#7c3aed 0%,#4338ca 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.15)">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="position:relative">
-          <div style="width:40px;height:40px;border-radius:50%;background:#ffffff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">
-            🤖
+          <div style="width:42px;height:42px;border-radius:50%;overflow:hidden;border:2px solid #ffffff;box-shadow:0 2px 8px rgba(0,0,0,0.25);background:#e0e7ff;display:flex;align-items:center;justify-content:center">
+            <img src="ai-avatar.png" alt="Ride Sathi AI Assistant" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.onerror=null;this.parentElement.innerHTML='🤖'">
           </div>
           <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;background:#22c55e;border:2px solid #fff;border-radius:50%"></span>
         </div>
         <div>
-          <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" data-i18n="liveChatModalTitle">🤖 Ride Sathi লাইভ সাপোর্ট</div>
+          <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" data-i18n="liveChatModalTitle">✨ Ride Sathi 24x7 লাইভ সাপোর্ট</div>
           <div style="font-size:11px;color:#e0e7ff;font-weight:500" data-i18n="liveChatModalSub">বাংলা, হিন্দি বা ইংরেজিতে লিখুন অথবা মুখে বলুন</div>
         </div>
       </div>
@@ -11650,14 +11968,21 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
     <!-- Assistant Typing Indicator -->
     <div id="chatTypingIndicator" style="display:none;padding:6px 16px;background:#f8fafc;font-size:12px;color:#7c3aed;font-weight:700;display:flex;align-items:center;gap:6px">
-      <span>🤖 <span data-i18n="chatAiTyping">সহকারী উত্তর তৈরি করছে...</span></span>
+      <img src="ai-avatar.png" alt="AI" style="width:20px;height:20px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'">
+      <span><span data-i18n="chatAiTyping">সহকারী উত্তর তৈরি করছে...</span></span>
       <span style="display:inline-block;animation:pulseChat 1s infinite">✍️</span>
     </div>
 
     <!-- Bottom Input & Voice Mic Row -->
-    <div style="background:#ffffff;padding:12px;border-top:1px solid #e2e8f0;display:flex;align-items:center;gap:8px">
+    <div style="background:#ffffff;padding:10px 12px;border-top:1px solid #e2e8f0;display:flex;align-items:center;gap:6px">
+      <!-- Document / Image Attachment Button -->
+      <input type="file" id="chatDocFileInput" accept="image/*,application/pdf" style="display:none" onchange="handleLiveChatDocUpload(event)">
+      <button type="button" onclick="document.getElementById('chatDocFileInput').click()" style="background:#f1f5f9;color:#475569;border:1.5px solid #cbd5e1;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all 0.2s" title="ডকুমেন্ট / ছবি / পেমেন্ট স্ক্রিনশট আপলোড করুন">
+        📎
+      </button>
+
       <!-- Voice Mic Button (Web Speech Recognition in BN / HI / EN) -->
-      <button type="button" id="chatVoiceBtn" onclick="toggleLiveChatVoiceInput()" style="background:#f1f5f9;color:#0f172a;border:1.5px solid #cbd5e1;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.2s" title="মুখে বলুন / Voice Speak (Bangla, Hindi, English)">
+      <button type="button" id="chatVoiceBtn" onclick="toggleLiveChatVoiceInput()" style="background:#f1f5f9;color:#0f172a;border:1.5px solid #cbd5e1;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all 0.2s" title="মুখে বলুন / Voice Speak (Bangla, Hindi, English)">
         🎙️
       </button>
 
@@ -11665,7 +11990,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
       <input type="text" id="chatInputText" placeholder="এখানে আপনার সমস্যা লিখুন বা মাইকে বলুন..." data-i18n-placeholder="chatInputPlaceholder" style="flex:1;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:24px;font-size:13.5px;outline:none;font-family:inherit;background:#f8fafc" onkeypress="if(event.key==='Enter') sendCustomerChatMessage()">
 
       <!-- Send Button -->
-      <button type="button" onclick="sendCustomerChatMessage()" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(124,58,237,0.35)" title="Send">
+      <button type="button" onclick="sendCustomerChatMessage()" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(124,58,237,0.35)" title="Send">
         <i class="fa-solid fa-paper-plane"></i>
       </button>
     </div>
