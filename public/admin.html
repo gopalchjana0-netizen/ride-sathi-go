@@ -258,8 +258,9 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
 
       <!-- Live Preview Box -->
       <div id="slidePreviewContainer" style="display:none;margin-top:12px;background:#064e3b;padding:14px;border-radius:16px;color:#fff;position:relative">
-        <div style="font-size:11px;color:#86efac;font-weight:bold;margin-bottom:6px">👁️ লাইভ স্লাইডার প্রিভিউ:</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div style="font-size:11px;color:#86efac;font-weight:bold;margin-bottom:8px">👁️ লাইভ স্লাইডার প্রিভিউ (Live Preview):</div>
+        <div id="slidePrevFullBanner" style="display:none;width:100%"></div>
+        <div id="slidePrevRegularBox" style="display:flex;justify-content:space-between;align-items:center;gap:12px">
           <div>
             <h4 id="slidePrevTitle" style="margin:0 0 4px;font-size:16px;color:#fff">শিরোনাম</h4>
             <p id="slidePrevSub" style="margin:0 0 8px;font-size:12px;color:#86efac">উপশিরোনাম</p>
@@ -3083,25 +3084,43 @@ function handleSlidePhotoSelected(input) {
 
 function previewSlidePhoto(urlOrBase64) {
   const prevBox = document.getElementById('slidePreviewContainer');
-  const t = document.getElementById('slideInputTitle')?.value || 'পুজো স্পেশাল অফার';
-  const s = document.getElementById('slideInputSub')?.value || 'গ্রাম্য রাস্তায় শহরের গতিতে';
+  const t = document.getElementById('slideInputTitle')?.value || '';
+  const s = document.getElementById('slideInputSub')?.value || '';
   const b = document.getElementById('slideInputBadge')?.value || '🔥 অফার';
 
   const tEl = document.getElementById('slidePrevTitle');
   const sEl = document.getElementById('slidePrevSub');
   const bEl = document.getElementById('slidePrevBadge');
-  if (tEl) tEl.innerText = t;
-  if (sEl) sEl.innerText = s;
+  if (tEl) tEl.innerText = t || 'শিরোনাম';
+  if (sEl) sEl.innerText = s || 'উপশিরোনাম';
   if (bEl) bEl.innerText = b;
 
   const graphicBox = document.getElementById('slidePrevGraphic');
+  const fullBannerBox = document.getElementById('slidePrevFullBanner');
+  const regularBox = document.getElementById('slidePrevRegularBox');
   const src = urlOrBase64 || slidePhotoDataUrl;
-  if (graphicBox) {
-    if (src) {
-      graphicBox.innerHTML = `<img src="${src}" style="width:70px;height:70px;object-fit:cover;border-radius:12px;border:1.5px solid #86efac">`;
-    } else {
-      graphicBox.innerHTML = '🛺';
+
+  if (src) {
+    if (fullBannerBox) {
+      fullBannerBox.style.display = 'block';
+      fullBannerBox.innerHTML = `
+        <div style="position:relative;width:100%;height:140px;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.35);background:#064e3b">
+          <img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block">
+          <div style="position:absolute;top:8px;left:8px;background:#facc15;color:#0f172a;font-size:10px;font-weight:900;padding:3px 8px;border-radius:10px">${b}</div>
+          ${t ? `
+            <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top, rgba(0,0,0,0.88), transparent);padding:8px 12px;color:#fff">
+              <div style="font-size:14px;font-weight:900">${t}</div>
+              ${s ? `<div style="font-size:11px;color:#86efac">${s}</div>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
     }
+    if (regularBox) regularBox.style.display = 'none';
+  } else {
+    if (fullBannerBox) fullBannerBox.style.display = 'none';
+    if (regularBox) regularBox.style.display = 'flex';
+    if (graphicBox) graphicBox.innerHTML = '🛺';
   }
   if (prevBox) prevBox.style.display = 'block';
 }
@@ -3120,13 +3139,13 @@ function saveAdminHeroSlide() {
 
   const slideId = 'SLIDE_' + Date.now();
   const slideData = {
-    title: title || 'Ride Sathi Special',
-    subtitle: sub || 'On Village Roads, at City Speed',
+    title: title || '',
+    subtitle: sub || '',
     badge: badge || '⚡ বিশেষ অফার',
     link: link || '',
     imageUrl: imgUrl || '',
     graphic: '🛺',
-    isFullImage: !!(imgUrl && !title),
+    isFullImage: !!imgUrl,
     active: true,
     createdAt: Date.now()
   };
@@ -3135,7 +3154,7 @@ function saveAdminHeroSlide() {
     db.ref('settings/slides/' + slideId).set(slideData),
     db.ref('slides/' + slideId).set(slideData)
   ]).then(() => {
-    alert("✅ সফলভাবে স্লাইডার বিজ্ঞাপন যুক্ত হয়েছে! কাস্টমার অ্যাপে সাথে সাথে দেখতে পাওয়া যাবে।");
+    alert("✅ সফলভাবে স্লাইডার বিজ্ঞাপন যুক্ত হয়েছে! কাস্টমার অ্যাপে সম্পূর্ণ ব্যানার আকারে স্লাইড হবে।");
     clearSlideInputs();
     listenHeroSlidesManager();
   }).catch(err => {

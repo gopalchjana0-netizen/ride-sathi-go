@@ -908,7 +908,7 @@ body {
 .hero-slider-card {
   background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
   border-radius: 20px;
-  padding: 16px 18px;
+  padding: 12px 14px;
   color: #fff;
   margin: 10px auto 14px;
   max-width: 600px;
@@ -919,16 +919,86 @@ body {
 }
 .hero-slides-wrapper {
   display: flex;
-  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform;
+  width: 100%;
 }
 .hero-slide {
+  flex: 0 0 100%;
   min-width: 100%;
+  max-width: 100%;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   box-sizing: border-box;
+}
+.hero-slide.hero-slide-full {
+  display: block;
+  padding: 0;
+}
+.hero-slide-banner-box {
+  position: relative;
+  width: 100%;
+  height: 155px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  background: #022c22;
+}
+@media (max-width: 480px) {
+  .hero-slide-banner-box {
+    height: 145px;
+  }
+}
+.hero-slide-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+}
+.hero-slide-banner-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #facc15;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hero-slide-banner-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 12px 8px;
+  background: linear-gradient(180deg, transparent 0%, rgba(2,44,34,0.85) 60%, rgba(2,44,34,0.96) 100%);
+  color: #fff;
+  z-index: 1;
+}
+.hero-slide-banner-overlay h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  line-height: 1.25;
+}
+.hero-slide-banner-overlay p {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: #86efac;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 .hero-slide-info h3 {
   margin: 0 0 4px;
@@ -5876,108 +5946,147 @@ function listenPromoCodes() {
 listenPromoCodes();
 
 // === 5. DYNAMIC HERO SLIDESHOW & BANNER ADS SYSTEM (settings/slides) ===
-function listenHeroSlides() {
-  if (!db) return;
-  onValue(ref(db, 'settings/slides'), snap => {
-    const wrapper = document.getElementById('heroSlidesWrapper');
-    const dotsWrapper = document.getElementById('heroDotsWrapper') || document.querySelector('.hero-dots');
-    if (!wrapper) return;
+const defaultHeroSlidesList = [
+  {
+    title: 'Safe Rides, Trusted Service',
+    subtitle: 'On Village Roads, at City Speed',
+    badge: 'Your Safety, Our Priority',
+    graphic: '🛺'
+  },
+  {
+    title: 'Super Fast Bike Taxi',
+    subtitle: 'Beat Traffic & Village Roads Easily',
+    badge: 'Quick Pickup in 2 Mins',
+    graphic: '🏍️'
+  },
+  {
+    title: 'Comfortable Car & Parcel',
+    subtitle: 'Safe Family Trips & Instant Delivery',
+    badge: 'Doorstep Pickup & Drop',
+    graphic: '🚗'
+  },
+  {
+    title: '🎁 সেরা শপিং ও ট্রাভেল অফার',
+    subtitle: 'Amazon, Myntra, Swiggy ও ২৫+ কুপনে ছাড়',
+    badge: 'অফার ও কুপন দেখুন ›',
+    graphic: '🛍️',
+    linkModal: 'openReferralModal'
+  }
+];
 
-    const data = snap.val();
-    const slidesList = [];
-    if (data) {
-      for (let k in data) {
-        if (data[k] && data[k].active !== false) {
-          slidesList.push({ id: k, ...data[k] });
+window.renderUnifiedHeroSlides = function(rawSlidesData) {
+  const wrapper = document.getElementById('heroSlidesWrapper');
+  const dotsWrapper = document.getElementById('heroDotsWrapper') || document.querySelector('.hero-dots');
+  if (!wrapper) return;
+
+  const customSlides = [];
+  if (rawSlidesData) {
+    if (Array.isArray(rawSlidesData)) {
+      rawSlidesData.forEach(s => {
+        if (s && s.active !== false) customSlides.push(s);
+      });
+    } else if (typeof rawSlidesData === 'object') {
+      for (let k in rawSlidesData) {
+        if (rawSlidesData[k] && rawSlidesData[k].active !== false) {
+          customSlides.push({ id: k, ...rawSlidesData[k] });
         }
       }
     }
+  }
 
-    if (slidesList.length > 0) {
-      slidesList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  // Sort custom slides newest first
+  customSlides.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
-      let slidesHtml = '';
-      let dotsHtml = '';
+  // Guarantee at least 3 slides so auto-slide ALWAYS runs smoothly
+  let finalSlides = [...customSlides];
+  if (finalSlides.length === 0) {
+    finalSlides = [...defaultHeroSlidesList];
+  } else if (finalSlides.length < 3) {
+    for (let defSlide of defaultHeroSlidesList) {
+      if (finalSlides.length >= 3) break;
+      finalSlides.push(defSlide);
+    }
+  }
 
-      slidesList.forEach((s, idx) => {
-        const clickAttr = s.link ? `onclick="window.open('${s.link}', '_blank')"` : '';
-        const cursorStyle = s.link ? 'cursor:pointer;' : '';
+  let slidesHtml = '';
+  let dotsHtml = '';
 
-        if (s.isFullImage && s.imageUrl) {
-          slidesHtml += `
-            <div class="hero-slide" ${clickAttr} style="${cursorStyle}min-width:100%;height:130px;position:relative;border-radius:14px;overflow:hidden;box-sizing:border-box">
-              <img src="${s.imageUrl}" alt="${s.title || 'Ad Banner'}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
-              ${s.badge ? `<div style="position:absolute;top:8px;left:8px;background:#facc15;color:#0f172a;font-size:10px;font-weight:900;padding:3px 8px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${s.badge}</div>` : ''}
-            </div>
-          `;
-        } else {
-          const graphicContent = s.imageUrl 
-            ? `<img src="${s.imageUrl}" alt="${s.title || 'Slide'}" style="width:72px;height:72px;object-fit:cover;border-radius:14px;box-shadow:0 4px 10px rgba(0,0,0,0.3);flex-shrink:0;border:1.5px solid rgba(255,255,255,0.25)">`
-            : `<div class="hero-slide-graphic">${s.graphic || '🛺'}</div>`;
+  finalSlides.forEach((s, idx) => {
+    const title = s.title || '';
+    const sub = s.subtitle || '';
+    const badge = s.badge || '';
+    const imgUrl = s.imageUrl || s.image || s.imgUrl || '';
+    const link = s.link || '';
+    const isModal = s.linkModal;
 
-          slidesHtml += `
-            <div class="hero-slide" ${clickAttr} style="${cursorStyle}">
-              <div class="hero-slide-info" style="flex:1">
-                <h3>${s.title || 'Safe Rides, Trusted Service'}</h3>
-                <p>${s.subtitle || 'On Village Roads, at City Speed'}</p>
-                <div class="hero-pill-badge">
-                  <span>⚡</span> <span>${s.badge || 'বিশেষ অফার'}</span>
-                </div>
+    let clickAttr = '';
+    let cursorStyle = '';
+    if (isModal) {
+      clickAttr = `onclick="${isModal}()"`;
+      cursorStyle = 'cursor:pointer;';
+    } else if (link) {
+      clickAttr = `onclick="window.open('${link}', '_blank')"`;
+      cursorStyle = 'cursor:pointer;';
+    }
+
+    if (imgUrl) {
+      // 🌟 FULL-WIDTH HERO BANNER (Full size, edge-to-edge, never small)
+      slidesHtml += `
+        <div class="hero-slide hero-slide-full" ${clickAttr} style="${cursorStyle}flex:0 0 100%;min-width:100%;max-width:100%;width:100%;box-sizing:border-box;">
+          <div class="hero-slide-banner-box">
+            <img src="${imgUrl}" alt="${title || 'Banner'}" class="hero-slide-banner-img" loading="eager">
+            ${badge ? `<div class="hero-slide-banner-badge"><span>⚡</span> <span>${badge}</span></div>` : ''}
+            ${(title || sub) ? `
+              <div class="hero-slide-banner-overlay">
+                ${title ? `<h3>${title}</h3>` : ''}
+                ${sub ? `<p>${sub}</p>` : ''}
               </div>
-              ${graphicContent}
-            </div>
-          `;
-        }
-
-        dotsHtml += `<div class="hero-dot ${idx === 0 ? 'active' : ''}" onclick="goToHeroSlide(${idx})"></div>`;
-      });
-
-      wrapper.innerHTML = slidesHtml;
-      if (dotsWrapper) dotsWrapper.innerHTML = dotsHtml;
-      if (typeof window.goToHeroSlide === 'function') window.goToHeroSlide(0);
-      if (typeof window.startHeroTimer === 'function') window.startHeroTimer();
-    } else {
-      wrapper.innerHTML = `
-        <div class="hero-slide">
-          <div class="hero-slide-info">
-            <h3>Safe Rides, Trusted Service</h3>
-            <p>On Village Roads, at City Speed</p>
-            <div class="hero-pill-badge">
-              <span>🛡️</span> <span>Your Safety, Our Priority</span>
-            </div>
+            ` : ''}
           </div>
-          <div class="hero-slide-graphic">🛺</div>
-        </div>
-        <div class="hero-slide">
-          <div class="hero-slide-info">
-            <h3>Super Fast Bike Taxi</h3>
-            <p>Beat Traffic & Village Roads Easily</p>
-            <div class="hero-pill-badge">
-              <span>⚡</span> <span>Quick Pickup in 2 Mins</span>
-            </div>
-          </div>
-          <div class="hero-slide-graphic">🏍️</div>
-        </div>
-        <div class="hero-slide">
-          <div class="hero-slide-info">
-            <h3>Comfortable Car & Parcel</h3>
-            <p>Safe Family Trips & Instant Delivery</p>
-            <div class="hero-pill-badge">
-              <span>📦</span> <span>Doorstep Pickup & Drop</span>
-            </div>
-          </div>
-          <div class="hero-slide-graphic">🚗</div>
         </div>
       `;
-      if (dotsWrapper) {
-        dotsWrapper.innerHTML = `
-          <div class="hero-dot active" onclick="goToHeroSlide(0)"></div>
-          <div class="hero-dot" onclick="goToHeroSlide(1)"></div>
-          <div class="hero-dot" onclick="goToHeroSlide(2)"></div>
-        `;
-      }
-      if (typeof window.goToHeroSlide === 'function') window.goToHeroSlide(0);
-      if (typeof window.startHeroTimer === 'function') window.startHeroTimer();
+    } else {
+      // 🛺 STANDARD SERVICE CARD
+      slidesHtml += `
+        <div class="hero-slide" ${clickAttr} style="${cursorStyle}flex:0 0 100%;min-width:100%;max-width:100%;width:100%;box-sizing:border-box;">
+          <div class="hero-slide-info" style="flex:1">
+            <h3>${title || 'Safe Rides, Trusted Service'}</h3>
+            <p>${sub || 'On Village Roads, at City Speed'}</p>
+            <div class="hero-pill-badge">
+              <span>⚡</span> <span>${badge || 'বিশেষ অফার'}</span>
+            </div>
+          </div>
+          <div class="hero-slide-graphic">${s.graphic || '🛺'}</div>
+        </div>
+      `;
+    }
+
+    dotsHtml += `<div class="hero-dot ${idx === 0 ? 'active' : ''}" onclick="goToHeroSlide(${idx})"></div>`;
+  });
+
+  wrapper.innerHTML = slidesHtml;
+  if (dotsWrapper) dotsWrapper.innerHTML = dotsHtml;
+
+  if (typeof window.goToHeroSlide === 'function') window.goToHeroSlide(0);
+  if (typeof window.startHeroTimer === 'function') window.startHeroTimer();
+};
+
+function listenHeroSlides() {
+  if (!db) return;
+  onValue(ref(db, 'settings/slides'), snap => {
+    const data = snap.val();
+    if (data && Object.keys(data).length > 0) {
+      window.renderUnifiedHeroSlides(data);
+    } else {
+      get(ref(db, 'slides')).then(s2 => {
+        if (s2.exists()) {
+          window.renderUnifiedHeroSlides(s2.val());
+        } else {
+          window.renderUnifiedHeroSlides(null);
+        }
+      }).catch(() => {
+        window.renderUnifiedHeroSlides(null);
+      });
     }
   });
 }
@@ -11669,10 +11778,12 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
   window.goToHeroSlide = function(slideIndex) {
     const wrapper = document.getElementById('heroSlidesWrapper');
-    const dots = document.querySelectorAll('.hero-dot');
     if (!wrapper) return;
+    const slides = wrapper.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+    const totalSlides = slides.length || dots.length || 1;
+    if (totalSlides <= 0) return;
     
-    const totalSlides = dots.length || 3;
     currentHeroSlideIndex = (slideIndex + totalSlides) % totalSlides;
     wrapper.style.transform = 'translateX(-' + (currentHeroSlideIndex * 100) + '%)';
     
@@ -11682,90 +11793,63 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   };
 
   function startHeroTimer() {
-    if (heroCarouselTimer) clearInterval(heroCarouselTimer);
+    if (heroCarouselTimer) {
+      clearInterval(heroCarouselTimer);
+      heroCarouselTimer = null;
+    }
+    const wrapper = document.getElementById('heroSlidesWrapper');
+    if (!wrapper) return;
+    const slides = wrapper.querySelectorAll('.hero-slide');
+    if (slides.length <= 1) return;
+
     heroCarouselTimer = setInterval(function() {
-      const dots = document.querySelectorAll('.hero-dot');
-      const totalSlides = dots.length || 3;
+      const w = document.getElementById('heroSlidesWrapper');
+      if (!w) return;
+      const s = w.querySelectorAll('.hero-slide');
+      if (s.length <= 1) return;
       window.goToHeroSlide(currentHeroSlideIndex + 1);
-    }, 4500);
+    }, 4000);
   }
   window.startHeroTimer = startHeroTimer;
 
   function listenDynamicHeroSlides() {
-    const wrapper = document.getElementById('heroSlidesWrapper');
-    const dotsWrapper = document.getElementById('heroDotsWrapper');
-    if (!wrapper || !dotsWrapper) return;
-
-    function renderDynamicSlides(slidesMap) {
-      if (!slidesMap || typeof slidesMap !== 'object') return;
-      const slideKeys = Object.keys(slidesMap);
-      if (slideKeys.length === 0) return;
-
-      const validSlides = slideKeys.map(k => ({ key: k, ...slidesMap[k] })).filter(s => s && s.active !== false);
-      if (validSlides.length === 0) return;
-
-      let slidesHtml = '';
-      let dotsHtml = '';
-
-      validSlides.forEach((s, idx) => {
-        const title = s.title || '';
-        const sub = s.subtitle || '';
-        const badge = s.badge || '⚡ অফার ও আপডেট';
-        const imgUrl = s.imageUrl || s.image || '';
-        const link = s.link || '';
-        const graphic = s.graphic || '🛺';
-        const isClickable = !!link;
-        const clickAttr = isClickable ? `onclick="window.open('${link}', '_blank')"` : '';
-        const cursorStyle = isClickable ? 'cursor:pointer;' : '';
-
-        const graphicHtml = imgUrl
-          ? `<img src="${imgUrl}" style="width:72px;height:72px;object-fit:cover;border-radius:14px;border:2px solid rgba(255,255,255,0.25);box-shadow:0 4px 12px rgba(0,0,0,0.3)">`
-          : `<div class="hero-slide-graphic">${graphic}</div>`;
-
-        slidesHtml += `
-          <div class="hero-slide" ${clickAttr} style="${cursorStyle}">
-            <div class="hero-slide-info">
-              <h3>${title}</h3>
-              <p>${sub}</p>
-              <div class="hero-pill-badge">
-                <span>⚡</span> <span>${badge}</span>
-              </div>
-            </div>
-            ${graphicHtml}
-          </div>
-        `;
-
-        dotsHtml += `<div class="hero-dot ${idx === 0 ? 'active' : ''}" onclick="window.goToHeroSlide(${idx})"></div>`;
-      });
-
-      wrapper.innerHTML = slidesHtml;
-      dotsWrapper.innerHTML = dotsHtml;
-      currentHeroSlideIndex = 0;
-      window.goToHeroSlide(0);
-      startHeroTimer();
-    }
-
     try {
       if (typeof db !== 'undefined' && db && db.ref) {
         db.ref('settings/slides').on('value', snap => {
           const val = snap.val();
           if (val && Object.keys(val).length > 0) {
-            renderDynamicSlides(val);
+            if (typeof window.renderUnifiedHeroSlides === 'function') {
+              window.renderUnifiedHeroSlides(val);
+            }
           } else {
             db.ref('slides').once('value').then(s2 => {
-              if (s2.exists()) renderDynamicSlides(s2.val());
-            }).catch(()=>{});
+              if (s2.exists() && typeof window.renderUnifiedHeroSlides === 'function') {
+                window.renderUnifiedHeroSlides(s2.val());
+              } else if (typeof window.renderUnifiedHeroSlides === 'function') {
+                window.renderUnifiedHeroSlides(null);
+              }
+            }).catch(() => {
+              if (typeof window.renderUnifiedHeroSlides === 'function') window.renderUnifiedHeroSlides(null);
+            });
           }
         });
       } else if (typeof firebase !== 'undefined' && firebase.database) {
         firebase.database().ref('settings/slides').on('value', snap => {
           const val = snap.val();
           if (val && Object.keys(val).length > 0) {
-            renderDynamicSlides(val);
+            if (typeof window.renderUnifiedHeroSlides === 'function') {
+              window.renderUnifiedHeroSlides(val);
+            }
           } else {
             firebase.database().ref('slides').once('value').then(s2 => {
-              if (s2.exists()) renderDynamicSlides(s2.val());
-            }).catch(()=>{});
+              if (s2.exists() && typeof window.renderUnifiedHeroSlides === 'function') {
+                window.renderUnifiedHeroSlides(s2.val());
+              } else if (typeof window.renderUnifiedHeroSlides === 'function') {
+                window.renderUnifiedHeroSlides(null);
+              }
+            }).catch(() => {
+              if (typeof window.renderUnifiedHeroSlides === 'function') window.renderUnifiedHeroSlides(null);
+            });
           }
         });
       }
@@ -11781,26 +11865,48 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     startHeroTimer();
     listenDynamicHeroSlides();
 
+    // Hover pause & resume
+    const card = document.querySelector('.hero-slider-card');
+    if (card && !card._hasHoverTimerListeners) {
+      card._hasHoverTimerListeners = true;
+      card.addEventListener('mouseenter', function() {
+        if (heroCarouselTimer) {
+          clearInterval(heroCarouselTimer);
+          heroCarouselTimer = null;
+        }
+      });
+      card.addEventListener('mouseleave', function() {
+        startHeroTimer();
+      });
+    }
+
     // Touch Swipe Gesture Support (Mobile / Tablet)
-    let touchStartX = 0;
-    let touchEndX = 0;
+    if (!wrapper._hasTouchListeners) {
+      wrapper._hasTouchListeners = true;
+      let touchStartX = 0;
+      let touchEndX = 0;
 
-    wrapper.addEventListener('touchstart', function(e) {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
+      wrapper.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        if (heroCarouselTimer) {
+          clearInterval(heroCarouselTimer);
+          heroCarouselTimer = null;
+        }
+      }, { passive: true });
 
-    wrapper.addEventListener('touchend', function(e) {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) {
-          window.goToHeroSlide(currentHeroSlideIndex + 1);
-        } else {
-          window.goToHeroSlide(currentHeroSlideIndex - 1);
+      wrapper.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 40) {
+          if (diff > 0) {
+            window.goToHeroSlide(currentHeroSlideIndex + 1);
+          } else {
+            window.goToHeroSlide(currentHeroSlideIndex - 1);
+          }
         }
         startHeroTimer();
-      }
-    }, { passive: true });
+      }, { passive: true });
+    }
   }
 
   // Quick Destination Shortcut Handler
