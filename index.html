@@ -6218,6 +6218,7 @@ window.saveRideToHistory = function(rideObj) {
     rideObj.key = rideObj.key || rideObj.id;
     rideObj.createdAt = rideObj.createdAt || rideObj.time || Date.now();
     rideObj.time = rideObj.time || rideObj.createdAt;
+    rideObj.customerName = rideObj.customerName || rideObj.name || rideObj.custName || localStorage.getItem('customerName') || localStorage.getItem('userName') || localStorage.getItem('custName') || 'Valued Rider';
 
     // Un-blacklist if re-saved
     try {
@@ -6582,8 +6583,21 @@ window.generateAndDownloadInvoicePDF = function(rideData) {
       dateTime = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
 
-    // 3. Customer Mobile
-    var rawCustPhone = rideData.customerMobile || localStorage.getItem('current_user_mobile') || localStorage.getItem('customerPhone') || '8768447312';
+    // 3. Customer Name & Mobile (Extracted cleanly & transliterated for crisp PDF printing)
+    var rawCustName = rideData.customerName || rideData.name || rideData.custName || rideData.userName || localStorage.getItem('customerName') || localStorage.getItem('userName') || localStorage.getItem('custName') || localStorage.getItem('current_user_name') || 'Valued Rider';
+    var customerName = String(rawCustName).trim();
+    if (!customerName || customerName.toLowerCase() === 'undefined' || customerName.toLowerCase() === 'null') {
+      customerName = 'Valued Rider';
+    }
+    var customerNameClean = cleanPdfAddress(customerName);
+    if (!customerNameClean || customerNameClean === 'Ride Sathi Location' || customerNameClean === 'Location Not Specified') {
+      customerNameClean = customerName.replace(/[^\x20-\x7E]/g, ' ').replace(/\s+/g, ' ').trim() || 'Valued Rider';
+    }
+    if (customerNameClean.length > 25) {
+      customerNameClean = customerNameClean.substring(0, 23) + '..';
+    }
+
+    var rawCustPhone = rideData.customerMobile || rideData.mobile || rideData.phone || localStorage.getItem('current_user_mobile') || localStorage.getItem('customerPhone') || '8768447312';
     var cleanMob = String(rawCustPhone).replace(/[^0-9]/g, '');
     if (cleanMob.length > 10 && cleanMob.startsWith('91')) cleanMob = cleanMob.slice(2);
     else if (cleanMob.length > 10 && cleanMob.startsWith('0')) cleanMob = cleanMob.slice(1);
@@ -6663,67 +6677,85 @@ window.generateAndDownloadInvoicePDF = function(rideData) {
     doc.setLineWidth(0.4);
     doc.line(15, 35, 195, 35);
 
-    // Customer & Ride Details (2-Column Card)
+    // Customer & Ride Details (2-Column Card with Customer Name & Mobile)
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(15, 39, 180, 32, 2, 2, 'F');
+    doc.roundedRect(15, 38, 180, 34, 2, 2, 'F');
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(15, 39, 180, 32, 2, 2, 'D');
+    doc.roundedRect(15, 38, 180, 34, 2, 2, 'D');
 
-    // Left Column
+    // Left Column (Invoice No, Ride ID, Date/Time, Payment Mode)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text('INVOICE NO:', 20, 46);
+    doc.text('INVOICE NO:', 20, 44.5);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(invoiceNo, 52, 46);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('RIDE ID:', 20, 54);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(rideId, 52, 54);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('DATE & TIME:', 20, 62);
-    doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(15, 23, 42);
-    doc.text(dateTime, 52, 62);
-
-    // Right Column
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('CUSTOMER MOBILE:', 110, 46);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(15, 23, 42);
-    doc.text(customerMobile, 154, 46);
+    doc.text(invoiceNo, 50, 44.5);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text('RIDE TYPE:', 110, 54);
+    doc.text('RIDE ID:', 20, 51.5);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
+    doc.setFontSize(9);
     doc.setTextColor(15, 23, 42);
-    doc.text(vehicleType + (driverName ? ' (' + driverName + ')' : ''), 154, 54);
+    doc.text(rideId, 50, 51.5);
 
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text('TOTAL DISTANCE:', 110, 62);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
+    doc.text('DATE & TIME:', 20, 58.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
     doc.setTextColor(15, 23, 42);
-    doc.text(distance, 154, 62);
+    doc.text(dateTime, 50, 58.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('PAYMENT MODE:', 20, 65.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(paymentMethod, 50, 65.5);
+
+    // Right Column (Customer Name, Customer Mobile, Ride Type, Total Distance)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('CUSTOMER NAME:', 108, 44.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(customerNameClean, 146, 44.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('CUSTOMER MOBILE:', 108, 51.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(customerMobile, 146, 51.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('RIDE TYPE:', 108, 58.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(vehicleType + (driverName ? ' (' + driverName + ')' : ''), 146, 58.5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('TOTAL DISTANCE:', 108, 65.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(15, 23, 42);
+    doc.text(distance, 146, 65.5);
 
     // Journey Route Box (Generous 46mm Height, Clean Route Line)
     doc.setFillColor(255, 255, 255);
@@ -7059,6 +7091,7 @@ window.openCustomerHistoryModal = function() {
                 distanceCharge: Math.max(0, fAmt - baseAmt),
                 paymentMethod: (b.paymentMethod || b.payMode || 'Cash').toUpperCase().includes('ONLINE') ? 'Online' : 'Cash',
                 vehicleType: veh.includes('CAR') ? 'Car' : (veh.includes('TOTO') ? 'Auto' : (veh.includes('PARCEL') ? 'Parcel' : 'Bike')),
+                customerName: b.customerName || b.name || b.custName || b.userName || localStorage.getItem('customerName') || 'Valued Rider',
                 customerMobile: phone,
                 status: b.status || 'COMPLETED',
                 driverName: b.driverName || '',
@@ -9629,6 +9662,7 @@ function listenForDriver(key, otp) {
           baseFare: baseFareAmt,
           distanceCharge: distChargeAmt,
           vehicleType: vehTitle,
+          customerName: b.customerName || b.name || b.custName || b.userName || localStorage.getItem('customerName') || localStorage.getItem('userName') || localStorage.getItem('custName') || 'Valued Rider',
           customerMobile: activeCustMob
         };
 
