@@ -3586,6 +3586,8 @@ async function acceptRide(key) {
       driverPhone: String(DRIVER_PHONE),
       driverName: DRIVER_NAME,
       driverVehicle: DRIVER_VEHICLE,
+      driverRating: localStorage.getItem('driverRating') || '4.9',
+      driverVehicleNumber: localStorage.getItem('driverVehicleNumber') || d.driverVehicleNumber || '',
       customerName: d.name || d.customerName || 'Customer',
       customerMobile: d.mobile || d.customerMobile || '',
       from: d.from || d.pickup || d.pickupLocation || d.pickup_location || '',
@@ -3617,6 +3619,8 @@ async function acceptRide(key) {
             driverPhone: String(DRIVER_PHONE),
             driverName: DRIVER_NAME,
             driverVehicle: DRIVER_VEHICLE,
+            driverRating: localStorage.getItem('driverRating') || '4.9',
+            driverVehicleNumber: localStorage.getItem('driverVehicleNumber') || d.driverVehicleNumber || '',
             customerName: d.name || d.customerName || 'Customer',
             customerMobile: d.mobile || d.customerMobile || '',
             status: 'ACCEPTED',
@@ -3635,6 +3639,10 @@ async function acceptRide(key) {
         currentRide.driverPhone = String(DRIVER_PHONE);
         currentRide.driverName = DRIVER_NAME;
         currentRide.driverVehicle = DRIVER_VEHICLE;
+        currentRide.driverRating = localStorage.getItem('driverRating') || currentRide.driverRating || '4.9';
+        if (localStorage.getItem('driverVehicleNumber')) {
+          currentRide.driverVehicleNumber = localStorage.getItem('driverVehicleNumber');
+        }
         currentRide.acceptedAt = Date.now();
         currentRide.fare = full;
         currentRide.driverEarning = earn;
@@ -3664,6 +3672,8 @@ async function acceptRide(key) {
         driverPhone: String(DRIVER_PHONE),
         driverName: DRIVER_NAME,
         driverVehicle: DRIVER_VEHICLE,
+        driverRating: localStorage.getItem('driverRating') || '4.9',
+        driverVehicleNumber: localStorage.getItem('driverVehicleNumber') || '',
         acceptedAt: Date.now(),
         otp: d.otp || ''
       });
@@ -4902,6 +4912,13 @@ function listenDriverProfile() {
       DRIVER_VEHICLE = normalizeVehicleCategory(veh);
       localStorage.setItem('driverVehicle', DRIVER_VEHICLE);
       updated = true;
+    }
+    let rtg = d.rating || d.avgRating || d.driverRating || d.stars;
+    if (rtg) {
+      localStorage.setItem('driverRating', String(rtg));
+    }
+    if (d.vehicleNumber || d.vehiclePlate) {
+      localStorage.setItem('driverVehicleNumber', String(d.vehicleNumber || d.vehiclePlate));
     }
 
     if (updated || d.name) {
