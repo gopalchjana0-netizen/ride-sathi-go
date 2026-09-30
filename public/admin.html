@@ -1602,6 +1602,7 @@ function doPost(e) {
             <div>
               <div style="display:flex;align-items:center;gap:8px">
                 <b style="font-size:15.5px;color:#0f172a" id="adminThreadCustName">Customer Name</b>
+                <span id="adminThreadTokenBadge" class="badge" style="background:#e0e7ff;color:#3730a3;font-size:11px;font-weight:bold">🎫 #RSG-LIVE</span>
                 <span id="adminThreadStatusBadge" class="badge" style="background:#dcfce7;color:#15803d;font-size:11px">OPEN</span>
               </div>
               <div style="font-size:12px;color:#64748b;margin-top:2px" id="adminThreadCustPhone">📞 +91 0000000000</div>
@@ -1620,6 +1621,11 @@ function doPost(e) {
             <!-- AI Auto Reply Toggle -->
             <button type="button" id="adminThreadAiToggleBtn" onclick="toggleCurrentChatAI()" class="btn purple" style="padding:7px 10px;font-size:12px;display:flex;align-items:center;gap:4px">
               <span>🤖 AI:</span> <b id="adminThreadAiStatusTxt">ON</b>
+            </button>
+
+            <!-- RESOLVE TICKET BUTTON (PAYTM STYLE) -->
+            <button type="button" onclick="adminMarkTicketResolved()" class="btn" style="padding:7px 12px;font-size:12px;background:#0284c7;color:#fff;font-weight:bold" title="টোকেন স্ট্যাটাস সমাধান (Resolved) হিসেবে চিহ্নিত করুন">
+              ✅ টোকেন সমাধান
             </button>
 
             <!-- INSTANT RESOLVE & DELETE BUTTON (USER REQUESTED) -->
@@ -7176,6 +7182,48 @@ function autoCleanOldSupportChats() {
   });
 }
 
+// 0. MARK TICKET AS RESOLVED (PAYTM STYLE)
+function adminMarkTicketResolved() {
+  if (!window.adminActiveChatId) return;
+  var d = getAdminDb();
+  if (!d) return;
+
+  var chatId = window.adminActiveChatId;
+  var sess = (window.adminChatSessions && window.adminChatSessions[chatId]) || {};
+  var meta = sess.meta || {};
+  var token = meta.token || ('#RSG-' + (chatId.length > 5 ? chatId.slice(-5) : chatId));
+
+  if (meta.status === 'RESOLVED') {
+    alert('ℹ️ এই টোকেনটি (' + token + ') ইতিমধ্যে সমাধান (RESOLVED) করা হয়েছে!');
+    return;
+  }
+
+  if (!confirm('✅ আপনি কি টোকেনটি (' + token + ') সমাধান (RESOLVED) হিসেবে চিহ্নিত করতে চান?\n\nকাস্টমারের চ্যাটে তৎক্ষণাৎ সমাধান বার্তা পৌঁছে যাবে।')) return;
+
+  d.ref('support_chats/' + chatId + '/meta').update({
+    status: 'RESOLVED',
+    resolvedAt: firebase.database.ServerValue.TIMESTAMP
+  }).then(function() {
+    d.ref('support_chats/' + chatId + '/messages').push({
+      sender: 'ai',
+      senderName: 'Ride Sathi Support',
+      text: '✅ **সাপোর্ট টিকিট সমাধান সম্পন্ন (' + token + ')**\n\nসম্মানিত কাস্টমার, আপনার সমস্যাটি আমাদের অ্যাডমিন টিম সফলভাবে সমাধান (Resolved) করেছেন। আপনার সহযোগিতা ও ধৈর্যের জন্য ধন্যবাদ! নতুন কোনো সহায়তা প্রয়োজন হলে যেকোনো সময় পুনরায় মেসেজ পাঠাতে পারেন।',
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    var statusBadge = document.getElementById('adminThreadStatusBadge');
+    if (statusBadge) {
+      statusBadge.innerText = 'RESOLVED';
+      statusBadge.style.background = '#f1f5f9';
+      statusBadge.style.color = '#64748b';
+    }
+
+    alert('✅ টোকেন ' + token + ' সফলভাবে সমাধান (RESOLVED) করা হয়েছে!');
+  }).catch(function(err) {
+    alert('❌ আপডেট ব্যর্থ: ' + err.message);
+  });
+}
+
 // 1. INSTANT RESOLVE & DELETE (USER REQUESTED REQUIREMENT)
 function adminResolveAndInstantDelete() {
   if (!window.adminActiveChatId) return;
@@ -7396,8 +7444,10 @@ function renderAdminChatSessions() {
     html += '    </div>';
     html += '  </div>';
 
-    // Middle Row: Phone & Status
+    // Middle Row: Token, Phone & Status
+    var token = meta.token || ('#RSG-' + (chatId.length > 5 ? chatId.slice(-5) : chatId));
     html += '  <div style="font-size:12px;color:#64748b;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+    html += '    <span style="background:#e0e7ff;color:#3730a3;font-weight:700;padding:1px 6px;border-radius:6px;font-size:11px">🎫 ' + token + '</span>';
     html += '    <span>📞 ' + phone + '</span>';
     html += '    <span>•</span>';
     html += '    <span>' + (status === 'RESOLVED' ? '<span style="color:#64748b">Closed</span>' : '<span style="color:#16a34a;font-weight:bold">🟢 Open</span>') + '</span>';
@@ -7439,6 +7489,8 @@ function selectAdminChatThread(chatId) {
   // Fill Header Info
   var nameEl = document.getElementById('adminThreadCustName');
   if (nameEl) nameEl.innerText = name;
+  var tokenEl = document.getElementById('adminThreadTokenBadge');
+  if (tokenEl) tokenEl.innerText = '🎫 ' + (meta.token || ('#RSG-' + (chatId.length > 5 ? chatId.slice(-5) : chatId)));
   var phoneEl = document.getElementById('adminThreadCustPhone');
   if (phoneEl) phoneEl.innerText = '📞 ' + phone;
 

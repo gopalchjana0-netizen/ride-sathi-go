@@ -10712,23 +10712,61 @@ window.connectLiveChatFirebase = function(chatId) {
     window.appendChatMessageUI(msg.sender, msg.text, msg.timestamp, msg.senderName, msg.fileUrl, msg.fileName, msg.fileType);
   });
 
-  // Check if session is new, send greeting
+  // Real-time Meta & Token / Ticket Status Listener (Paytm Style)
+  chatRef.child('meta').off();
+  chatRef.child('meta').on('value', function(snapshot) {
+    var meta = snapshot.val() || {};
+    var token = meta.token;
+    if (!token) {
+      token = '#RSG-' + (chatId.length > 5 ? chatId.slice(-5) : Math.floor(10000 + Math.random() * 90000));
+      chatRef.child('meta/token').set(token).catch(function(){});
+    }
+    window.currentChatToken = token;
+    window.currentChatStatus = meta.status || 'OPEN';
+
+    // Update Token badge in header
+    var tokenBadge = document.getElementById('customerChatTokenBadge');
+    if (tokenBadge) tokenBadge.innerText = token;
+
+    // Update Status badge in header
+    var statusBadge = document.getElementById('customerChatStatusBadge');
+    if (statusBadge) {
+      if (meta.status === 'RESOLVED') {
+        statusBadge.innerText = '✅ সমাধান সম্পন্ন (RESOLVED)';
+        statusBadge.style.background = '#f1f5f9';
+        statusBadge.style.color = '#475569';
+      } else {
+        statusBadge.innerText = '🟢 সক্রিয় (OPEN)';
+        statusBadge.style.background = '#dcfce7';
+        statusBadge.style.color = '#15803d';
+      }
+    }
+  });
+
+  // Check if session is new, send greeting with official Support Token
   chatRef.child('messages').once('value', function(snap) {
     if (!snap.exists() || !snap.hasChildren()) {
-      var greeting = "নমস্কার! 🙏 আমি Ride Sathi এআই সাপোর্ট সহকারী। আপনার রাইড বুকিং, ভাড়া, ওটিপি, পার্সেল ডেলিভারি বা যেকোনো সহায়তায় আমি প্রস্তুত। আপনি কি জানতে চান?";
+      var genToken = '#RSG-' + (chatId.length > 5 ? chatId.slice(-5) : Math.floor(10000 + Math.random() * 90000));
+      window.currentChatToken = genToken;
+      window.currentChatStatus = 'OPEN';
+
+      var greeting = "নমস্কার! 🙏 আমি Ride Sathi এআই সাপোর্ট সহকারী। আপনার জন্য একটি সাপোর্ট টিকিট/টোকেন **" + genToken + "** জেনারেট করা হয়েছে।\n\nআপনার রাইড বুকিং, ভাড়া, ওটিপি, পার্সেল ডেলিভারি বা যেকোনো সমস্যা নিচে লিখুন, আমি দ্রুত সমাধান করে দিচ্ছি।";
       if (window.currentLang === 'hi') {
-        greeting = "नमस्ते! 🙏 मैं Ride Sathi एआई सपोर्ट सहायक हूँ। आपकी राइड बुकिंग, किराया, ओटीपी, पार्सल डिलीवरी या किसी भी समस्या में सहायता के लिए तैयार हूँ। आप क्या जानना चाहते हैं?";
+        greeting = "नमस्ते! 🙏 मैं Ride Sathi एआई सपोर्ट सहायक हूँ। आपके लिए एक सपोर्ट टिकट/टोकन **" + genToken + "** जनरेट किया गया है।\n\nआपकी राइड बुकिंग, किराया, ओटीपी, पार्सल डिलीवरी या किसी भी समस्या के समाधान के लिए मैं तैयार हूँ!";
       } else if (window.currentLang === 'en') {
-        greeting = "Hello! 🙏 I am Ride Sathi AI Support Assistant. How can I help you with ride bookings, fares, OTP, parcel delivery, or safety today?";
+        greeting = "Hello! 🙏 I am Ride Sathi AI Support Assistant. A support ticket/token **" + genToken + "** has been generated for you.\n\nPlease let me know how I can help you with ride bookings, fares, OTP, parcel delivery, or safety today!";
       }
+
       chatRef.child('messages').push({
         sender: 'ai',
         senderName: 'Ride Sathi AI',
         text: greeting,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       });
+
       chatRef.child('meta').set({
         phone: chatId,
+        token: genToken,
         name: localStorage.getItem('customerName') || 'Guest Rider',
         status: 'OPEN',
         aiActive: true,
@@ -10744,6 +10782,30 @@ window.connectLiveChatFirebase = function(chatId) {
 
   // Mark customer unread as 0
   chatRef.child('meta/unreadByCustomer').set(0).catch(function(){});
+};
+
+// 1-Click Start New Ticket if previous was resolved
+window.startNewChatTicket = function() {
+  var chatId = window.liveChatSessionId || window.getChatCustomerId();
+  var rtdb = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.rtdb || null);
+  if (!rtdb) return;
+  var chatRef = rtdb.ref('support_chats/' + chatId);
+  var newToken = '#RSG-' + Math.floor(100000 + Math.random() * 900000);
+  window.currentChatToken = newToken;
+  window.currentChatStatus = 'OPEN';
+
+  chatRef.child('meta').update({
+    token: newToken,
+    status: 'OPEN',
+    reopenedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  chatRef.child('messages').push({
+    sender: 'ai',
+    senderName: 'Ride Sathi AI',
+    text: '🎫 **নতুন সাপোর্ট টিকিট টোকেন চালু হয়েছে (' + newToken + ')**\n\nআপনার নতুন সমস্যা বা প্রশ্নটি লিখুন, আমাদের এআই ও অ্যাডমিন টিম দ্রুত সমাধান করবেন!',
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
 };
 
 window.appendChatMessageUI = function(sender, text, timestamp, senderName, fileUrl, fileName, fileType) {
@@ -10971,8 +11033,8 @@ window.sendCustomerChatMessage = function() {
     timestamp: firebase.database.ServerValue.TIMESTAMP
   });
 
-  // Update metadata
-  chatRef.child('meta').update({
+  // Update metadata with auto-reopen support if previous ticket was resolved
+  var updatePayload = {
     phone: chatId,
     name: custName,
     status: 'OPEN',
@@ -10981,7 +11043,14 @@ window.sendCustomerChatMessage = function() {
     lastTimestamp: firebase.database.ServerValue.TIMESTAMP,
     unreadByAdmin: firebase.database.ServerValue.increment(1),
     language: window.currentLang || 'bn'
-  });
+  };
+  if (window.currentChatStatus === 'RESOLVED') {
+    var newToken = '#RSG-' + Math.floor(100000 + Math.random() * 900000);
+    window.currentChatToken = newToken;
+    window.currentChatStatus = 'OPEN';
+    updatePayload.token = newToken;
+  }
+  chatRef.child('meta').update(updatePayload);
 
   // Check if AI is active for this session
   chatRef.child('meta/aiActive').once('value', function(snap) {
@@ -11135,6 +11204,19 @@ window.generateAiCustomerResponse = function(query, lang) {
     if (lang === 'en') return 'en';
     return 'bn';
   })();
+
+  // 0. SUPPORT TICKET / TOKEN INQUIRY (Paytm Style)
+  if (q.includes('token') || q.includes('ticket') || q.includes('টোকেন') || q.includes('টিকিট') || q.includes('টোকেন নম্বর') || q.includes('টিকিট নম্বর') || q.includes('কমপ্লেন নম্বর') || q.includes('टोकन') || q.includes('टिकट') || (q.includes('status') && (q.includes('my') || q.includes('complaint') || q.includes('issue') || q.includes('সমস্যা')))) {
+    var curToken = window.currentChatToken || ('#RSG-' + (String(window.liveChatSessionId || '').slice(-5) || '84920'));
+    var curStatus = window.currentChatStatus === 'RESOLVED' ? '✅ সমাধান সম্পন্ন (RESOLVED)' : '🟢 সক্রিয় ও প্রক্রিয়াধীন (OPEN)';
+    if (userLang === 'hi') {
+      return "🎫 **Ride Sathi GO सपोर्ट टिकट विवरण:**\n\n• **टोकन आईडी (Token ID):** **" + curToken + "**\n• **वर्तमान स्थिति (Status):** " + curStatus + "\n• **समस्या निवारण गारंटी:** आपका यह मुद्दा हमारे सपोर्ट सिस्टम में आधिकारिक रूप से दर्ज है। एআই और एडमिन टीम सक्रिय रूप से इसकी निगरानी कर रहे हैं। समस्या का समाधान होते ही आपको सूचित किया जाएगा!";
+    } else if (userLang === 'en') {
+      return "🎫 **Ride Sathi GO Support Ticket Details:**\n\n• **Token ID:** **" + curToken + "**\n• **Current Status:** " + curStatus + "\n• **Resolution Guarantee:** Your issue is officially registered under this token. Our AI assistant and human admin are actively monitoring it until full resolution!";
+    } else {
+      return "🎫 **Ride Sathi GO সাপোর্ট টিকিট বিবরণ:**\n\n• **টোকেন আইডি (Token ID):** **" + curToken + "**\n• **বর্তমান স্ট্যাটাস (Status):** " + curStatus + "\n• **সমাধানের নিশ্চয়তা:** আপনার সমস্যাটি এই টোকেনের অধীনে সফলভাবে নথিভুক্ত রয়েছে। আমাদের এআই ও অ্যাডমিন টিম এটি সক্রিয়ভাবে পর্যবেক্ষণ করছেন। সমস্যা সমাধান হওয়ামাত্র অ্যাডমিন এটি ক্লোজ করবেন এবং আপনি নোটিফিকেশন পাবেন!";
+    }
+  }
 
   // 2. OVERCHARGING / EXTRA MONEY DEMAND
   if (q.includes('বেশি টাকা') || q.includes('বেশি চাইছে') || q.includes('বেশি নিচ্ছে') || q.includes('বাড়তি টাকা') || q.includes('অতিরিক্ত টাকা') || q.includes('জাদা প্যায়সা') || q.includes('ज्यादा पैसे') || q.includes('अधिक पैसे') || q.includes('extra money') || q.includes('overcharge') || q.includes('extra cash') || q.includes('extra taka') || q.includes('beshi taka') || q.includes('besi taka') || q.includes('अतिरिक्त') || (q.includes('extra') && (q.includes('mange') || q.includes('mang'))) || q.includes('extra paise') || q.includes('extra paisa') || q.includes('jyada paise') || q.includes('zyada paise') || q.includes('jada paise') || q.includes('extra charges') || q.includes('extra charge') || (q.includes('extra') && (q.includes('paise') || q.includes('paisa') || q.includes('taka') || q.includes('charge')))) {
@@ -11945,7 +12027,14 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         </div>
         <div>
           <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" data-i18n="liveChatModalTitle">✨ Ride Sathi 24x7 লাইভ সাপোর্ট</div>
-          <div style="font-size:11px;color:#e0e7ff;font-weight:500" data-i18n="liveChatModalSub">বাংলা, হিন্দি বা ইংরেজিতে লিখুন অথবা মুখে বলুন</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap">
+            <span style="font-size:10.5px;background:rgba(255,255,255,0.22);padding:1px 7px;border-radius:10px;font-weight:700;display:inline-flex;align-items:center;gap:3px">
+              🎫 <span id="customerChatTokenBadge">#RSG-LIVE</span>
+            </span>
+            <span id="customerChatStatusBadge" style="font-size:10.5px;background:#dcfce7;color:#15803d;padding:1px 7px;border-radius:10px;font-weight:800">
+              🟢 সক্রিয় (OPEN)
+            </span>
+          </div>
         </div>
       </div>
       <button type="button" onclick="closeLiveChatModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:bold" aria-label="Close">✕</button>
@@ -11953,6 +12042,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
     <!-- Quick Help Topics Chips Bar -->
     <div style="background:#f8fafc;padding:8px 12px;border-bottom:1px solid #e2e8f0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+      <div class="chat-chip" onclick="sendQuickChatMessage('আমার সাপোর্ট টোকেন নম্বর কত?')"><span style="color:#7c3aed;font-weight:800">🎫 টোকেন স্ট্যাটাস</span></div>
       <div class="chat-chip" onclick="sendQuickChatKey('chatTopicFares')"><span data-i18n="chatTopicFares">💰 ভাড়া কত?</span></div>
       <div class="chat-chip" onclick="sendQuickChatKey('chatTopicBooking')"><span data-i18n="chatTopicBooking">🚕 বুকিং কীভাবে?</span></div>
       <div class="chat-chip" onclick="sendQuickChatKey('chatTopicOtp')"><span data-i18n="chatTopicOtp">🔒 সেফটি ও OTP</span></div>
