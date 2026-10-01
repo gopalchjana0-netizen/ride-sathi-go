@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-01T00:20:57.618Z",
+  "updated_at": "2026-10-01T06:19:44.221Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,28 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Tata Cliq",
+      "d": "Limited Time: Enjoy 11% Off Luxury Items Now!",
+      "c": "LUXNORETURN",
+      "cat": "Shopping",
+      "l": "https://luxury.tatacliq.com/?cid=af:homepage:admitad:301233_20261001cl18ob1djxu9:b268d1238a686065540d4ecd86ba7773",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxury.tatacliq.com%2F%3Fcid%3Daf%3Ahomepage%3Aadmitad%3A301233_20261001cl18ob1djxu9%3Ab268d1238a686065540d4ecd86ba7773&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2126/medium/tata.png?1495706175",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Tata Cliq",
+      "d": "Elevate Your Wardrobe: 10% Off on Select Fashion Items!",
+      "c": "TCADD10",
+      "cat": "Shopping",
+      "l": "https://luxury.tatacliq.com/?cid=af:homepage:admitad:301233_20261001cl18ob1djxu9:b268d1238a686065540d4ecd86ba7773",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxury.tatacliq.com%2F%3Fcid%3Daf%3Ahomepage%3Aadmitad%3A301233_20261001cl18ob1djxu9%3Ab268d1238a686065540d4ecd86ba7773&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2126/medium/tata.png?1495706175",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Tata Cliq",
@@ -1228,17 +1250,6 @@
       "rank": 20
     },
     {
-      "b": "Shyaway",
-      "d": "Snag a 10% Off Your Purchase Over Rs. 999!",
-      "c": "HOTDEAL10",
-      "cat": "Shopping",
-      "l": "https://www.shyaway.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.shyaway.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/2533/medium/Shyaway.png?1488194061",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
       "b": "Ajio Gram",
       "d": "Get 5% Off on Accessories + Rs. 500 Savings!",
       "c": "ACCESSOREASE5",
@@ -1389,17 +1400,6 @@
       "l": "https://fitspire.online/products/fit-super-bold-protein-badam-kesar-pista-4-lbs",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Ffitspire.online%2Fproducts%2Ffit-super-bold-protein-badam-kesar-pista-4-lbs&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4086/medium/New_Project_%2841%29_%281%29.png?1622528796",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Shyaway",
-      "d": "Save BIG at Shyaway: Rs. 100 Off on Your Favorite Women's Innerwear!",
-      "c": "SAVE100",
-      "cat": "Shopping",
-      "l": "https://www.shyaway.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.shyaway.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/2533/medium/Shyaway.png?1488194061",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2757,17 +2757,6 @@
       "rank": 20
     },
     {
-      "b": "Shyaway",
-      "d": "Enjoy Rs. 100 Off on Purchases Over Rs. 999 + Complimentary Shipping!",
-      "c": "WOWSHY100",
-      "cat": "Shopping",
-      "l": "http://shyaway.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fshyaway.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/2533/medium/Shyaway.png?1488194061",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
       "b": "Firstcry",
       "d": "Hot Sale: Save Up To 50% + Get Extra 10% OFF on Avent Range!",
       "c": "AVEN10",
@@ -2951,6 +2940,17 @@
       "l": "https://www.gonoise.com",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.gonoise.com&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/2863/medium/NoiseLogo-01_%281%29.png?1713530613",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Bewakoof",
+      "d": "Enjoy Rs.100 Off Your Shopping—Limited Time Only!",
+      "c": "SPECIAL100",
+      "cat": "Shopping",
+      "l": "http://www.bewakoof.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.bewakoof.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/1626/medium/New_Project_%2837%29_%281%29.png?1602509781",
       "badge": "Coupon",
       "rank": 20
     }
