@@ -1036,7 +1036,7 @@ function doPost(e) {
           <tr style="background:#fef3c7;color:#92400e">
             <th style="padding:10px">#</th>
             <th style="padding:10px">Date &amp; Time</th>
-            <th style="padding:10px">Customer Phone</th>
+            <th style="padding:10px">Customer Name &amp; Phone (কাস্টমারের নাম ও মোবাইল)</th>
             <th style="padding:10px">Driver Info</th>
             <th style="padding:10px">Rating</th>
             <th style="padding:10px">Feedback / Comment</th>
@@ -4651,7 +4651,11 @@ function renderTrips(){
     let cNum=(d.mobile||d.customerMobile||'').toString().replace(/[^0-9]/g,'').slice(-10);
     let drvKey = normalizeDriverId(d.driverPhone||d.driverId);
     let drvName = allDriversData[drvKey]?.name || d.driverName || drvKey || '';
-    box.innerHTML+=`<div class="card" style="border-left:4px solid #16a34a"><b>👤 ${d.name||d.customerName||'Customer'} (${cNum})</b> <span style="float:right;color:#16a34a;font-weight:800">₹${fare}</span> | ${d.payType||d.paymentMode||'CASH'}<br><span class="small">📍 ${d.from||''} → ${d.to||''} | 🚕 ${drvName} | ${d.status||''}</span><br><span class="small">🕐 ${new Date(getTimestamp(d.completedAt||d.time)).toLocaleString()}</span><br><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="flex:1;padding:12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:bold" onclick="generateBillPDF('${k}')">📄 Bill PDF</button><button class="btn" style="flex:1;padding:12px;background:#25D366;color:#fff;border-radius:8px;font-weight:bold" onclick="sendWhatsAppBillPDF('${k}')">💬 WhatsApp Bill</button></div></div>`;
+    let isParcel = (d.vehicle === 'PARCEL' || d.vehicleType === 'parcel' || d.serviceType === 'PARCEL' || String(d.vehicle||'').toLowerCase() === 'parcel');
+    let parcelBadge = isParcel ? `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:900;border:1px solid #fde68a">📦 PARCEL</span> ` : '';
+    let receiverInfo = (isParcel && d.parcelReceiver) ? `<br><span class="small" style="color:#b45309;font-weight:bold">📦 পার্সেল প্রাপক: ${d.parcelReceiver}</span>` : '';
+    let commDue = Number(d.adminCommission || Math.round(fare * 0.15));
+    box.innerHTML+=`<div class="card" style="border-left:5px solid ${isParcel ? '#f59e0b' : '#16a34a'}"><b>${parcelBadge}👤 ${d.name||d.customerName||'Customer'} (${cNum})</b> <span style="float:right;color:#16a34a;font-weight:800">₹${fare}</span> | ${d.payType||d.paymentMode||'CASH'}<br><span class="small">📍 ${d.from||''} → ${d.to||''} | 🚕 ${drvName || 'ড্রাইভার খোঁজা হচ্ছে'} | <b>${d.status||''}</b></span>${receiverInfo}<br><span class="small">💰 অ্যাডমিন কমিশন ডিউ: <b>₹${commDue}</b> | 🕐 ${new Date(getTimestamp(d.completedAt||d.time)).toLocaleString()}</span><br><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="flex:1;padding:12px;background:#0f172a;color:#fff;border-radius:8px;font-weight:bold" onclick="generateBillPDF('${k}')">📄 Bill PDF</button><button class="btn" style="flex:1;padding:12px;background:#25D366;color:#fff;border-radius:8px;font-weight:bold" onclick="sendWhatsAppBillPDF('${k}')">💬 WhatsApp Bill</button></div></div>`;
   }
   document.getElementById('totalRides').innerText=total;
   document.getElementById('totalCollection').innerText='₹'+collect;
@@ -4670,17 +4674,93 @@ db.ref('live_trips').on('value',s=>{
   refreshTripLive(false);
 });
 
+
+function extractCustomerNameFromReview(r) {
+  if (!r) return 'Customer';
+  if (r.customerName && r.customerName !== 'Customer') return r.customerName;
+  if (r.name && r.name !== 'Customer') return r.name;
+  if (r.customer && r.customer !== 'Customer') return r.customer;
+  const rideKey = r.bookingId || r.rideId || r._id;
+  if (rideKey && typeof allRidesCache === 'object' && allRidesCache[rideKey]) {
+    const rc = allRidesCache[rideKey];
+    if (rc.customerName && rc.customerName !== 'Customer') return rc.customerName;
+    if (rc.name && rc.name !== 'Customer') return rc.name;
+  }
+  return r.customerName || r.name || 'সম্মানিত যাত্রী (Customer)';
+}
+
+function extractReviewTime(r) {
+  if (!r) return 'N/A';
+  const t = getTimestamp(r.time || r.timestamp || r.date || r.createdAt);
+  return t ? new Date(t).toLocaleString('en-IN') : 'N/A';
+}
+
 let allRatingsCache={};
 db.ref('ratings').on('value',snap=>{
   let data=snap.val()||{};
   allRatingsCache=data;
   let box=document.getElementById('ratingsDiv');
+  if(!box) return;
   let arr=Object.entries(data).reverse();
-  if(!arr.length){box.innerHTML='<div class="card">No reviews</div>';return;}
-  box.innerHTML='';
-  for(let [k,r] of arr){
-    box.innerHTML+=`<div class="card">${'⭐'.repeat(Number(r.stars||5))} <b>${r.stars} Star</b><br><span class="small">${r.comment||''}</span></div>`;
+
+  let headerHtml = `
+    <div class="card" style="border-left:5px solid #f59e0b;background:linear-gradient(135deg,#fffbeb,#fef3c7);margin-bottom:14px;padding:16px;border-radius:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <h3 style="margin:0;color:#92400e;display:flex;align-items:center;gap:8px">
+            ⭐ Live Customer Reviews & Ratings (যাত্রী রিভিউ ও রেটিং)
+          </h3>
+          <p class="small" style="color:#b45309;margin:4px 0 0">
+            যাত্রীদের নাম, মোবাইল নম্বর, রেটিং, মন্তব্য এবং সঠিক সময়-তারিখ লাইভ আপডেট হচ্ছে।
+          </p>
+        </div>
+        <span class="badge" style="background:#f59e0b;color:#fff;font-size:13px;padding:6px 12px;border-radius:12px;font-weight:900">
+          ${arr.length} Reviews
+        </span>
+      </div>
+    </div>
+  `;
+
+  if(!arr.length){
+    box.innerHTML=headerHtml + '<div class="card" style="text-align:center;padding:24px;color:#64748b">কোনো রিভিউ এখনো আসেনি / No customer reviews yet.</div>';
+    return;
   }
+
+  let cardsHtml = arr.map(([k, r]) => {
+    let custName = extractCustomerNameFromReview(r);
+    let custPhone = r.customerPhone || r.phone || r.customerMobile || (typeof allRidesCache === 'object' && allRidesCache[r.rideId || k] ? allRidesCache[r.rideId || k].mobile : '') || '';
+    let timeStr = extractReviewTime(r);
+    let stars = Number(r.stars || r.rating || 5);
+    let starsHtml = '⭐'.repeat(Math.max(1, Math.min(5, stars)));
+    let comment = r.comment || r.feedback || 'চমৎকার সেবা!';
+    let drvName = r.driverName || (typeof allRidesCache === 'object' && allRidesCache[r.rideId || k] ? allRidesCache[r.rideId || k].driverName : '') || '';
+    let drvVeh = r.driverVehicle || (typeof allRidesCache === 'object' && allRidesCache[r.rideId || k] ? allRidesCache[r.rideId || k].driverVehicle : '') || '';
+
+    return `
+      <div class="card" style="border-left:5px solid #f59e0b;background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #fed7aa">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:15.5px;font-weight:900;color:#0f172a;display:flex;align-items:center;gap:8px">
+              👤 <span>${custName}</span>
+              ${custPhone ? `<span style="font-size:12px;font-weight:700;color:#0369a1;background:#e0f2fe;padding:2px 8px;border-radius:10px">📞 ${custPhone}</span>` : ''}
+            </div>
+            <div style="font-size:12px;color:#64748b;margin-top:4px;font-weight:600">
+              📅 ${timeStr} ${r.rideId || k ? `• <span style="color:#0284c7;font-weight:700">🎫 Ride: ${r.rideId || k}</span>` : ''}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="color:#d97706;font-size:15px;font-weight:900;letter-spacing:1px">${starsHtml} <span style="font-size:13px;color:#b45309">(${stars}/5)</span></div>
+            ${drvName ? `<div style="font-size:11.5px;color:#166534;font-weight:700;margin-top:3px">🚕 চালক: ${drvName} ${drvVeh ? `(${drvVeh})` : ''}</div>` : ''}
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:10px 12px;background:#fefce8;border-radius:10px;border:1px solid #fef08a;font-size:13.5px;color:#334155;line-height:1.5">
+          💬 <b>যাত্রীর মন্তব্য:</b> "${comment}"
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  box.innerHTML = headerHtml + cardsHtml;
 });
 
 let alertedSosKeys = new Set(JSON.parse(sessionStorage.getItem('RS_ALERTED_SOS') || '[]'));
@@ -5500,11 +5580,18 @@ function renderFeedbackTable(feedbacks) {
       adminFbList.innerHTML = '<p class="small" style="color:#64748b">কোনো রিভিউ এখনো আসেনি।</p>';
     } else {
       adminFbList.innerHTML = feedbacks.slice(0, 30).map(f => {
-        const phone = f.customerPhone || f.phone || f.customerMobile || 'Customer';
-        const rating = Number(f.rating || 5);
+        const custName = (typeof extractCustomerNameFromReview === 'function') ? extractCustomerNameFromReview(f) : (f.customerName || f.name || 'Customer');
+        const phone = f.customerPhone || f.phone || f.customerMobile || '';
+        const rating = Number(f.rating || f.stars || 5);
         const comment = f.comment || f.feedback || 'Good ride';
-        return `<div style="padding:8px 10px;border-bottom:1px solid #eee;margin-bottom:4px;background:#f8fafc;border-radius:8px;font-size:12px">
-          <b>${phone}</b> • <span style="color:#f59e0b;font-weight:bold">${rating}★</span> • <span>${comment}</span>
+        const timeStr = (typeof extractReviewTime === 'function') ? extractReviewTime(f) : '';
+        return `<div style="padding:10px 12px;border-bottom:1px solid #eee;margin-bottom:6px;background:#fff;border-radius:10px;font-size:12.5px;border:1px solid #fed7aa;border-left:4px solid #f59e0b">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <b>👤 ${custName} ${phone ? `<span style="color:#64748b;font-weight:normal">(${phone})</span>` : ''}</b>
+            <span style="color:#f59e0b;font-weight:bold;font-size:13px">${'⭐'.repeat(Math.min(5, Math.max(1, rating)))} (${rating}/5)</span>
+          </div>
+          <div style="font-size:11px;color:#64748b;margin:2px 0 4px">📅 ${timeStr}</div>
+          <div style="color:#334155;background:#fefce8;padding:6px 8px;border-radius:6px;margin-top:4px">💬 "${comment}"</div>
         </div>`;
       }).join('');
     }
@@ -5519,19 +5606,23 @@ function renderFeedbackTable(feedbacks) {
   tbody.innerHTML = feedbacks.map((f, idx) => {
     const t = getTimestamp(f.time || f.timestamp || f.date);
     const dateStr = t ? new Date(t).toLocaleString('en-IN') : 'N/A';
+    const custName = (typeof extractCustomerNameFromReview === 'function') ? extractCustomerNameFromReview(f) : (f.customerName || f.name || 'Customer');
     const custPhone = f.customerPhone || f.phone || f.customerMobile || 'N/A';
     const drvInfo = f.driverName || f.driverPhone || f.driverMobile || 'Assigned Driver';
-    const rating = Number(f.rating || 5);
+    const rating = Number(f.rating || f.stars || 5);
     const stars = '★'.repeat(Math.max(1, Math.min(5, rating))) + '☆'.repeat(Math.max(0, 5 - Math.min(5, rating)));
     const comment = f.comment || f.feedback || 'No comment provided';
 
     return `<tr style="border-bottom:1px solid #f1f5f9;background:${idx % 2 === 0 ? '#fff' : '#f8fafc'}">
       <td style="padding:10px;font-weight:bold;color:#64748b">${idx + 1}</td>
-      <td style="padding:10px;white-space:nowrap;font-size:11px">${dateStr}</td>
-      <td style="padding:10px;font-weight:bold;color:#0f172a">${custPhone}</td>
-      <td style="padding:10px;font-size:11px">${drvInfo}</td>
+      <td style="padding:10px;white-space:nowrap;font-size:11px">📅 ${dateStr}</td>
+      <td style="padding:10px;font-size:12px">
+        <b style="color:#0f172a">👤 ${custName}</b><br>
+        <small style="color:#64748b">📞 ${custPhone}</small>
+      </td>
+      <td style="padding:10px;font-size:11px">🚕 ${drvInfo}</td>
       <td style="padding:10px"><span style="color:#d97706;font-weight:bold;font-size:13px">${stars} (${rating}/5)</span></td>
-      <td style="padding:10px;font-size:11px;max-width:260px">${comment}</td>
+      <td style="padding:10px;font-size:11px;max-width:260px">💬 ${comment}</td>
     </tr>`;
   }).join('');
 }
@@ -5792,13 +5883,15 @@ function downloadFeedbackExcel() {
   const rows = allFeedbackCache.map((f, i) => {
     const t = getTimestamp(f.time || f.timestamp || f.date);
     const dObj = t ? new Date(t) : new Date();
+    const cName = (typeof extractCustomerNameFromReview === 'function') ? extractCustomerNameFromReview(f) : (f.customerName || f.name || 'Customer');
     return {
       'Sl': i + 1,
       'Date': dObj.toLocaleDateString('en-IN'),
       'Time': dObj.toLocaleTimeString('en-IN'),
+      'Customer Name': cName,
       'Customer Phone': f.customerPhone || f.phone || f.customerMobile || 'N/A',
       'Driver Info': f.driverName || f.driverPhone || f.driverMobile || 'N/A',
-      'Rating': Number(f.rating || 5),
+      'Rating': Number(f.rating || f.stars || 5),
       'Feedback Comment': f.comment || f.feedback || 'N/A'
     };
   });
@@ -5835,11 +5928,12 @@ function downloadFeedbackPDF() {
   const tableRows = allFeedbackCache.map((f, i) => {
     const t = getTimestamp(f.time || f.timestamp || f.date);
     const dateStr = t ? new Date(t).toLocaleString('en-IN') : 'N/A';
+    const cName = (typeof extractCustomerNameFromReview === 'function') ? extractCustomerNameFromReview(f) : (f.customerName || f.name || 'Customer');
     const custPhone = f.customerPhone || f.phone || f.customerMobile || 'N/A';
     const drvInfo = f.driverName || f.driverPhone || f.driverMobile || 'N/A';
-    const rating = `${Number(f.rating || 5)}/5`;
+    const rating = `${Number(f.rating || f.stars || 5)}/5`;
     const comment = String(f.comment || f.feedback || 'Good ride').slice(0, 50);
-    return [i + 1, dateStr, custPhone, drvInfo, rating, comment];
+    return [i + 1, dateStr, `${cName} (${custPhone})`, drvInfo, rating, comment];
   });
 
   if (doc.autoTable) {

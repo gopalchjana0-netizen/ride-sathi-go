@@ -7609,7 +7609,13 @@ window.submitCustomerRating = function() {
   const commentEl = document.getElementById('rateCommentInput') || document.getElementById('feedbackText');
   const comment = commentEl ? commentEl.value.trim() : '';
   const phone = cleanPhone(localStorage.getItem('current_user_mobile') || localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || (document.getElementById('custPhone') ? document.getElementById('custPhone').value : ''));
-  const name = localStorage.getItem('customerName') || (document.getElementById('custName') ? document.getElementById('custName').value : 'Customer');
+  const name = (typeof activeRatingCustomerName !== 'undefined' && activeRatingCustomerName) ||
+               (window.lastBookingRecord && (window.lastBookingRecord.customerName || window.lastBookingRecord.name)) ||
+               localStorage.getItem('custName') ||
+               localStorage.getItem('customerName') ||
+               localStorage.getItem('userName') ||
+               (document.getElementById('custName') ? document.getElementById('custName').value.trim() : '') ||
+               'Customer';
   const starCount = Number(window.currentSelectedStars || currentSelectedStars || window.selectedRating || 5);
 
   const ratingRecord = {
@@ -7620,7 +7626,10 @@ window.submitCustomerRating = function() {
     bookingId: safeRideKey,
     rideId: safeRideKey,
     customerName: name,
+    name: name,
     customerPhone: phone,
+    phone: phone,
+    mobile: phone,
     driverName: activeRatingDriverName || 'Driver Partner',
     driverPhone: activeRatingDriverPhone || '',
     driverVehicle: activeRatingDriverVeh || 'BIKE',

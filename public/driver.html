@@ -2049,7 +2049,9 @@ function matchesVehicleCategory(driverVeh, reqVeh) {
   let d = normalizeVehicleCategory(driverVeh).toLowerCase();
   let r = normalizeVehicleCategory(reqVeh).toLowerCase();
   if (!d || !r) return false;
-  // Strict 1-to-1 matching: Toto -> Toto, Auto -> Auto, Bike -> Bike, Car -> Car, Parcel -> Parcel
+  // PARCEL BROADCAST RULE: Any parcel request goes to ALL online drivers (Bike, Toto, Auto, Car)
+  if (r === 'parcel' || r.includes('parcel')) return true;
+  // Strict 1-to-1 matching: Toto -> Toto, Auto -> Auto, Bike -> Bike, Car -> Car
   return d === r;
 }
 
@@ -6249,6 +6251,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       const ride = rSnap.val();
       if (!ride || !isRealRide(ride)) return;
       if (!matchesVehicleCategory(myVehicleType, ride.vehicleType || ride.vehicle)) return;
+      if (ride.rejectedDrivers && ride.rejectedDrivers[myPhone]) return;
+      if (typeof showRideCard === 'function') {
+        showRideCard(rSnap.key, ride);
+      }
+    });
+
+    // PARCEL BROADCAST: Listen to all parcel deliveries for every online driver
+    firebase.database().ref('ride_requests').orderByChild('vehicleType').equalTo('parcel').on('child_added', rSnap => {
+      const online = (typeof isOnline !== 'undefined' ? isOnline : (localStorage.getItem('driverOnline') === 'true'));
+      if (!online) return;
+      const ride = rSnap.val();
+      if (!ride || !isRealRide(ride)) return;
+      if (ride.rejectedDrivers && ride.rejectedDrivers[myPhone]) return;
+      if (typeof showRideCard === 'function') {
+        showRideCard(rSnap.key, ride);
+      }
+    });
+
+    firebase.database().ref('rideRequests').orderByChild('vehicleType').equalTo('parcel').on('child_added', rSnap => {
+      const online = (typeof isOnline !== 'undefined' ? isOnline : (localStorage.getItem('driverOnline') === 'true'));
+      if (!online) return;
+      const ride = rSnap.val();
+      if (!ride || !isRealRide(ride)) return;
       if (ride.rejectedDrivers && ride.rejectedDrivers[myPhone]) return;
       if (typeof showRideCard === 'function') {
         showRideCard(rSnap.key, ride);
