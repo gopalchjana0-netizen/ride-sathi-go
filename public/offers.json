@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-03T06:21:27.176Z",
+  "updated_at": "2026-10-03T14:58:24.099Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,28 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Eternz",
+      "d": "Shine Bright: Snag 10% Off Your Jewelry Purchase!",
+      "c": "COMEBACK10",
+      "cat": "Shopping",
+      "l": "https://www.eternz.com/?utm_campaign=flat15&utm_medium=affiliate+&utm_source=parity-cube_6ac0ce061f0e80ff222128d6",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.eternz.com%2F%3Futm_campaign%3Dflat15%26utm_medium%3Daffiliate+%26utm_source%3Dparity-cube_6ac0ce061f0e80ff222128d6&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/40650/medium/New_Project_-_2025-12-26T131817.669.png?1766735363",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Sirona",
+      "d": "Limited Time: Get 20% Off All Sirona Singles and Combos!",
+      "c": "PAYDAY20",
+      "cat": "Food",
+      "l": "https://thesirona.com/?click_id=6ac0b048e8b738bffe17c2a7&utm_campaign=trackier_13441_Vcommission&utm_medium=Vcommission_100503_20261003clgftkxdtszb&utm_source=Vcommission",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fthesirona.com%2F%3Fclick_id%3D6ac0b048e8b738bffe17c2a7%26utm_campaign%3Dtrackier_13441_Vcommission%26utm_medium%3DVcommission_100503_20261003clgftkxdtszb%26utm_source%3DVcommission&cid=324245&subid=ridesathigo",
+      "img": "/photos/medium/missing.png",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Purenutrition",
@@ -2929,28 +2951,6 @@
       "l": "http://www.bewakoof.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.bewakoof.com%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/1626/medium/New_Project_%2837%29_%281%29.png?1602509781",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "HealthKart",
-      "d": "First Order? Get Rs. 250 Off at Healthkart Right Now!",
-      "c": "NEW250",
-      "cat": "Health",
-      "l": "https://www.healthkart.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Firstcry",
-      "d": "FirstCry Exclusive: Save Up to 85% + Extra Rs. 50 on Orders Over Rs. 999",
-      "c": "GET50CT",
-      "cat": "Electronics",
-      "l": "http://www.firstcry.com",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.firstcry.com&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/47/medium/FC-Logo-big_store_tagline.png?1582718962",
       "badge": "Coupon",
       "rank": 20
     }
