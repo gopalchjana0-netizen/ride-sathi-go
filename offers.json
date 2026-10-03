@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-02T18:18:11.187Z",
+  "updated_at": "2026-10-03T00:19:02.104Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -509,17 +509,6 @@
       "l": "https://www.muscletech.in/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.muscletech.in%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4966/medium/logo.png?1683628593",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "khadi Natural",
-      "d": "Special Gandhi Jayanti Offer: Buy 1 Get 1 Free + Additional 5% Off for Prepaid Orders",
-      "c": "B1G1",
-      "cat": "Health",
-      "l": "https://www.khadinatural.com/collections/all-products-offer",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.khadinatural.com%2Fcollections%2Fall-products-offer&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/39355/medium/New_Project_-_2025-12-02T185508.098.png?1764681944",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2951,6 +2940,17 @@
       "l": "https://www.healthkart.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Firstcry",
+      "d": "FirstCry Exclusive: Save Up to 85% + Extra Rs. 50 on Orders Over Rs. 999",
+      "c": "GET50CT",
+      "cat": "Electronics",
+      "l": "http://www.firstcry.com",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.firstcry.com&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/47/medium/FC-Logo-big_store_tagline.png?1582718962",
       "badge": "Coupon",
       "rank": 20
     }
