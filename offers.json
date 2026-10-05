@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-05T06:22:14.727Z",
+  "updated_at": "2026-10-05T12:19:19.797Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,61 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Levis",
+      "d": "Fashion Alert: Save an Extra 15% on Levi's Orders Over Rs. 4699!",
+      "c": "LEVI15",
+      "cat": "Shopping",
+      "l": "https://levi.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Flevi.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3306/medium/Levis.png?1540963555",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Crocs",
+      "d": "Celebrate Savings: Get 30%-50% Off Crocs + Extra 5% on Prepayment!",
+      "c": "PREPAID5",
+      "cat": "Shopping",
+      "l": "https://www.crocs.in/buy/30-50-off.html?page=1&promotion_id=30-09-26-36&promotion_name=octpromo",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.crocs.in%2Fbuy%2F30-50-off.html%3Fpage%3D1%26promotion_id%3D30-09-26-36%26promotion_name%3Doctpromo&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/1821/medium/Crocs.png?1487934625",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Don’t Miss Out: Extra 5% Off on Rs. 1290+ Purchases at Ajio!",
+      "c": "ALLSTARS5",
+      "cat": "Health",
+      "l": "https://www.ajio.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.ajio.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Klook",
+      "d": "Grab Rs. 2000 Discount on Your Next Transport Booking Now!",
+      "c": "FESTIVETRAEL26",
+      "cat": "Travel",
+      "l": "https://www.klook.com/en-IN/promotion/program/404837256/?spm=CouponHowToUse.ApplicableAid&clickId=78c5004237",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2Fen-IN%2Fpromotion%2Fprogram%2F404837256%2F%3Fspm%3DCouponHowToUse.ApplicableAid%26clickId%3D78c5004237&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "R for Rabbit",
+      "d": "Special Offer: Get 12% Off Your Order of Kid's & Baby Clothing at R for Rabbit!",
+      "c": "GLAMUP",
+      "cat": "Health",
+      "l": "https://rforrabbit.com/collections/clothing",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Frforrabbit.com%2Fcollections%2Fclothing&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4425/medium/logo20250811-880075-5fgge5.jpg?1755830048",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "R for Rabbit",
@@ -817,6 +872,17 @@
       "l": "https://www.helium10.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.helium10.com%2F&cid=324245&subid=ridesathigo",
       "img": "/photos/medium/missing.png",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Mymuse",
+      "d": "MyMuse Quickie Sale: Steals of 35% Off + Extra 7% Savings!",
+      "c": "DDMM7",
+      "cat": "Health",
+      "l": "https://mymuse.in/collections/quickie-sale",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fmymuse.in%2Fcollections%2Fquickie-sale&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/5212/medium/images.png?1693814422",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2042,6 +2108,17 @@
       "rank": 20
     },
     {
+      "b": "blackberrys",
+      "d": "Unbeatable Style Sale: Enjoy 50% Off + Extra 5% Discount!",
+      "c": "EXTRA5",
+      "cat": "Health",
+      "l": "https://blackberrys.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fblackberrys.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2039/medium/logo20250811-880075-lxteaz.jpg?1755829946",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
       "b": "Digihaat",
       "d": "Get Rs. 45 Off Your EYAAS Coffee Mug Purchase of Rs. 99 or More!",
       "c": "EYAAS",
@@ -2647,6 +2724,17 @@
       "rank": 20
     },
     {
+      "b": "blackberrys",
+      "d": "Unlock a Special Rs.2000 Discount Just for You!",
+      "c": "GET2000",
+      "cat": "Health",
+      "l": "http://www.blackberrys.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.blackberrys.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2039/medium/logo20250811-880075-lxteaz.jpg?1755829946",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
       "b": "Caprese Bags",
       "d": "Claim Your 5% Off on Prepaid Purchases at Caprese!",
       "c": "PREPAID5",
@@ -2863,94 +2951,6 @@
       "l": "https://www.furlenco.com/#/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.furlenco.com%2F%23%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3305/medium/Furlenco-logo.png?1540902137",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Fly Fairly",
-      "d": "Score Big on New Zealand Flights: Book Now, Pay Later & Get $100 Off!",
-      "c": "AFTERPAYNZ100",
-      "cat": "Travel",
-      "l": "https://flyfairly.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fflyfairly.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/12313/medium/New_Project_-_2025-07-02T152624.884.png?1751450225",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Fly Fairly",
-      "d": "Enjoy a $50 Discount on Your New Zealand Flights Using AfterPay!",
-      "c": "AFTERPAYNZ50",
-      "cat": "Travel",
-      "l": "https://flyfairly.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fflyfairly.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/12313/medium/New_Project_-_2025-07-02T152624.884.png?1751450225",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Sugar Cosmetics",
-      "d": "Get a FREE Matte Liquid Lipstick + Bonus Gift with Every Order!",
-      "c": "METTLE1099",
-      "cat": "Food",
-      "l": "https://in.sugarcosmetics.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fin.sugarcosmetics.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3260/medium/Sugar.png?1531908894",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Gonoise",
-      "d": "Grab 10% Off All Our Products – Limited Time!",
-      "c": "NOISE10",
-      "cat": "Travel",
-      "l": "https://www.gonoise.com",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.gonoise.com&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/2863/medium/NoiseLogo-01_%281%29.png?1713530613",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Bewakoof",
-      "d": "Enjoy Rs.100 Off Your Shopping—Limited Time Only!",
-      "c": "SPECIAL100",
-      "cat": "Shopping",
-      "l": "http://www.bewakoof.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.bewakoof.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/1626/medium/New_Project_%2837%29_%281%29.png?1602509781",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "HealthKart",
-      "d": "First Order? Get Rs. 250 Off at Healthkart Right Now!",
-      "c": "NEW250",
-      "cat": "Health",
-      "l": "https://www.healthkart.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Firstcry",
-      "d": "FirstCry Exclusive: Save Up to 85% + Extra Rs. 50 on Orders Over Rs. 999",
-      "c": "GET50CT",
-      "cat": "Electronics",
-      "l": "http://www.firstcry.com",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=http%3A%2F%2Fwww.firstcry.com&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/47/medium/FC-Logo-big_store_tagline.png?1582718962",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Muscletech",
-      "d": "Elevate Your Performance: Grab 65% Off + Extra 5% Discount",
-      "c": "TC",
-      "cat": "Shopping",
-      "l": "https://www.muscletech.in/?utm_campaign=Banner&utm_medium=affiliate&utm_source=icubeswire_57_20250421clobmrrsqkb5",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.muscletech.in%2F%3Futm_campaign%3DBanner%26utm_medium%3Daffiliate%26utm_source%3Dicubeswire_57_20250421clobmrrsqkb5&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4966/medium/logo.png?1683628593",
       "badge": "Coupon",
       "rank": 20
     }
