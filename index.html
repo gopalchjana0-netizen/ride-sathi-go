@@ -8,8 +8,100 @@
 <meta name="cuelinks-verification" content="VERIFY-CL-KOIS6KEQ">
 <!-- Monetag Official Domain Verification Meta Tag -->
 <meta name="monetag" content="e28c357753f0f87ee763fe5ab7610ce9">
-<!-- Monetag Official Ad Tag (Zone: 11929403) -->
-<script>(function(s){s.dataset.zone='11929403',s.src='https://nap5k.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+<!-- Monetag Official Ad Tag (Zone: 11929403) with 30-Minute Smart Dismiss Cooldown -->
+<script>
+(function() {
+  const ZONE_ID = '11929403';
+  const COOLDOWN_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+  const STORAGE_KEY = 'rsg_monetag_cooldown_until';
+
+  function isCooldownActive() {
+    try {
+      const until = Number(sessionStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY) || 0);
+      return Date.now() < until;
+    } catch(e) {
+      return false;
+    }
+  }
+
+  function activateCooldown() {
+    try {
+      const until = Date.now() + COOLDOWN_DURATION;
+      sessionStorage.setItem(STORAGE_KEY, String(until));
+      localStorage.setItem(STORAGE_KEY, String(until));
+      applyAdSuppression();
+    } catch(e) {}
+  }
+
+  function applyAdSuppression() {
+    let st = document.getElementById('rsg-monetag-cooldown-style');
+    if (!st) {
+      st = document.createElement('style');
+      st.id = 'rsg-monetag-cooldown-style';
+      st.textContent = `
+        div[class*="monetag"], div[id*="monetag"],
+        div[data-zone="${ZONE_ID}"],
+        div[style*="z-index: 2147483647"], div[style*="z-index: 2147483646"] {
+          display: none !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+      `;
+      (document.head || document.documentElement).appendChild(st);
+    }
+  }
+
+  function removeAdSuppression() {
+    const st = document.getElementById('rsg-monetag-cooldown-style');
+    if (st) st.remove();
+  }
+
+  function loadMonetagScript() {
+    if (window._rsgMonetagInjected) return;
+    window._rsgMonetagInjected = true;
+    removeAdSuppression();
+    const s = document.createElement('script');
+    s.dataset.zone = ZONE_ID;
+    s.src = 'https://nap5k.com/tag.min.js';
+    (document.documentElement || document.body).appendChild(s);
+  }
+
+  if (isCooldownActive()) {
+    // Cooldown is active: suppress ads for now, load when cooldown expires
+    applyAdSuppression();
+    const until = Number(sessionStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY) || 0);
+    const delay = Math.max(1000, until - Date.now());
+    setTimeout(() => {
+      if (!isCooldownActive()) {
+        loadMonetagScript();
+      }
+    }, delay);
+  } else {
+    // Normal first visit: load Monetag ad normally so impressions & earnings are counted!
+    loadMonetagScript();
+  }
+
+  // Detect when user clicks cross / close button on a floating ad
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    if (!target) return;
+    const isCloseAction = target.closest && target.closest('[class*="close"], [id*="close"], [class*="cross"], [id*="cross"], [aria-label*="close"], [aria-label*="Close"], svg, button');
+    if (isCloseAction) {
+      const adContainer = target.closest('div[style*="fixed"], div[style*="absolute"], div[class*="push"], div[id*="push"], div[class*="monetag"]');
+      if (adContainer) {
+        const zIndex = parseInt(window.getComputedStyle(adContainer).zIndex || 0, 10);
+        if (zIndex >= 1000) {
+          // User dismissed a floating in-page ad!
+          activateCooldown();
+        }
+      }
+    }
+  }, true);
+
+  // Expose manual helper for complete transparency
+  window.rsgActivateAdCooldown = activateCooldown;
+})();
+</script>
 <!-- Cuelinks Official Verified Channel Script (Channel ID: 324245) -->
 <script type="text/javascript">
   var cId = '324245';
@@ -5002,6 +5094,19 @@ function checkUserCityFromGPS() {
 
 async function fetchActiveCities() {
   try {
+    const cached = localStorage.getItem('rsg_cached_cities');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && Array.isArray(parsed.data) && parsed.data.length > 0 && (Date.now() - (parsed.time || 0) < 12 * 60 * 60 * 1000)) {
+        window.activeCitiesList = parsed.data;
+        checkUserCityFromGPS();
+        return;
+      }
+    }
+  } catch(e) {}
+
+  let fetchedFromRemote = false;
+  try {
     if (firestore) {
       const snap = await getDocs(collection(firestore, 'cities'));
       if (!snap.empty) {
@@ -5010,12 +5115,15 @@ async function fetchActiveCities() {
           const data = d.data();
           if (data.isActive !== false) fetched.push({ id: d.id, ...data });
         });
-        if (fetched.length > 0) window.activeCitiesList = fetched;
+        if (fetched.length > 0) {
+          window.activeCitiesList = fetched;
+          fetchedFromRemote = true;
+        }
       }
     }
   } catch(e) {}
 
-  if (db) {
+  if (!fetchedFromRemote && db) {
     try {
       const rSnap = await get(ref(db, 'cities'));
       if (rSnap.exists()) {
@@ -5024,8 +5132,17 @@ async function fetchActiveCities() {
         Object.keys(v).forEach(k => {
           if (v[k].isActive !== false) fetched.push({ id: k, ...v[k] });
         });
-        if (fetched.length > 0) window.activeCitiesList = fetched;
+        if (fetched.length > 0) {
+          window.activeCitiesList = fetched;
+          fetchedFromRemote = true;
+        }
       }
+    } catch(e) {}
+  }
+
+  if (window.activeCitiesList && window.activeCitiesList.length > 0) {
+    try {
+      localStorage.setItem('rsg_cached_cities', JSON.stringify({ data: window.activeCitiesList, time: Date.now() }));
     } catch(e) {}
   }
 

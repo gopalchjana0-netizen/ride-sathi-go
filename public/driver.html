@@ -1987,6 +1987,24 @@ function updateDriverCity(lat, lng) {
 
 async function fetchDriverCities() {
   try {
+    const cached = localStorage.getItem('rsg_cached_cities');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed && Array.isArray(parsed.data) && parsed.data.length > 0 && (Date.now() - (parsed.time || 0) < 12 * 60 * 60 * 1000)) {
+        window.driverActiveCities = parsed.data;
+        if (currentDriverLat && currentDriverLng) {
+          updateDriverCity(currentDriverLat, currentDriverLng);
+        } else if (window.driverCurrentCity) {
+          const cityText = document.getElementById('driverCityText');
+          if (cityText) cityText.innerText = window.driverCurrentCity;
+        }
+        return;
+      }
+    }
+  } catch(e) {}
+
+  let fetchedFromRemote = false;
+  try {
     if (firestore) {
       const snap = await getDocs(collection(firestore, 'cities'));
       if (!snap.empty) {
@@ -1995,12 +2013,15 @@ async function fetchDriverCities() {
           const data = d.data();
           if (data.isActive !== false) fetched.push({ id: d.id, ...data });
         });
-        if (fetched.length > 0) window.driverActiveCities = fetched;
+        if (fetched.length > 0) {
+          window.driverActiveCities = fetched;
+          fetchedFromRemote = true;
+        }
       }
     }
   } catch(e) {}
 
-  if (db) {
+  if (!fetchedFromRemote && db) {
     try {
       const rSnap = await get(ref(db, 'cities'));
       if (rSnap.exists()) {
@@ -2009,8 +2030,17 @@ async function fetchDriverCities() {
         Object.keys(v).forEach(k => {
           if (v[k].isActive !== false) fetched.push({ id: k, ...v[k] });
         });
-        if (fetched.length > 0) window.driverActiveCities = fetched;
+        if (fetched.length > 0) {
+          window.driverActiveCities = fetched;
+          fetchedFromRemote = true;
+        }
       }
+    } catch(e) {}
+  }
+
+  if (window.driverActiveCities && window.driverActiveCities.length > 0) {
+    try {
+      localStorage.setItem('rsg_cached_cities', JSON.stringify({ data: window.driverActiveCities, time: Date.now() }));
     } catch(e) {}
   }
 
