@@ -2453,8 +2453,9 @@ function initAdminPaymentConfig() {
   } catch(e){}
 
   if (typeof db !== 'undefined' && db) {
-    db.ref('app_config/payment').on('value', snap => {
+    const handleSnap = snap => {
       const data = snap.val() || {};
+      if (!data.upi_id) return;
       const uId = data.upi_id || "8768447312@pthdfc";
       const mName = data.merchant_name || "RIDE SATHI GO";
       window.currentAdminPaymentConfig.upi_id = uId;
@@ -2464,7 +2465,9 @@ function initAdminPaymentConfig() {
       try {
         localStorage.setItem('rsg_payment_config', JSON.stringify({ upi_id: uId, merchant_name: mName, time: Date.now() }));
       } catch(e){}
-    });
+    };
+    db.ref('app_config/payment').on('value', handleSnap);
+    db.ref('settings/payment').on('value', handleSnap);
   }
 }
 
@@ -2488,15 +2491,22 @@ window.saveAdminPaymentConfig = function() {
   };
 
   if (typeof db !== 'undefined' && db) {
-    db.ref('app_config/payment').set(payload).then(() => {
-      window.currentAdminPaymentConfig.upi_id = upiVal;
-      window.currentAdminPaymentConfig.merchant_name = merchVal;
-      try {
-        localStorage.setItem('rsg_payment_config', JSON.stringify({ upi_id: upiVal, merchant_name: merchVal, time: Date.now() }));
-      } catch(e){}
-      alert('✅ কেন্দ্রীয় UPI সেটিংস সফলভাবে সেভ হয়েছে! সমস্ত কাস্টমার ও ড্রাইভারের অ্যাপে নতুন UPI ID সক্রিয় হয়ে গেছে।');
-    }).catch(err => {
-      alert('❌ সেভ করতে সমস্যা হয়েছে: ' + err.message);
+    const p1 = db.ref('app_config/payment').set(payload);
+    const p2 = db.ref('settings/payment').set(payload);
+
+    Promise.allSettled([p1, p2]).then(results => {
+      const succeeded = results.some(r => r.status === 'fulfilled');
+      if (succeeded) {
+        window.currentAdminPaymentConfig.upi_id = upiVal;
+        window.currentAdminPaymentConfig.merchant_name = merchVal;
+        try {
+          localStorage.setItem('rsg_payment_config', JSON.stringify({ upi_id: upiVal, merchant_name: merchVal, time: Date.now() }));
+        } catch(e){}
+        alert('✅ কেন্দ্রীয় UPI সেটিংস সফলভাবে সেভ হয়েছে! সমস্ত কাস্টমার ও ড্রাইভারের অ্যাপে নতুন UPI ID সক্রিয় হয়ে গেছে।');
+      } else {
+        const err = results[0].reason || (results[1] && results[1].reason);
+        alert('❌ সেভ করতে সমস্যা হয়েছে: ' + (err ? err.message : 'Permission Denied'));
+      }
     });
   }
 };

@@ -366,6 +366,14 @@
         "unreadByAdmin"
       ]
     },
+    "app_config": {
+      ".read": true,
+      ".write": true,
+      "$configKey": {
+        ".read": true,
+        ".write": true
+      }
+    },
     "settings": {
       ".read": true,
       ".write": true
