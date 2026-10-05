@@ -1409,11 +1409,15 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
     <button class="btn" style="width:100%;margin-top:10px;background:#334155;color:#facc15;padding:12px;font-size:13px;font-weight:800" id="snoozeNowBtn" data-i18n="dueSnoozeBtn">
       ⏰ ১ ঘণ্টার ছাড় নিন / 1-Hour Snooze
     </button>
+
+    <button type="button" class="btn" style="width:100%;margin-top:10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:10px;font-size:13px;font-weight:700" onclick="window.dismissLockScreenManual()">
+      ✕ বন্ধ করুন (Dismiss)
+    </button>
   </div>
 </div>
 
 <!-- 7. UPI QR CODE MODAL -->
-<div id="qrModal" class="modal">
+<div id="qrModal" class="modal" style="z-index:100005">
   <div class="modal-box" style="max-width:440px;padding:22px">
     <h3 style="margin:0 0 4px;color:#0f172a;font-size:18px" data-i18n="dueModalTitle">
       💳 অ্যাডমিন ডিউ পেমেন্ট<br>
@@ -2742,8 +2746,11 @@ async function checkApproved(phone) {
     let val2 = (s2 && s2.exists()) ? s2.val() : null;
     let val3 = (s3 && s3.exists()) ? s3.val() : null;
 
-    // 1. Check if blocked
-    if ((val1 && val1.isBlocked === true) || (val2 && val2.isBlocked === true) || (val3 && val3.isBlocked === true)) {
+    let snoozedUntil = Math.max(val1?.snoozedUntil || 0, val2?.snoozedUntil || 0, val3?.snoozedUntil || 0, val1?.dueGraceUntil || 0, val2?.dueGraceUntil || 0);
+    let isSnoozed = Date.now() < snoozedUntil;
+
+    // 1. Check if blocked (skip if snoozed)
+    if (!isSnoozed && ((val1 && val1.isBlocked === true) || (val2 && val2.isBlocked === true) || (val3 && val3.isBlocked === true))) {
       return { approved: false, isBlocked: true, msg: 'আপনার আইডি ডিউ বা অন্য কারণে সাময়িকভাবে ব্লক আছে।' };
     }
 
@@ -4492,11 +4499,110 @@ async function confirmReject() {
 window.confirmReject = confirmReject;
 
 // === DUE MONITORING & AUTO-LOCK SYSTEM ===
+window._lastDriverRecord = null;
+window.currentDueTotal = 0;
+
+window.evaluateDriverLockState = function(customDrData) {
+  let lockEl = document.getElementById('lockScreen');
+  if (!lockEl) return false;
+
+  let dr = customDrData || window._lastDriverRecord || {};
+  let totalDue = Number(window.currentDueTotal || 0);
+  let now = Date.now();
+  let snoozedUntil = Math.max(Number(dr.snoozedUntil || 0), Number(dr.dueGraceUntil || 0));
+  let isSnoozed = now < snoozedUntil;
+
+  // 1. Explicit Admin Block: Admin explicitly blocked the driver account
+  if (dr.status === 'BLOCKED' || dr.isBlocked === true) {
+    if (!isSnoozed) {
+      lockEl.classList.add('show');
+      let lockSubEl = document.querySelector('#lockScreen p[data-i18n="lockSub"]');
+      if (lockSubEl) {
+        lockSubEl.innerHTML = `⚠️ আপনার অ্যাকাউন্ট অ্যাডমিন দ্বারা সাময়িকভাবে বন্ধ করা হয়েছে।<br><small style="color:#64748b">(Account blocked by Admin. Contact support for help.)</small>`;
+      }
+      if (isOnline) {
+        isOnline = false;
+        try { setStatusOfflineUI(); } catch(e) {}
+      }
+      return true;
+    }
+  }
+
+  // 2. Commission Due Limit Lock:
+  // ONLY lock if total due has crossed the system limit AND grace countdown expired AND not snoozed!
+  if (totalDue >= systemDueLimit) {
+    if (isSnoozed) {
+      lockEl.classList.remove('show');
+      return false;
+    }
+
+    // Determine deadline from start time
+    let dueStartTime = Number(dr.dueStartTime || localStorage.getItem('rsg_dueStartTime_' + DRIVER_PHONE) || 0);
+    if (!dueStartTime) {
+      dueStartTime = now;
+      localStorage.setItem('rsg_dueStartTime_' + DRIVER_PHONE, String(dueStartTime));
+      try {
+        update(ref(db, 'drivers/' + DRIVER_PHONE), { dueStartTime: dueStartTime }).catch(()=>{});
+        update(ref(db, 'drivers/DRIVER_' + DRIVER_PHONE), { dueStartTime: dueStartTime }).catch(()=>{});
+      } catch(e) {}
+    }
+
+    let graceMs = (Number(systemAutoLockMin) || 60) * 60 * 1000;
+    let deadline = dueStartTime + graceMs;
+    let rem = Math.max(0, deadline - now);
+
+    if (rem <= 0) {
+      // Grace period expired and total >= limit: LOCK!
+      lockEl.classList.add('show');
+      let lockSubEl = document.querySelector('#lockScreen p[data-i18n="lockSub"]');
+      if (lockSubEl) {
+        lockSubEl.innerHTML = `Please Pay Your Due ₹${totalDue} (Limit: ₹${systemDueLimit}) to Continue Receiving Orders<br><small style="color:#64748b">(বকেয়া সীমা অতিক্রম করেছে। পরিশোধ না করা পর্যন্ত নতুন অর্ডার আসবে না)</small>`;
+      }
+      if (isOnline) {
+        isOnline = false;
+        try { setStatusOfflineUI(); } catch(e) {}
+      }
+      let sBtn = document.getElementById('statusBtn');
+      if (sBtn) {
+        sBtn.disabled = true;
+        sBtn.style.opacity = '0.5';
+        sBtn.style.cursor = 'not-allowed';
+      }
+      return true;
+    } else {
+      // Still in grace countdown: DO NOT LOCK!
+      lockEl.classList.remove('show');
+      let sBtn = document.getElementById('statusBtn');
+      if (sBtn) {
+        sBtn.disabled = false;
+        sBtn.style.opacity = '1';
+        sBtn.style.cursor = 'pointer';
+      }
+      return false;
+    }
+  }
+
+  // 3. Otherwise: Total is under the allowed limit (or zero) -> NEVER LOCK!
+  lockEl.classList.remove('show');
+  localStorage.removeItem('rsg_dueStartTime_' + DRIVER_PHONE);
+  let sBtn = document.getElementById('statusBtn');
+  if (sBtn) {
+    sBtn.disabled = false;
+    sBtn.style.opacity = '1';
+    sBtn.style.cursor = 'pointer';
+  }
+  return false;
+};
+
+window.dismissLockScreenManual = function() {
+  let lockEl = document.getElementById('lockScreen');
+  if (lockEl) lockEl.classList.remove('show');
+};
+
 function listenDues() {
   if (!DRIVER_PHONE) return;
 
   onValue(ref(db, 'driver_dues/' + DRIVER_PHONE), snap => {
-    if (timerInterval) clearInterval(timerInterval);
     let total = 0, earliest = Infinity;
 
     if (snap.exists()) {
@@ -4511,48 +4617,42 @@ function listenDues() {
 
     get(ref(db, 'drivers/' + DRIVER_PHONE)).then(drSnap => {
       let dr = drSnap.val() || {};
+      window._lastDriverRecord = dr;
       let fallbackDue = parseInt(dr.adminDue || dr.due || 0);
       if (total === 0 && fallbackDue > 0) {
         total = fallbackDue;
       }
-      let snoozedUntil = dr.snoozedUntil || 0;
-      let now = Date.now();
-
-      let dueStorageKey = 'rsg_dueStartTime_' + DRIVER_PHONE;
-      if (total > 0) {
-        let stored = localStorage.getItem(dueStorageKey);
-        if (!stored) {
-          stored = String(Date.now());
-          localStorage.setItem(dueStorageKey, stored);
-        }
-        let startTime = Number(stored);
-        let lockMinutes = Number(systemAutoLockMin || 60);
-        earliest = startTime + (lockMinutes * 60 * 1000);
-      } else {
-        localStorage.removeItem(dueStorageKey);
-      }
-      if (snoozedUntil > now && snoozedUntil > earliest) {
-        earliest = snoozedUntil;
-      }
+      window.currentDueTotal = total;
 
       document.getElementById('fleetDue').innerText = '₹' + total;
+      let lockDueEl = document.getElementById('lockDueText');
+      if (lockDueEl) lockDueEl.innerText = '₹' + total;
+      let dueAmtEl = document.getElementById('dueAmountText');
+      if (dueAmtEl) dueAmtEl.innerText = '₹' + total;
 
-      if (total > 0) {
-        document.getElementById('dueAmountText').innerText = '₹' + total;
-        document.getElementById('lockDueText').innerText = '₹' + total;
+      if (timerInterval) clearInterval(timerInterval);
+
+      if (total >= systemDueLimit) {
+        // Active Limit Exceeded Countdown
+        let dueStartTime = Number(dr.dueStartTime || localStorage.getItem('rsg_dueStartTime_' + DRIVER_PHONE) || 0);
+        if (!dueStartTime) {
+          dueStartTime = Date.now();
+          localStorage.setItem('rsg_dueStartTime_' + DRIVER_PHONE, String(dueStartTime));
+        }
+        let snoozedUntil = Math.max(Number(dr.snoozedUntil || 0), Number(dr.dueGraceUntil || 0));
+        let deadline = dueStartTime + ((Number(systemAutoLockMin) || 60) * 60 * 1000);
+        if (snoozedUntil > Date.now() && snoozedUntil > deadline) {
+          deadline = snoozedUntil;
+        }
 
         function upd() {
           let curTime = Date.now();
-          let rem = Math.max(0, earliest - curTime);
+          let rem = Math.max(0, deadline - curTime);
           let m = Math.floor(rem / 60000);
           let sec = Math.floor((rem % 60000) / 1000);
-          let timerBox = document.getElementById('dueTimerText');
-          let timerSub = document.getElementById('dueTimerSub');
-
           let mStr = String(m).padStart(2, '0');
           let sStr = String(sec).padStart(2, '0');
 
-          // Update Compact Due Bar & Header Badge
           let cBar = document.getElementById('compactDueBar');
           if (cBar) {
             cBar.style.background = 'linear-gradient(90deg, #7f1d1d, #991b1b)';
@@ -4564,7 +4664,7 @@ function listenDues() {
           if (cAmt) { cAmt.innerText = '₹' + total; cAmt.style.color = '#fde047'; }
           let cTimer = document.getElementById('compactTimerBadge');
           if (cTimer) {
-            cTimer.innerText = `⏳ ${mStr}:${sStr}`;
+            cTimer.innerText = rem > 0 ? `⏳ ${mStr}:${sStr}` : '🔒 LOCKED';
             cTimer.style.color = '#fef08a';
             cTimer.style.background = 'rgba(0,0,0,0.45)';
           }
@@ -4577,72 +4677,54 @@ function listenDues() {
             hBadge.innerText = `🔴 Due: ₹${total} (${mStr}:${sStr})`;
           }
 
+          let timerBox = document.getElementById('dueTimerText');
+          let timerSub = document.getElementById('dueTimerSub');
           if (rem > 0) {
-            if (timerBox) {
-              timerBox.innerText = `${mStr}m : ${sStr}s (${mStr}:${sStr})`;
-              timerBox.style.color = '#dc2626';
-            }
-            if (timerSub) {
-              timerSub.innerHTML = `⚠️ সময় বাকি / Time Left: <b>${m} মিনিট ${sec} সেকেন্ড (${m}m ${sec}s)</b><br><small style="color:#7f1d1d">নির্ধারিত সময়ের মধ্যে পরিশোধ না করলে আইডি স্বয়ংক্রিয়ভাবে লক হবে / ID auto-locks at 00:00</small>`;
-            }
+            if (timerBox) timerBox.innerText = `${mStr}m : ${sStr}s (${mStr}:${sStr})`;
+            if (timerSub) timerSub.innerHTML = `⚠️ সময় বাকি / Time Left: <b>${m} মিনিট ${sec} সেকেন্ড</b><br><small style="color:#7f1d1d">বকেয়া সীমা (₹${systemDueLimit}) অতিক্রম করেছে। সময় শেষ হলে আইডি লক হবে।</small>`;
           } else {
             if (timerBox) timerBox.innerText = '🔒 00:00 - LOCKED';
-            if (timerSub) timerSub.innerHTML = '<b style="color:#dc2626">⚠️ সময় শেষ! আইডি লক হয়েছে / Time Expired! Account Locked.</b>';
-            if (cTimer) cTimer.innerText = '🔒 LOCKED';
+            if (timerSub) timerSub.innerHTML = '<b style="color:#dc2626">⚠️ সময় শেষ! আইডি লক হয়েছে / Account Locked.</b>';
           }
 
-          if (rem <= 0 || total >= systemDueLimit) {
-            get(ref(db, 'drivers/' + DRIVER_PHONE)).then(chkSnap => {
-              let chkDr = chkSnap.val() || {};
-              let curSnooze = chkDr.snoozedUntil || 0;
-              if (Date.now() < curSnooze) {
-                document.getElementById('lockScreen').classList.remove('show');
-                return;
-              }
-              document.getElementById('lockScreen').classList.add('show');
-              let lockSubEl = document.querySelector('#lockScreen p[data-i18n="lockSub"]');
-              if (lockSubEl) {
-                lockSubEl.innerHTML = `Please Pay Your Due ₹${total} to Continue Receiving Orders<br><small style="color:#64748b">(বকেয়া পরিশোধ না করা পর্যন্ত নতুন অর্ডার আসবে না)</small>`;
-              }
-              if (isOnline) {
-                isOnline = false;
-                localStorage.setItem('driverOnline', 'false');
-                setStatusOfflineUI();
-              }
-              let sBtn = document.getElementById('statusBtn');
-              if (sBtn) {
-                sBtn.disabled = true;
-                sBtn.style.opacity = '0.5';
-                sBtn.style.cursor = 'not-allowed';
-              }
-              clearInterval(timerInterval);
-            });
-          } else {
-            let sBtn = document.getElementById('statusBtn');
-            if (sBtn) {
-              sBtn.disabled = false;
-              sBtn.style.opacity = '1';
-              sBtn.style.cursor = 'pointer';
-            }
-            document.getElementById('lockScreen').classList.remove('show');
-          }
+          window.evaluateDriverLockState();
         }
         upd();
         timerInterval = setInterval(upd, 1000);
-      } else {
-        if (timerInterval) clearInterval(timerInterval);
+      } else if (total > 0) {
+        // Below limit: friendly warning, NO LOCKDOWN
         localStorage.removeItem('rsg_dueStartTime_' + DRIVER_PHONE);
-        let sBtn = document.getElementById('statusBtn');
-        if (sBtn) {
-          sBtn.disabled = false;
-          sBtn.style.opacity = '1';
-          sBtn.style.cursor = 'pointer';
+        let cBar = document.getElementById('compactDueBar');
+        if (cBar) {
+          cBar.style.background = 'linear-gradient(135deg, #1e293b, #0f172a)';
+          cBar.style.borderColor = '#eab308';
         }
-        document.getElementById('dueBox').classList.remove('show');
-        document.getElementById('dueBox').style.display = 'none';
-        document.getElementById('lockScreen').classList.remove('show');
-
-        // Reset Compact Due Bar & Header Badge
+        let cIcon = document.getElementById('compactDueIcon');
+        if (cIcon) cIcon.innerText = '🟡';
+        let cAmt = document.getElementById('compactDueAmt');
+        if (cAmt) { cAmt.innerText = '₹' + total; cAmt.style.color = '#fde047'; }
+        let cTimer = document.getElementById('compactTimerBadge');
+        if (cTimer) {
+          cTimer.innerText = `Limit: ₹${systemDueLimit}`;
+          cTimer.style.color = '#fef08a';
+          cTimer.style.background = 'rgba(0,0,0,0.35)';
+        }
+        let cPay = document.getElementById('compactPayBtn');
+        if (cPay) cPay.style.display = 'inline-block';
+        let hBadge = document.getElementById('headerDueBadge');
+        if (hBadge) {
+          hBadge.style.background = '#854d0e';
+          hBadge.style.borderColor = '#fde047';
+          hBadge.innerText = `🟡 Due: ₹${total}`;
+        }
+        let dueBox = document.getElementById('dueBox');
+        if (dueBox && dueBox.style.display !== 'block') {
+          dueBox.classList.remove('show');
+        }
+        window.evaluateDriverLockState();
+      } else {
+        // Zero due: completely clear
+        localStorage.removeItem('rsg_dueStartTime_' + DRIVER_PHONE);
         let cBar = document.getElementById('compactDueBar');
         if (cBar) {
           cBar.style.background = 'linear-gradient(135deg,#1e293b,#0f172a)';
@@ -4666,27 +4748,22 @@ function listenDues() {
           hBadge.style.borderColor = '#34d399';
           hBadge.innerText = '🟢 Due: ₹0';
         }
+        let dueBox = document.getElementById('dueBox');
+        if (dueBox) {
+          dueBox.classList.remove('show');
+          dueBox.style.display = 'none';
+        }
+        window.evaluateDriverLockState();
       }
     });
   });
 
+  // Keep _lastDriverRecord updated in realtime
   onValue(ref(db, 'drivers/' + DRIVER_PHONE), snap => {
     let d = snap.val();
     if (!d) return;
-    let now = Date.now();
-    let snoozedUntil = d.snoozedUntil || 0;
-    let dueVal = parseInt(d.adminDue || d.due || 0);
-
-    if (d.isBlocked === false || now < snoozedUntil || dueVal === 0) {
-      document.getElementById('lockScreen').classList.remove('show');
-      if (dueVal === 0) {
-        document.getElementById('dueBox').classList.remove('show');
-        document.getElementById('fleetDue').innerText = '₹0';
-      }
-    } else if (d.isBlocked === true && now >= snoozedUntil) {
-      document.getElementById('lockScreen').classList.add('show');
-      if (isOnline) toggleStatus();
-    }
+    window._lastDriverRecord = d;
+    window.evaluateDriverLockState(d);
   });
 }
 
@@ -4698,7 +4775,7 @@ function snoozeDue() {
     if (s.exists()) {
       s.forEach(c => {
         if (c.val().status === 'PENDING') {
-          update(ref(db, `driver_dues/${DRIVER_PHONE}/${c.key}`), { deadline: snoozeUntil });
+          update(ref(db, `driver_dues/${DRIVER_PHONE}/${c.key}`), { deadline: snoozeUntil }).catch(()=>{});
         }
       });
     }
@@ -4706,12 +4783,20 @@ function snoozeDue() {
     let unblockUpdates = {
       isBlocked: false,
       snoozedUntil: snoozeUntil,
-      dueGraceUntil: snoozeUntil
+      dueGraceUntil: snoozeUntil,
+      dueStartTime: now
     };
-    update(ref(db, 'drivers/' + DRIVER_PHONE), unblockUpdates);
-    update(ref(db, 'drivers/DRIVER_' + DRIVER_PHONE), unblockUpdates);
+    update(ref(db, 'drivers/' + DRIVER_PHONE), unblockUpdates).catch(()=>{});
+    update(ref(db, 'drivers/DRIVER_' + DRIVER_PHONE), unblockUpdates).catch(()=>{});
 
-    document.getElementById('lockScreen').classList.remove('show');
+    localStorage.setItem('rsg_dueStartTime_' + DRIVER_PHONE, String(now));
+    if (window._lastDriverRecord) {
+      window._lastDriverRecord.snoozedUntil = snoozeUntil;
+      window._lastDriverRecord.dueGraceUntil = snoozeUntil;
+      window._lastDriverRecord.isBlocked = false;
+    }
+    window.evaluateDriverLockState();
+
     alert(currentLang === 'bn' 
       ? '⏰ ১ ঘণ্টা সময় বাড়ানো হয়েছে! আইডি অবিলম্বে আনলক করা হয়েছে।\n(1 Hour Snooze Applied! ID Unlocked immediately).' 
       : '⏰ 1 Hour Snooze Applied! ID unlocked immediately.');
@@ -4800,16 +4885,26 @@ function confirmDuePaid() {
       paymentVerificationPending: true,
       submittedUtr: utr,
       submittedAmount: total || 50,
-      lastUtrSubmittedAt: now
+      lastUtrSubmittedAt: now,
+      snoozedUntil: now + 7200000, // 2-hour temporary grace while admin verifies
+      dueGraceUntil: now + 7200000,
+      isBlocked: false
     };
-    update(ref(db, 'drivers/' + DRIVER_PHONE), updates);
-    update(ref(db, 'drivers/DRIVER_' + DRIVER_PHONE), updates);
+    update(ref(db, 'drivers/' + DRIVER_PHONE), updates).catch(()=>{});
+    update(ref(db, 'drivers/DRIVER_' + DRIVER_PHONE), updates).catch(()=>{});
+
+    if (window._lastDriverRecord) {
+      window._lastDriverRecord.snoozedUntil = now + 7200000;
+      window._lastDriverRecord.dueGraceUntil = now + 7200000;
+      window._lastDriverRecord.isBlocked = false;
+    }
+    window.evaluateDriverLockState();
 
     document.getElementById('qrModal').classList.remove('show');
     if (utrInp) utrInp.value = '';
     alert(currentLang === 'bn' 
-      ? `✅ আপনার UTR নম্বর (${utr}) সফলভাবে জমা হয়েছে!\nঅ্যাডমিন ব্যাংক স্টেটমেন্ট দেখে Approve করলেই আপনার আইডি স্বয়ংক্রিয়ভাবে আনলক হয়ে যাবে।` 
-      : `✅ UTR (${utr}) submitted successfully!\nAdmin will verify the bank statement and approve your payment to unlock your ID.`);
+      ? `✅ আপনার UTR নম্বর (${utr}) সফলভাবে জমা হয়েছে!\nঅ্যাডমিন ভেরিফাই করার জন্য ২ ঘণ্টার সাময়িক ছাড় দেওয়া হলো। অ্যাডমিন Approve করলেই ডিউ শূন্য হয়ে যাবে।` 
+      : `✅ UTR (${utr}) submitted successfully!\nA 2-hour temporary grace period has been applied while Admin verifies your payment.`);
   });
 }
 
@@ -5039,18 +5134,12 @@ function listenDriverProfile() {
     let d = snap ? snap.val() : null;
     if (!d) return;
 
-    // 1. Instant Lockout if Blocked by Admin
-    if (d.status === 'BLOCKED' || d.isBlocked === true) {
-      let lockEl = document.getElementById('lockScreen');
-      if (lockEl) lockEl.classList.add('show');
-      if (isOnline) {
-        isOnline = false;
-        try { setStatusOfflineUI(); } catch(e) {}
-      }
-      return;
-    } else if (d.status === 'APPROVED' || d.status === 'active') {
-      let lockEl = document.getElementById('lockScreen');
-      if (lockEl) lockEl.classList.remove('show');
+    // 1. Instant Lockout / Unlock Check via Central Evaluator
+    window._lastDriverRecord = d;
+    if (typeof window.evaluateDriverLockState === 'function') {
+      window.evaluateDriverLockState(d);
+    }
+    if (d.status === 'APPROVED' || d.status === 'active') {
       let pBlock = document.getElementById('pendingBlock');
       if (pBlock) {
         pBlock.classList.remove('show');

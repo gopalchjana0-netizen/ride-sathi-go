@@ -4698,12 +4698,18 @@ function filterDrivers(){
     if(isVerified)verified++;
     let dueTime=d.dueStartTime||0;
     let left=0,timerHtml='';
+    let isSnooze = (d.snoozedUntil && Date.now() < d.snoozedUntil) || (d.dueGraceUntil && Date.now() < d.dueGraceUntil);
     if(isLock&&dueTime){
       let el=Math.floor((Date.now()-dueTime)/60000);
       left=autoMin-el;
       if(left<0)left=0;
-      timerHtml=`<span class="badge TIMER">⏰ ${left}m</span>`;
-      if(left==0&&!d.isBlocked){
+      if(isSnooze) {
+        let snzLeft = Math.ceil((Math.max(d.snoozedUntil||0, d.dueGraceUntil||0) - Date.now()) / 60000);
+        timerHtml=`<span class="badge" style="background:#7c3aed;color:#fff">⏰ Snooze: ${snzLeft}m</span>`;
+      } else {
+        timerHtml=`<span class="badge TIMER">⏰ ${left}m</span>`;
+      }
+      if(left==0&&!d.isBlocked&&!isSnooze){
         db.ref('drivers/'+k+'/isBlocked').set(true);
         db.ref('drivers/DRIVER_'+k+'/isBlocked').set(true);
         speakDue(d.name||k,due,0);
@@ -4711,6 +4717,9 @@ function filterDrivers(){
     }else if(isLock&&!dueTime){
       db.ref('drivers/'+k+'/dueStartTime').set(Date.now());
       db.ref('drivers/DRIVER_'+k+'/dueStartTime').set(Date.now());
+    }else if(!isLock&&dueTime){
+      db.ref('drivers/'+k+'/dueStartTime').remove();
+      db.ref('drivers/DRIVER_'+k+'/dueStartTime').remove();
     }
     let latest=getLatestSelfieForPhone(k);
     html+=`<div class="card" style="border-left:4px solid ${isVerified?'#16a34a':'#e2e8f0'}"><div style="display:flex;gap:8px"><div style="flex:1"><b>${isVerified?'✅':'🔴'} ${d.name||k}</b> ${isLock?`<span class="badge DUE-LOCK">₹${due}</span>`:``} ${timerHtml} ${isVerified?`<span class="badge" style="background:#16a34a;color:white">Selfie ✅</span>`:`<span class="badge" style="background:#fee2e2;color:#991b1b">No Selfie</span>`}<br><span class="small">${d.mobile||''}</span><br><div style="display:flex;gap:4px;margin-top:4px"><button class="btn" style="border:1px solid orange" onclick="speakDue('${(d.name||k).replace(/'/g,'')}',${due},${left})">🔊</button><button class="btn blue" onclick="clearDriverDue('${k}')">Clear Due</button><button class="btn orange" onclick="blockDriver('${k}')">Block</button></div></div>${latest?`<img src="${latest.image}" style="width:64px;height:64px;border-radius:50%;border:2px solid #16a34a;object-fit:cover">`:''}</div></div>`;
