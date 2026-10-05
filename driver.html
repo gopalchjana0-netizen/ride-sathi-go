@@ -1364,6 +1364,21 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
   </div>
 </div>
 
+<!-- 5.5 CUSTOMER CANCELLED ON-SCREEN ALERT MODAL -->
+<div id="customerCancelledAlertModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.92);backdrop-filter:blur(8px);z-index:99999999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:24px;border:3px solid #ef4444;padding:24px 20px;text-align:center;max-width:390px;width:92%;box-shadow:0 25px 60px rgba(239,68,68,0.35)">
+    <div style="font-size:52px;margin-bottom:8px">⚠️</div>
+    <h3 style="color:#dc2626;font-size:20px;font-weight:900;margin:0 0 6px">যাত্রী রাইড বাতিল করেছেন!</h3>
+    <p style="color:#64748b;font-size:13px;font-weight:bold;margin:0 0 8px">Customer Cancelled Ride</p>
+    <p style="color:#334155;font-size:13.5px;margin:0 0 18px;line-height:1.4" id="custCancelAlertDetail">
+      যাত্রী এই রাইডটি বাতিল করেছেন। আপনি এখন নতুন রাইডের জন্য প্রস্তুত।
+    </p>
+    <button type="button" onclick="dismissCustomerCancelAlert()" style="background:linear-gradient(90deg,#dc2626,#ef4444);color:#fff;border:none;padding:14px 20px;border-radius:14px;font-size:15px;font-weight:900;width:100%;cursor:pointer;box-shadow:0 4px 15px rgba(239,68,68,0.4)">
+      ✅ ঠিক আছে (OK)
+    </button>
+  </div>
+</div>
+
 <!-- 6. ADMIN DUE LOCK SCREEN -->
 <div id="lockScreen" class="lock-overlay">
   <div style="background:#fff;color:#0f172a;padding:26px 20px;border-radius:24px;max-width:440px;width:100%;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,.7);border-top:6px solid #ef4444">
@@ -3837,6 +3852,34 @@ async function acceptRide(key) {
   }
 }
 
+// === CUSTOMER CANCELLED ON-SCREEN ALERT HANDLER ===
+window.showCustomerCancelledModal = function(msg) {
+  let modal = document.getElementById('customerCancelledAlertModal');
+  if (modal) {
+    let d = document.getElementById('custCancelAlertDetail');
+    if (d && msg) d.innerText = msg;
+    modal.style.display = 'flex';
+  }
+  try {
+    if (typeof stopSound === 'function') stopSound();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      let u = new SpeechSynthesisUtterance('যাত্রী রাইড বাতিল করেছেন');
+      u.lang = 'bn-IN';
+      window.speechSynthesis.speak(u);
+    }
+  } catch(e) {}
+};
+
+window.dismissCustomerCancelAlert = function() {
+  let modal = document.getElementById('customerCancelledAlertModal');
+  if (modal) modal.style.display = 'none';
+  window.hasActiveOngoingRide = false;
+  window.activeTripKey = null;
+  let box = document.getElementById('acceptedBox');
+  if (box) box.innerHTML = '';
+};
+
 // === ACTIVE TRIPS WITH QUICK-REPLY WHATSAPP BUTTONS ===
 function listenAccepted() {
   const aRef = ref(db, 'accepted_rides');
@@ -3861,7 +3904,7 @@ function listenAccepted() {
       if (cleanPhone(d.driverPhone) !== DRIVER_PHONE) return;
 
       if (d.status === 'CANCELLED_BY_CUSTOMER' || d.status === 'CANCELLED') {
-        alert(currentLang === 'bn' ? '⚠️ যাত্রী রাইডটি বাতিল করেছেন! / Customer cancelled the ride.' : '⚠️ Customer has cancelled this ride.');
+        window.showCustomerCancelledModal(currentLang === 'bn' ? '⚠️ যাত্রী রাইডটি বাতিল করেছেন! আপনি এখন অন্য রাইড নিতে পারেন।' : '⚠️ Customer cancelled this ride. You are now available for other rides.');
         remove(ref(db, 'accepted_rides/' + key)).catch(()=>{});
         let c = document.getElementById('card_accepted_' + key);
         if (c) c.remove();
@@ -6308,8 +6351,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!n) return;
       const nTime = Number(n.time || n.timestamp || 0);
       if (nTime > 0 && Date.now() - nTime > 45000) return; // Skip historical old notices
-      if (n.status === 'CANCELLED_BY_CUSTOMER' || n.status === 'cancelled') {
-        alert('⚠️ ' + (n.message || n.msg || 'যাত্রী রাইডটি বাতিল করেছেন! (Customer Cancelled)'));
+      if (n.status === 'CANCELLED_BY_CUSTOMER' || n.status === 'cancelled' || n.type === 'CANCELLED_BY_CUSTOMER') {
+        if (typeof window.showCustomerCancelledModal === 'function') {
+          window.showCustomerCancelledModal(n.message || n.msg || '⚠️ যাত্রী রাইডটি বাতিল করেছেন! আপনি এখন অন্য নতুন রাইড নিতে পারেন।');
+        } else {
+          alert('⚠️ ' + (n.message || n.msg || 'যাত্রী রাইডটি বাতিল করেছেন! (Customer Cancelled)'));
+        }
         window.hasActiveOngoingRide = false;
         window.activeTripKey = null;
         let box = document.getElementById('acceptedBox');
@@ -6366,6 +6413,34 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (ride.rejectedDrivers && ride.rejectedDrivers[myPhone]) return;
       if (typeof showRideCard === 'function') {
         showRideCard(rSnap.key, ride);
+      }
+    });
+
+    // Auto-dismiss incoming request modal if customer cancels while driver is viewing
+    firebase.database().ref('rideRequests').on('child_removed', rSnap => {
+      const modal = document.getElementById('requestModal');
+      const curKey = modal ? modal.getAttribute('data-ride-key') : null;
+      if (curKey && curKey === rSnap.key) {
+        if (typeof stopSound === 'function') stopSound();
+        if (modal) modal.style.display = 'none';
+        if (typeof showDriverToast === 'function') {
+          showDriverToast('⚠️ যাত্রী রিকোয়েস্টটি বাতিল করেছেন (Cancelled by Customer)');
+        }
+      }
+    });
+
+    firebase.database().ref('rideRequests').on('child_changed', rSnap => {
+      const val = rSnap.val();
+      if (val && (val.status === 'CANCELLED_BY_CUSTOMER' || val.status === 'CANCELLED')) {
+        const modal = document.getElementById('requestModal');
+        const curKey = modal ? modal.getAttribute('data-ride-key') : null;
+        if (curKey && curKey === rSnap.key) {
+          if (typeof stopSound === 'function') stopSound();
+          if (modal) modal.style.display = 'none';
+          if (typeof showDriverToast === 'function') {
+            showDriverToast('⚠️ যাত্রী রিকোয়েস্টটি বাতিল করেছেন (Cancelled by Customer)');
+          }
+        }
       }
     });
 

@@ -68,6 +68,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
   <div class="tab" onclick="openTab('dispatch',this)" style="color:#0284c7;background:#f0f9ff">📞<br>Call Book</div>
   <div class="tab" onclick="openTab('broadcast',this)" style="color:#b45309;background:#fefce8">📢<br>Notice</div>
   <div class="tab" id="tab-slideshow" onclick="openTab('slideshow',this)" style="color:#d97706;background:#fffbeb">🎠<br>Slides</div>
+  <div class="tab" id="tab-splash" onclick="openTab('splash',this)" style="color:#e11d48;background:#fff1f2">🎬<br>Splash Video</div>
   <div class="tab" id="tab-appCms" onclick="openTab('appCms',this)" style="color:#059669;background:#ecfdf5">🎛️<br>App CMS</div>
   <div class="tab" onclick="openTab('promo',this)" style="color:#7c3aed;background:#faf5ff">🎟️<br>Coupons</div>
   <div class="tab" onclick="openTab('report',this)" style="color:#dc2626;background:#fef2f2">📑<br>Report</div>
@@ -99,6 +100,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
 <div id="homeDiv">
 <div class="homeGrid">
 <div class="homeCard hc-orange" onclick="openTab('slideshow',document.getElementById('tab-slideshow'))"><b>🎠 Hero Slideshow</b><span>কাস্টমার ব্যানার ও বিজ্ঞাপন তৈরি / ডিলিট</span><br><small style="font-weight:800;color:#d97706" id="homeSlidesSummary">Manage Slides</small></div>
+<div class="homeCard hc-pink" onclick="openTab('splash',document.getElementById('tab-splash'))"><b>🎬 Welcome Splash Video</b><span>Rapido-style 5s Intro Video / Photo</span><br><small style="font-weight:800;color:#e11d48" id="homeSplashSummary">Manage Splash</small></div>
 <div class="homeCard hc-yellow" onclick="openTab('dispatch',document.querySelectorAll('.tab')[2])"><b>📞 Call-in Booking</b><span>যাত্রীর কল থেকে বুকিং করুন</span><br><small style="font-weight:800;color:#ca8a04">Dispatch Console</small></div>
 <div class="homeCard hc-blue" onclick="openTab('tripLive',document.querySelectorAll('.tab')[8])"><b>🎯 Live Tracking</b><span>Driver + Customer Live Map</span><br><small style="font-weight:800;color:#0284c7" id="homeLive">0 Live</small></div>
 <div class="homeCard hc-green" onclick="openTab('live',document.querySelectorAll('.tab')[7])"><b>🚕 Online Drivers</b><span id="homeDrivers">0 Online</span><br><small style="font-weight:800;color:#16a34a" id="homeDriverCount">0 Fleet</small></div>
@@ -290,6 +292,88 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
       </div>
       <div id="adminSlidesList" style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
         <div style="color:#64748b;font-size:12px">স্লাইড লোড হচ্ছে...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME SPLASH MEDIA TAB -->
+<div id="splashDiv" style="display:none">
+  <div class="card" style="border:2px solid #f43f5e;border-radius:18px;background:#fff;padding:20px;box-shadow:0 10px 30px rgba(244,63,94,0.1)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;border-bottom:2px solid #ffe4e6;padding-bottom:12px">
+      <div>
+        <h2 style="margin:0;color:#e11d48;font-size:20px;display:flex;align-items:center;gap:8px">
+          🎬 Rapido-Style Welcome Splash Video / Banner
+        </h2>
+        <p style="margin:4px 0 0;color:#64748b;font-size:13px">
+          Customer app/website open করলে ৫ সেকেন্ডের আকর্ষণীয় ইন্ট্রো ভিডিও বা ব্যানার ডিসপ্লে করবে।
+        </p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;background:#ffe4e6;padding:8px 14px;border-radius:12px;color:#be123c">
+          <input type="checkbox" id="splashEnabledToggle" style="width:20px;height:20px;accent-color:#e11d48">
+          <span>স্প্ল্যাশ সক্রিয় (Active)</span>
+        </label>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+      <div>
+        <label class="small"><b>মিডিয়া টাইপ (Media Type):</b></label>
+        <select id="splashMediaType" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;font-weight:bold" onchange="window.updateSplashPreview()">
+          <option value="video">🎥 Video (MP4 / WebM / CDN Video)</option>
+          <option value="photo">🖼️ Photo / High-Res Banner (JPG / PNG / GIF)</option>
+        </select>
+
+        <div style="margin-top:12px">
+          <label class="small"><b>ভিডিও / ফটোর ডাইরেক্ট লিঙ্ক (Direct URL):</b></label>
+          <input id="splashMediaUrl" placeholder="https://example.com/intro-video.mp4" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box" oninput="window.updateSplashPreview()">
+          <small style="color:#64748b;font-size:11px">সরাসরি যেকোনো ক্লাউড, ড্রাইভ বা সিডিএন ভিডিও/ফটোর লিঙ্ক দিন অথবা নিচে ফাইল আপলোড করুন</small>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="small"><b>📁 লোকাল ফাইল আপলোড করুন (Direct Upload):</b></label>
+          <input type="file" id="splashFileInput" accept="video/mp4,video/webm,image/*" style="width:100%;padding:8px;border-radius:10px;border:1.5px dashed #f43f5e;box-sizing:border-box" onchange="window.handleSplashFileUpload(this)">
+          <div id="splashUploadProgress" style="display:none;color:#e11d48;font-size:12px;font-weight:bold;margin-top:4px">আপলোড হচ্ছে... <span id="splashUploadPercent">0%</span></div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:12px">
+          <div style="flex:1">
+            <label class="small"><b>টাইমার সেকেন্ড (Display Duration):</b></label>
+            <input type="number" id="splashDuration" value="5" min="2" max="15" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box">
+          </div>
+          <div style="flex:1">
+            <label class="small"><b>Skip বাটন দেখাবে?</b></label>
+            <select id="splashSkipToggle" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;font-weight:bold">
+              <option value="true">হ্যাঁ (Yes - Recommended)</option>
+              <option value="false">না (No)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="small"><b>ট্যাগলাইন / হেডলাইন (Optional Overlay Text):</b></label>
+          <input id="splashTagline" placeholder="যেমন: RIDE SATHI GO • গ্রামের পথে, শহরের গতিতে 🚀" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box">
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button type="button" onclick="window.saveSplashSettings()" style="flex:2;background:linear-gradient(90deg,#e11d48,#f43f5e);color:#fff;border:none;padding:12px 18px;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 15px rgba(225,29,72,0.3)">
+            💾 সেভ করুন (Save Splash)
+          </button>
+          <button type="button" onclick="window.deleteSplashSettings()" style="flex:1;background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;padding:12px;border-radius:12px;font-size:14px;font-weight:900;cursor:pointer">
+            🗑️ ডিলিট (Delete)
+          </button>
+        </div>
+      </div>
+
+      <!-- LIVE PREVIEW CONTAINER -->
+      <div style="background:#0f172a;border-radius:20px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;position:relative;border:2px solid #334155;overflow:hidden">
+        <div style="position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.6);color:#f8fafc;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;z-index:2">
+          📱 লাইভ প্রিভিউ (Live Preview)
+        </div>
+        <div id="splashPreviewContainer" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center">
+          <span style="color:#94a3b8;font-size:13px">ভিডিও বা ছবির URL দিন অথবা ফাইল আপলোড করুন</span>
+        </div>
       </div>
     </div>
   </div>
@@ -2367,13 +2451,16 @@ function parseCoords(obj){
 function openTab(n,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   if(el) el.classList.add('active');
-  ['home','dash','dispatch','broadcast','slideshow','appCms','promo','report','selfie','live','tripLive','sos','pending','all','blocked','payment','wallet','rides','ratings','setting','tracking','cities','sheetReport','appDownload','driverComm','supportChat','smartTools','manage'].forEach(x=>{
+  ['home','dash','dispatch','broadcast','slideshow','splash','appCms','promo','report','selfie','live','tripLive','sos','pending','all','blocked','payment','wallet','rides','ratings','setting','tracking','cities','sheetReport','appDownload','driverComm','supportChat','smartTools','manage'].forEach(x=>{
     let d=document.getElementById(x+'Div'); 
     if(d) d.style.display=x==n?'block':'none'
   });
   
   if(n=='slideshow') {
     if(typeof listenHeroSlidesManager === 'function') listenHeroSlidesManager();
+  }
+  if(n=='splash') {
+    if(typeof window.loadSplashSettings === 'function') window.loadSplashSettings();
   }
   if(n=='cities') loadCitiesManagement();
   if(n=='driverComm') {
@@ -3352,6 +3439,160 @@ window.saveAdminHeroSlide = saveAdminHeroSlide;
 window.clearSlideInputs = clearSlideInputs;
 window.deleteHeroSlide = deleteHeroSlide;
 window.listenHeroSlidesManager = listenHeroSlidesManager;
+
+// === WELCOME SPLASH SCREEN MANAGER (RAPIDO STYLE) ===
+window.loadSplashSettings = function() {
+  db.ref('settings/splashScreen').once('value').then(snap => {
+    const data = snap.val() || {};
+    const enabledToggle = document.getElementById('splashEnabledToggle');
+    const mediaType = document.getElementById('splashMediaType');
+    const mediaUrl = document.getElementById('splashMediaUrl');
+    const duration = document.getElementById('splashDuration');
+    const skipToggle = document.getElementById('splashSkipToggle');
+    const tagline = document.getElementById('splashTagline');
+
+    if (enabledToggle) enabledToggle.checked = !!data.enabled;
+    if (mediaType) mediaType.value = data.mediaType || 'video';
+    if (mediaUrl) mediaUrl.value = data.mediaUrl || '';
+    if (duration) duration.value = data.durationSec || 5;
+    if (skipToggle) skipToggle.value = data.skipEnabled !== false ? 'true' : 'false';
+    if (tagline) tagline.value = data.tagline || 'RIDE SATHI GO • গ্রামের পথে, শহরের গতিতে 🚀';
+
+    const homeSummary = document.getElementById('homeSplashSummary');
+    if (homeSummary) {
+      homeSummary.innerText = data.enabled ? 'Active • ' + (data.mediaType || 'video') : 'Disabled';
+      homeSummary.style.color = data.enabled ? '#16a34a' : '#dc2626';
+    }
+
+    window.updateSplashPreview();
+  }).catch(err => {
+    console.warn('Error loading splash settings:', err);
+  });
+};
+
+window.updateSplashPreview = function() {
+  const container = document.getElementById('splashPreviewContainer');
+  if (!container) return;
+  const type = document.getElementById('splashMediaType') ? document.getElementById('splashMediaType').value : 'video';
+  const url = document.getElementById('splashMediaUrl') ? document.getElementById('splashMediaUrl').value.trim() : '';
+
+  if (!url) {
+    container.innerHTML = '<span style="color:#94a3b8;font-size:13px">ভিডিও বা ছবির URL দিন অথবা ফাইল আপলোড করুন</span>';
+    return;
+  }
+
+  if (type === 'video') {
+    container.innerHTML = `
+      <video src="${url}" autoplay muted loop playsinline controls style="max-width:100%;max-height:280px;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.5)">
+        আপনার ব্রাউজার ভিডিও সাপোর্ট করে না।
+      </video>
+    `;
+  } else {
+    container.innerHTML = `
+      <img src="${url}" style="max-width:100%;max-height:280px;border-radius:12px;object-fit:cover;box-shadow:0 4px 15px rgba(0,0,0,0.5)">
+    `;
+  }
+};
+
+window.handleSplashFileUpload = function(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const progressDiv = document.getElementById('splashUploadProgress');
+  const percentSpan = document.getElementById('splashUploadPercent');
+  if (progressDiv) progressDiv.style.display = 'block';
+
+  try {
+    const storageRef = firebase.storage().ref('splash/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, ''));
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed', 
+      function(snapshot) {
+        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        if (percentSpan) percentSpan.innerText = progress + '%';
+      }, 
+      function(error) {
+        console.warn('Storage upload error, fallback to FileReader:', error);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (progressDiv) progressDiv.style.display = 'none';
+          const urlInput = document.getElementById('splashMediaUrl');
+          if (urlInput) urlInput.value = e.target.result;
+          window.updateSplashPreview();
+        };
+        reader.readAsDataURL(file);
+      }, 
+      function() {
+        uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+          if (progressDiv) progressDiv.style.display = 'none';
+          const urlInput = document.getElementById('splashMediaUrl');
+          if (urlInput) urlInput.value = downloadURL;
+          window.updateSplashPreview();
+          alert('✅ ফাইল সফলভাবে আপলোড হয়েছে!');
+        });
+      }
+    );
+  } catch(e) {
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      if (progressDiv) progressDiv.style.display = 'none';
+      const urlInput = document.getElementById('splashMediaUrl');
+      if (urlInput) urlInput.value = ev.target.result;
+      window.updateSplashPreview();
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+window.saveSplashSettings = function() {
+  const enabled = document.getElementById('splashEnabledToggle') ? document.getElementById('splashEnabledToggle').checked : false;
+  const mediaType = document.getElementById('splashMediaType') ? document.getElementById('splashMediaType').value : 'video';
+  const mediaUrl = document.getElementById('splashMediaUrl') ? document.getElementById('splashMediaUrl').value.trim() : '';
+  const durationSec = document.getElementById('splashDuration') ? Number(document.getElementById('splashDuration').value) || 5 : 5;
+  const skipEnabled = document.getElementById('splashSkipToggle') ? document.getElementById('splashSkipToggle').value === 'true' : true;
+  const tagline = document.getElementById('splashTagline') ? document.getElementById('splashTagline').value.trim() : '';
+
+  if (enabled && !mediaUrl) {
+    alert('⚠️ স্প্ল্যাশ সক্রিয় করতে হলে অনুগ্রহ করে একটি ভিডিও বা ফটো URL দিন অথবা ফাইল আপলোড করুন!');
+    return;
+  }
+
+  const payload = {
+    enabled: enabled,
+    mediaType: mediaType,
+    mediaUrl: mediaUrl,
+    durationSec: durationSec,
+    skipEnabled: skipEnabled,
+    tagline: tagline,
+    updatedAt: Date.now()
+  };
+
+  db.ref('settings/splashScreen').set(payload).then(() => {
+    alert('✅ ওয়েলকাম স্প্ল্যাশ ভিডিও / ব্যানার সফলভাবে সংরক্ষিত হয়েছে!');
+    window.loadSplashSettings();
+  }).catch(err => {
+    alert('ত্রুটি: ' + err.message);
+  });
+};
+
+window.deleteSplashSettings = function() {
+  if (!confirm('আপনি কি নিশ্চিত যে ওয়েলকাম স্প্ল্যাশ সেটিংস মুছে ফেলতে চান?')) return;
+  db.ref('settings/splashScreen').remove().then(() => {
+    alert('🗑️ ওয়েলকাম স্প্ল্যাশ ডিলিট করা হয়েছে। কাস্টমার সরাসরি হোম পেজে প্রবেশ করবে।');
+    window.loadSplashSettings();
+  }).catch(err => {
+    alert('ত্রুটি: ' + err.message);
+  });
+};
+
+// Also listen on startup for home summary
+db.ref('settings/splashScreen').on('value', snap => {
+  const data = snap.val() || {};
+  const homeSummary = document.getElementById('homeSplashSummary');
+  if (homeSummary) {
+    homeSummary.innerText = data.enabled ? 'Active • ' + (data.mediaType || 'video') : 'Disabled';
+    homeSummary.style.color = data.enabled ? '#16a34a' : '#dc2626';
+  }
+});
 
 // === 3. PROMO CODES & COUPONS ===
 function savePromoCode(){
