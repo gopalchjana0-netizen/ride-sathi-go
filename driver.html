@@ -2459,6 +2459,9 @@ window._activeSpeechUtterances = [];
 
 let lastSpokenTime = 0;
 let lastSpokenRideKey = null;
+let isSpeechActive = false;
+let speechTimeout = null;
+let speechQueueTimers = [];
 
 function speak3Lang(rideKey, force = false) {
   if (isSoundMuted || window.hasActiveOngoingRide) return;
@@ -2471,14 +2474,19 @@ function speak3Lang(rideKey, force = false) {
 
   if (!('speechSynthesis' in window)) return;
 
+  isSpeechActive = true;
+  speechQueueTimers.forEach(t => clearTimeout(t));
+  speechQueueTimers = [];
+
   try {
     if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     window.speechSynthesis.cancel();
   } catch(e) {}
 
-  setTimeout(() => {
+  clearTimeout(speechTimeout);
+  speechTimeout = setTimeout(() => {
     try {
-      if (isSoundMuted || window.hasActiveOngoingRide) return;
+      if (!isSpeechActive || isSoundMuted || window.hasActiveOngoingRide) return;
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
 
       const voices = (window.speechSynthesis.getVoices && window.speechSynthesis.getVoices()) || [];
@@ -2513,25 +2521,35 @@ function speak3Lang(rideKey, force = false) {
       let curIdx = 0;
 
       function playNext() {
-        if (curIdx >= queue.length || isSoundMuted || window.hasActiveOngoingRide) {
+        if (!isSpeechActive || curIdx >= queue.length || isSoundMuted || window.hasActiveOngoingRide) {
           window._activeSpeechUtterances = [];
           return;
         }
         const utt = queue[curIdx];
         curIdx++;
         let advanced = false;
-        const advance = () => {
+        const advance = (evt) => {
           if (advanced) return;
           advanced = true;
-          clearTimeout(watchdog);
-          setTimeout(playNext, 180);
+          if (!isSpeechActive || isSoundMuted || window.hasActiveOngoingRide) {
+            window._activeSpeechUtterances = [];
+            return;
+          }
+          if (evt && (evt.error === 'canceled' || evt.error === 'interrupted')) {
+            window._activeSpeechUtterances = [];
+            return;
+          }
+          const tId = setTimeout(playNext, 180);
+          speechQueueTimers.push(tId);
         };
 
         utt.onend = advance;
         utt.onerror = advance;
-        const watchdog = setTimeout(advance, 3500);
+        const watchdog = setTimeout(() => { advance(); }, 3500);
+        speechQueueTimers.push(watchdog);
 
         try {
+          if (!isSpeechActive || isSoundMuted || window.hasActiveOngoingRide) return;
           if (window.speechSynthesis.paused) window.speechSynthesis.resume();
           window.speechSynthesis.speak(utt);
         } catch(e) {
@@ -2549,7 +2567,7 @@ window.speak3Lang = speak3Lang;
 
 function playSound(rideKey) {
   triggerHapticVibrate();
-  if (isSoundMuted) return;
+  if (isSoundMuted || window.hasActiveOngoingRide) return;
   unlockAudio();
 
   // 1. Play synthesized Web Audio alarm chime
@@ -2572,7 +2590,10 @@ function playSound(rideKey) {
   if (!soundInterval) {
     soundInterval = setInterval(() => {
       triggerHapticVibrate();
-      if (isSoundMuted) return;
+      if (isSoundMuted || window.hasActiveOngoingRide) {
+        stopSound();
+        return;
+      }
       playUberRapidoAlarm();
       let ringEl = document.getElementById('ring');
       if (ringEl) {
@@ -2587,6 +2608,11 @@ window.playSound = playSound;
 
 function stopSound() {
   lastSpokenRideKey = null;
+  isSpeechActive = false;
+  clearTimeout(speechTimeout);
+  speechQueueTimers.forEach(t => clearTimeout(t));
+  speechQueueTimers = [];
+
   if (soundInterval) {
     clearInterval(soundInterval);
     soundInterval = null;
@@ -2600,6 +2626,8 @@ function stopSound() {
   }
   try {
     if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.pause();
       window.speechSynthesis.cancel();
     }
   } catch(e) {}
@@ -2655,9 +2683,9 @@ function isRealRide(d) {
   const rawSt = String(d.status || 'PENDING').toUpperCase();
   const isPending = rawSt === 'PENDING' || rawSt === 'SEARCHING';
   if (!isPending) return false;
-  // Ignore expired requests older than 10 minutes
+  // Ignore expired requests older than 5 minutes
   const rideTime = Number(d.time || d.timestamp || d.createdAt || 0);
-  if (rideTime > 0 && (Date.now() - rideTime > 10 * 60 * 1000)) return false;
+  if (rideTime > 0 && (Date.now() - rideTime > 5 * 60 * 1000)) return false;
   return true;
 }
 
@@ -3237,23 +3265,15 @@ function renderAllIncoming() {
       let reqVeh = d.vehicle || d.vehicleType;
       if (!matchesVehicleCategory(DRIVER_VEHICLE, reqVeh)) return;
 
-      // 2. SELF-BOOKING BLOCK: Do not show order if customer mobile matches driver mobile
-      let custMobile = cleanPhone(d.mobile || d.customerMobile || d.customerPhone || d.phone);
-      if (custMobile && custMobile === cleanPhone(DRIVER_PHONE) && DRIVER_PHONE !== '8768447312') return;
-
-      // 4. CITY FILTER: Driver will only get ride requests where request.city == driver.currentCity
-      if (window.driverCurrentCity && d.city) {
-        if (d.city.toLowerCase() !== window.driverCurrentCity.toLowerCase()) return;
-      }
-
-      // 3. DISTANCE FILTER (15km radius):
+      // 2. SELF-BOOKING ALLOWED: Do not drop test rides if tester uses same mobile
+      // 3. DISTANCE FILTER (45km radius to ensure suburban/village trips are not dropped):
       let distToPickup = null;
       let pLat = Number(d.fromLat || (d.pickupCoords && d.pickupCoords.lat) || 0);
       let pLng = Number(d.fromLng || d.fromLon || (d.pickupCoords && d.pickupCoords.lon) || 0);
       if (currentDriverLat && currentDriverLng && pLat && pLng) {
         distToPickup = calculateDistanceKm(currentDriverLat, currentDriverLng, pLat, pLng);
       }
-      if (distToPickup !== null && distToPickup > 15) return;
+      if (distToPickup !== null && distToPickup > 45) return;
 
       count++;
       let full = parseInt(d.fare || 0);
@@ -3435,11 +3455,6 @@ function renderAllIncoming() {
           rejectedRideKeys.add(key);
           return;
         }
-        // Bandwidth & Battery Optimization: Only listen to driver's designated city if set
-        let rideCity = (d.city || d.cityName || '').trim().toLowerCase();
-        if (driverCity && rideCity && driverCity !== 'all' && rideCity !== 'all' && driverCity !== rideCity) {
-          return;
-        }
         let isForMe = !d.assignedTo || d.assignedTo === 'ALL' || cleanPhone(d.assignedTo) === DRIVER_PHONE;
         let reqVeh = d.vehicle || d.vehicleType;
         let vehMatch = matchesVehicleCategory(DRIVER_VEHICLE, reqVeh);
@@ -3453,7 +3468,7 @@ function renderAllIncoming() {
     renderAllIncoming();
   });
 
-  // 2. rideRequests camelCase bounded to last 20 with city filter
+  // 2. rideRequests camelCase bounded to last 20
   const qRideRequestsCamel = query(ref(db, 'rideRequests'), limitToLast(20));
   onValue(qRideRequestsCamel, snap => {
     if (!isOnline) {
@@ -3465,7 +3480,6 @@ function renderAllIncoming() {
     });
 
     if (snap.exists() && isOnline) {
-      const driverCity = (window.driverCurrentCity || localStorage.getItem('driverCity') || '').trim().toLowerCase();
       snap.forEach(ch => {
         let d = ch.val();
         let key = ch.key;
@@ -3473,11 +3487,6 @@ function renderAllIncoming() {
         if (rejectedRideKeys.has(key)) return;
         if (d.rejectedBy && d.rejectedBy[DRIVER_PHONE]) {
           rejectedRideKeys.add(key);
-          return;
-        }
-        // City filtering
-        let rideCity = (d.city || d.cityName || '').trim().toLowerCase();
-        if (driverCity && rideCity && driverCity !== 'all' && rideCity !== 'all' && driverCity !== rideCity) {
           return;
         }
         let isForMe = !d.assignedTo || d.assignedTo === 'ALL' || cleanPhone(d.assignedTo) === DRIVER_PHONE;
@@ -3569,15 +3578,24 @@ function renderAllIncoming() {
       if (cfRes.ok) {
         const cfData = await cfRes.json();
         if (cfData && cfData.requests && cfData.requests.length > 0) {
+          let hasNewRide = false;
           cfData.requests.forEach(req => {
+            // STRICT EXPIRATION CHECK: Discard stale / mock requests older than 3 minutes
+            const reqTime = req.created_at ? new Date(req.created_at).getTime() : Number(req.time || req.timestamp || 0);
+            if (!reqTime || (Date.now() - reqTime > 3 * 60 * 1000)) return;
+            const reqVeh = req.vehicle || req.vehicleType;
+            if (reqVeh && !matchesVehicleCategory(DRIVER_VEHICLE, reqVeh)) return;
+
             if (!activeRequestMap.has(req.id) && !rejectedRideKeys.has(req.id)) {
               req._source = 'cloudflare_poll';
               activeRequestMap.set(req.id, req);
-              if (typeof renderRequestCards === 'function') renderRequestCards();
-              if (typeof playSound === 'function') playSound();
+              hasNewRide = true;
               notifyDriverCustomerBooking(req.id, req);
             }
           });
+          if (hasNewRide) {
+            renderAllIncoming();
+          }
         }
       }
     } catch(err) {}
@@ -3596,6 +3614,9 @@ function renderAllIncoming() {
 
 // === ACCEPT RIDE ===
 async function acceptRide(key) {
+  // 1. STOP SOUND & 3-LANGUAGE VOICE IMMEDIATELY AT ONCE!
+  stopSound();
+
   if (window.hasActiveOngoingRide) {
     alert(currentLang === 'hi' ? '⚠️ आपकी एक राइड अभी चल रही है! इसे पूरा करने के बाद ही नई राइड ले सकते हैं।' : (currentLang === 'en' ? '⚠️ You have an ongoing trip! Complete it before accepting another.' : '⚠️ আপনার একটি অনগোইং রাইড বর্তমানে চালু আছে! আগের রাইডটি শেষ না হওয়া পর্যন্ত নতুন রাইড একসেপ্ট করতে পারবেন না।'));
     return;

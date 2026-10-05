@@ -4543,8 +4543,8 @@ loadOffers();
 </div>
 
 <!-- 4. CUSTOMER RIDE CANCELLATION MODAL (Pre-set reasons) -->
-<div id="customerCancelModal" class="modal-overlay">
-  <div class="modal-box" style="max-width:440px;width:90%">
+<div id="customerCancelModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;pointer-events:auto">
+  <div class="modal-box" style="max-width:440px;width:90%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1.5px solid #e2e8f0;position:relative;z-index:100000000">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h3 style="margin:0;color:#dc2626;font-size:18px">❌ <span data-i18n="cancelModalTitle">রাইড বাতিল করুন</span></h3>
       <button onclick="closeCustomerCancelModal()" style="border:none;background:none;font-size:24px;cursor:pointer;color:#64748b">&times;</button>
@@ -4569,6 +4569,7 @@ loadOffers();
       </button>
     </div>
   </div>
+</div>
 <!-- 4.9 OLA / RAPIDO STYLE PAYMENT SETTLEMENT MODAL (ZERO-BILL DYNAMIC UPI & CASH FLOW) -->
 <div id="ridePaymentModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(8px);z-index:99999998;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;pointer-events:auto">
   <div class="modal-box" style="text-align:center;max-width:440px;width:92%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1.5px solid #e2e8f0;position:relative;z-index:99999999;pointer-events:auto;max-height:92vh;overflow-y:auto">
