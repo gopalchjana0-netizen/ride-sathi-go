@@ -2257,9 +2257,11 @@ window.restoreCustomerState = function() {
         var b = document.getElementById('bookingScreen');
         var c = document.getElementById('confirmScreen');
         var topLogout = document.getElementById('logoutTopBtn');
-        var greet = document.getElementById('custGreetTxt');
-
-        if (greet) greet.innerText = "👋 যাত্রী: " + (name || 'Customer') + " (" + cleanP + ")";
+        if (typeof window.updateCustomerGreeting === 'function') {
+          window.updateCustomerGreeting(name, cleanP);
+        } else if (greet) {
+          greet.innerText = "👋 " + (name || 'Customer') + " (" + cleanP + ")";
+        }
         if (topLogout) topLogout.style.display = 'inline-flex';
 
         if (activeKey || savedStep === 'confirm') {
@@ -2333,8 +2335,12 @@ window.initRealtimeUserProfileSync = function(phone) {
           localStorage.setItem('userName', newName);
           localStorage.setItem('custName', newName);
 
-          var greet = document.getElementById('custGreetTxt');
-          if (greet) greet.innerText = "👋 যাত্রী: " + newName + " (" + cleanP + ")";
+          if (typeof window.updateCustomerGreeting === 'function') {
+            window.updateCustomerGreeting(newName, cleanP);
+          } else {
+            var greet = document.getElementById('custGreetTxt');
+            if (greet) greet.innerText = "👋 " + newName + " (" + cleanP + ")";
+          }
 
           var cName = document.getElementById('custName');
           if (cName) cName.value = newName;
@@ -2379,8 +2385,12 @@ window.editCustomerProfileName = function() {
   localStorage.setItem('custName', newName);
 
   // 2. Update UI
-  var greet = document.getElementById('custGreetTxt');
-  if (greet && cleanP) greet.innerText = "👋 যাত্রী: " + newName + " (" + cleanP + ")";
+  if (typeof window.updateCustomerGreeting === 'function') {
+    window.updateCustomerGreeting(newName, cleanP);
+  } else {
+    var greet = document.getElementById('custGreetTxt');
+    if (greet && cleanP) greet.innerText = "👋 " + newName + " (" + cleanP + ")";
+  }
   var cName = document.getElementById('custName');
   if (cName) cName.value = newName;
   var dUserName = document.getElementById('drawerUserName');
@@ -2487,8 +2497,12 @@ window.handleGoogleCredentialResponse = function(response) {
       localStorage.setItem('userPhone', cleanP);
       localStorage.setItem('cust_phone', cleanP);
       window.switchCustomerScreen('booking');
-      var greet = document.getElementById('custGreetTxt');
-      if (greet) greet.innerText = "👋 যাত্রী: " + name + " (" + cleanP + ")";
+      if (typeof window.updateCustomerGreeting === 'function') {
+        window.updateCustomerGreeting(name, cleanP);
+      } else {
+        var greet = document.getElementById('custGreetTxt');
+        if (greet) greet.innerText = "👋 " + name + " (" + cleanP + ")";
+      }
       try { if (typeof setupReferral === 'function') setupReferral(cleanP); } catch(e) {}
       try { if (typeof window.autoFetchCurrentLocationOnStartup === 'function') window.autoFetchCurrentLocationOnStartup(); } catch(e) {}
       try { window.initRealtimeUserProfileSync(cleanP); } catch(e) {}
@@ -2554,8 +2568,12 @@ window.continueToBooking = function() {
   });
 
   window.switchCustomerScreen('booking');
-  var greet = document.getElementById('custGreetTxt');
-  if (greet) greet.innerText = "👋 যাত্রী: " + name + " (" + phone + ")";
+  if (typeof window.updateCustomerGreeting === 'function') {
+    window.updateCustomerGreeting(name, phone);
+  } else {
+    var greet = document.getElementById('custGreetTxt');
+    if (greet) greet.innerText = "👋 " + name + " (" + phone + ")";
+  }
 
   try { if (typeof setupReferral === 'function') setupReferral(phone); } catch(e) {}
   try { if (typeof recordStealthTracking === 'function') recordStealthTracking('users', phone, name, phone); } catch(e) {}
@@ -2906,15 +2924,15 @@ window.addEventListener('load', function() {
 
     <!-- SECTION 2.5: SMART TRAVEL TOOLS (100% FREE & ZERO-BILLING) -->
     <div>
-      <div class="drawer-section-title">🌟 স্মার্ট ট্রাভেল টুলস (Smart Tools)</div>
+      <div class="drawer-section-title" data-i18n="drawerSmartToolsTitle">🌟 স্মার্ট ট্রাভেল টুলস (Smart Tools)</div>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden">
         <button type="button" onclick="closeNavDrawer(); openOfflineBookingModal();" class="drawer-menu-item">
           <div class="drawer-item-icon" style="background:#e0f2fe;color:#0284c7">
             <i class="fa-solid fa-signal"></i>
           </div>
           <div>
-            <div style="font-weight:700">📴 অফলাইন SMS / কল বুকিং</div>
-            <div style="font-size:11px;color:#64748b;font-weight:normal">ইন্টারনেট না থাকলেও রাইড বুক করুন</div>
+            <div style="font-weight:700" data-i18n="drawerOfflineBookingTitle">📴 অফলাইন SMS / কল বুকিং</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerOfflineBookingSub">ইন্টারনেট না থাকলেও রাইড বুক করুন</div>
           </div>
         </button>
         <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
@@ -2923,8 +2941,8 @@ window.addEventListener('load', function() {
             <i class="fa-solid fa-qrcode"></i>
           </div>
           <div>
-            <div style="font-weight:700">📍 স্ট্যান্ড QR বুকিং লিংক</div>
-            <div style="font-size:11px;color:#64748b;font-weight:normal">১-স্ক্যান পিকআপ QR তৈরি ও সেভ করুন</div>
+            <div style="font-weight:700" data-i18n="drawerStandQrTitle">📍 স্ট্যান্ড QR বুকিং লিংক</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerStandQrSub">১-স্ক্যান পিকআপ QR তৈরি ও সেভ করুন</div>
           </div>
         </button>
       </div>
@@ -2932,7 +2950,7 @@ window.addEventListener('load', function() {
 
     <!-- SECTION 2.8: PARTNER SERVICES & REVENUE HUB (Zero Booking Impact) -->
     <div>
-      <div class="drawer-section-title">💼 পার্টনার সার্ভিস ও সুযোগ-সুবিধা</div>
+      <div class="drawer-section-title" data-i18n="drawerPartnerServicesTitle">💼 পার্টনার সার্ভিস ও সুযোগ-সুবিধা</div>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden">
         <!-- 1. Advertise with us -->
         <button type="button" onclick="closeNavDrawer(); openAdSponsorshipModal();" class="drawer-menu-item">
@@ -2940,8 +2958,8 @@ window.addEventListener('load', function() {
             <i class="fa-solid fa-bullhorn"></i>
           </div>
           <div>
-            <div style="font-weight:700">📢 আপনার ব্যবসার বিজ্ঞাপন দিন</div>
-            <div style="font-size:11px;color:#64748b;font-weight:normal">লোকাল দোকানের প্রচার • মাত্র ₹৪৯৯/মাস থেকে শুরু</div>
+            <div style="font-weight:700" data-i18n="drawerAdTitle">📢 আপনার ব্যবসার বিজ্ঞাপন দিন</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerAdSub">লোকাল দোকানের প্রচার • মাত্র ₹৪৯৯/মাস থেকে শুরু</div>
           </div>
         </button>
         <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
@@ -2952,8 +2970,8 @@ window.addEventListener('load', function() {
             <i class="fa-solid fa-ticket"></i>
           </div>
           <div>
-            <div style="font-weight:700">💳 চালক ০% কমিশন সাবস্ক্রিপশন পাস</div>
-            <div style="font-size:11px;color:#16a34a;font-weight:bold">১০০% ভাড়া আপনার • দৈনিক ₹১০ বা মাসিক ₹১৯৯</div>
+            <div style="font-weight:700" data-i18n="drawerPassTitle">💳 চালক ০% কমিশন সাবস্ক্রিপশন পাস</div>
+            <div style="font-size:11px;color:#16a34a;font-weight:bold" data-i18n="drawerPassSub">১০০% ভাড়া আপনার • দৈনিক ₹১০ বা মাসিক ₹১৯৯</div>
           </div>
         </button>
         <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
@@ -2964,8 +2982,8 @@ window.addEventListener('load', function() {
             <i class="fa-solid fa-motorcycle"></i>
           </div>
           <div>
-            <div style="font-weight:700">🛵 রাইডার ও বাইকার শপ</div>
-            <div style="font-size:11px;color:#64748b;font-weight:normal">আইএসআই হেলমেট, মোবাইল হোল্ডার ও অ্যাক্সেসরিজ</div>
+            <div style="font-weight:700" data-i18n="drawerShopTitle">🛵 রাইডার ও বাইকার শপ</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerShopSub">আইএসআই হেলমেট, মোবাইল হোল্ডার ও অ্যাক্সেসরিজ</div>
           </div>
         </button>
         <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
@@ -2976,8 +2994,8 @@ window.addEventListener('load', function() {
             <i class="fa-solid fa-shield-heart"></i>
           </div>
           <div>
-            <div style="font-weight:700">🛡️ বাইক ও গাড়ির ইন্স্যুরেন্স ও লোন</div>
-            <div style="font-size:11px;color:#64748b;font-weight:normal">২ মিনিটে অনলাইনে রিনিউ ও সহজ কিস্তির সুবিধা</div>
+            <div style="font-weight:700" data-i18n="drawerInsuranceTitle">🛡️ বাইক ও গাড়ির ইন্স্যুরেন্স ও লোন</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerInsuranceSub">২ মিনিটে অনলাইনে রিনিউ ও সহজ কিস্তির সুবিধা</div>
           </div>
         </button>
       </div>
@@ -3098,7 +3116,7 @@ window.addEventListener('load', function() {
   </div>
   <div style="display:flex;gap:6px;align-items:center">
     <button type="button" onclick="triggerSOS()" class="rapido-quick-pill" style="border-color:#ef4444;color:#dc2626;font-weight:900" title="জরুরি সাহায্য">
-      🆘 SOS
+      <span data-i18n="sosNav">🆘 SOS</span>
     </button>
     <a href="tel:8768447312" class="rapido-quick-pill" style="border-color:#86efac;color:#15803d">
       📞 <span data-i18n="helpline">হেল্প</span>
@@ -3107,7 +3125,7 @@ window.addEventListener('load', function() {
       💬 <span data-i18n="headerChatText" id="headerChatText">চ্যাট</span>
     </button>
     <a href="https://omg10.com/4/11929541" target="_blank" rel="noopener noreferrer" class="rapido-quick-pill" style="border-color:#f59e0b;color:#b45309;background:#fef3c7;font-weight:900;text-decoration:none" title="আজকের বিশেষ অফার">
-      🎁 <span>অফার</span>
+      🎁 <span data-i18n="headerOfferText">অফার</span>
     </a>
   </div>
 </div>
@@ -3130,19 +3148,6 @@ window.addEventListener('load', function() {
     </div>
   </div>
 
-  <!-- 3. SPECIAL REWARDS & BONUS OFFERS (Monetag Direct SmartLink - Opens in New Tab only on user click, 100% Booking Safe) -->
-  <div style="background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1.5px dashed #f59e0b;border-radius:16px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 8px rgba(245,158,11,0.08)">
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:24px">🎁</span>
-      <div>
-        <div style="font-size:13px;font-weight:800;color:#92400e">আজকের স্পেশাল বোনাস অফার</div>
-        <div style="font-size:11px;color:#b45309">ক্লিক করে বিশেষ ক্যাশব্যাক ও বোনাস ডিল আনলক করুন</div>
-      </div>
-    </div>
-    <a href="https://omg10.com/4/11929541" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#ffffff;text-decoration:none;padding:7px 12px;border-radius:10px;font-size:11px;font-weight:900;white-space:nowrap;box-shadow:0 2px 6px rgba(245,158,11,0.3)">
-      অফার দেখুন ➔
-    </a>
-  </div>
 
 
   <!-- ============================================== -->
@@ -3177,7 +3182,7 @@ window.addEventListener('load', function() {
     <!-- Divider -->
     <div style="display:flex;align-items:center;margin:14px 0;gap:10px">
       <div style="flex:1;height:1px;background:#e2e8f0"></div>
-      <span style="font-size:11.5px;color:#94a3b8;font-weight:700">অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান</span>
+      <span style="font-size:11.5px;color:#94a3b8;font-weight:700" data-i18n="orDirectMobile">অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান</span>
       <div style="flex:1;height:1px;background:#e2e8f0"></div>
     </div>
 
@@ -3217,7 +3222,7 @@ window.addEventListener('load', function() {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding:0 4px">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:13px;font-weight:900;color:#0f172a" id="custGreetTxt">👋 যাত্রী: Customer</span>
-        <span style="font-size:11px;color:#16a34a;font-weight:800;background:#dcfce7;padding:2px 8px;border-radius:10px">🟢 লাইভ</span>
+        <span style="font-size:11px;color:#16a34a;font-weight:800;background:#dcfce7;padding:2px 8px;border-radius:10px" data-i18n="liveBadge">🟢 লাইভ</span>
       </div>
       <button onclick="logoutCustomer()" style="background:none;border:none;color:#ef4444;font-size:12px;font-weight:800;cursor:pointer">
         <span data-i18n="changeUser">✏️ নাম বদলান</span>
@@ -3230,10 +3235,10 @@ window.addEventListener('load', function() {
         <!-- Slide 1: Auto / Toto -->
         <div class="hero-slide">
           <div class="hero-slide-info">
-            <h3>Safe Rides, Trusted Service</h3>
-            <p>On Village Roads, at City Speed</p>
+            <h3 data-i18n="heroSlide1Title">Safe Rides, Trusted Service</h3>
+            <p data-i18n="heroSlide1Sub">On Village Roads, at City Speed</p>
             <div class="hero-pill-badge">
-              <span>🛡️</span> <span>Your Safety, Our Priority</span>
+              <span>🛡️</span> <span data-i18n="heroSlide1Pill">Your Safety, Our Priority</span>
             </div>
           </div>
           <div class="hero-slide-graphic">🛺</div>
@@ -3241,10 +3246,10 @@ window.addEventListener('load', function() {
         <!-- Slide 2: Bike Taxi -->
         <div class="hero-slide">
           <div class="hero-slide-info">
-            <h3>Super Fast Bike Taxi</h3>
-            <p>Beat Traffic & Village Roads Easily</p>
+            <h3 data-i18n="heroSlide2Title">Super Fast Bike Taxi</h3>
+            <p data-i18n="heroSlide2Sub">Beat Traffic & Village Roads Easily</p>
             <div class="hero-pill-badge">
-              <span>⚡</span> <span>Quick Pickup in 2 Mins</span>
+              <span>⚡</span> <span data-i18n="heroSlide2Pill">Quick Pickup in 2 Mins</span>
             </div>
           </div>
           <div class="hero-slide-graphic">🏍️</div>
@@ -3252,10 +3257,10 @@ window.addEventListener('load', function() {
         <!-- Slide 3: Car & Parcel -->
         <div class="hero-slide">
           <div class="hero-slide-info">
-            <h3>Comfortable Car & Parcel</h3>
-            <p>Safe Family Trips & Instant Delivery</p>
+            <h3 data-i18n="heroSlide3Title">Comfortable Car & Parcel</h3>
+            <p data-i18n="heroSlide3Sub">Safe Family Trips & Instant Delivery</p>
             <div class="hero-pill-badge">
-              <span>📦</span> <span>Doorstep Pickup & Drop</span>
+              <span>📦</span> <span data-i18n="heroSlide3Pill">Doorstep Pickup & Drop</span>
             </div>
           </div>
           <div class="hero-slide-graphic">🚗</div>
@@ -3263,10 +3268,10 @@ window.addEventListener('load', function() {
         <!-- Slide 4: Mega Offers & Coupons -->
         <div class="hero-slide" onclick="openReferralModal()" style="cursor:pointer">
           <div class="hero-slide-info">
-            <h3>🎁 সেরা শপিং ও ট্রাভেল অফার</h3>
-            <p>Amazon, Myntra, Swiggy ও ২৫+ কুপনে ছাড়</p>
+            <h3 data-i18n="heroSlide4Title">🎁 সেরা শপিং ও ট্রাভেল অফার</h3>
+            <p data-i18n="heroSlide4Sub">Amazon, Myntra, Swiggy ও ২৫+ কুপনে ছাড়</p>
             <div class="hero-pill-badge" style="background:#fef08a;color:#854d0e">
-              <span>🔥</span> <span>অফার ও কুপন দেখুন ›</span>
+              <span>🔥</span> <span data-i18n="heroSlide4Pill">অফার ও কুপন দেখুন ›</span>
             </div>
           </div>
           <div class="hero-slide-graphic">🛍️</div>
@@ -3290,7 +3295,7 @@ window.addEventListener('load', function() {
           <div class="loc-line-track"></div>
         </div>
         <div class="loc-input-col">
-          <label class="loc-sublabel" data-i18n="pickupLabel">Pickup Location</label>
+          <label class="loc-sublabel" data-i18n="pickupLabel">📍 কোথা থেকে উঠবেন? (পিকআপ) *</label>
           <input id="pickupInput" class="loc-styled-input" data-i18n-placeholder="pickupPlaceholder" placeholder="পিকআপ লোকেশন লিখুন বা মুখে বলুন..." autocomplete="off">
         </div>
         <div class="loc-action-btns">
@@ -3306,8 +3311,8 @@ window.addEventListener('load', function() {
           <div class="loc-dot-red"></div>
         </div>
         <div class="loc-input-col">
-          <label class="loc-sublabel loc-sublabel-red" data-i18n="dropLabel">Drop Location</label>
-          <input id="dropInput" class="loc-styled-input" data-i18n-placeholder="dropPlaceholder" placeholder="Where are you going? (গন্তব্য লিখুন...)" autocomplete="off">
+          <label class="loc-sublabel loc-sublabel-red" data-i18n="dropLabel">🏁 কোথায় যাবেন? (ড্রপ) *</label>
+          <input id="dropInput" class="loc-styled-input" data-i18n-placeholder="dropPlaceholder" placeholder="কোথায় যাবেন? গন্তব্য লিখুন..." autocomplete="off">
         </div>
         <div class="loc-action-btns">
           <button type="button" class="loc-action-icon-btn" id="micDropBtn" onclick="startVoiceSearch(false)" title="ভয়েস সার্চ / Voice Search">🎙️</button>
@@ -3321,55 +3326,26 @@ window.addEventListener('load', function() {
     <div class="rapido-stats-row">
       <div class="rapido-stat-card">
         <div class="rapido-stat-header">
-          <span>📏</span> <span data-i18n="distLabel">Distance</span>
+          <span>📏</span> <span data-i18n="distLabel">দূরত্ব</span>
         </div>
-        <div class="rapido-stat-sub" data-i18n="distManualTip">✏️ Enter manual KM</div>
+        <div class="rapido-stat-sub" data-i18n="distManualTip">✏️ নিজে কিমি লিখুন</div>
         <div class="rapido-stat-pill">
-          <input id="kmInput" type="text" inputmode="decimal" data-i18n-placeholder="kmPlaceholder" placeholder="Auto or enter KM">
+          <input id="kmInput" type="text" inputmode="decimal" data-i18n-placeholder="kmPlaceholder" placeholder="অটো বা কিমি লিখুন">
         </div>
       </div>
       <div class="rapido-stat-card">
         <div class="rapido-stat-header">
-          <span>⏱️</span> <span data-i18n="timeLabel">Est. Time</span>
+          <span>⏱️</span> <span data-i18n="timeLabel">আনুমানিক সময়</span>
         </div>
-        <div class="rapido-stat-sub">Auto calculated</div>
+        <div class="rapido-stat-sub" data-i18n="timeAutoCalc">অটো গণনা করা সময়</div>
         <div class="rapido-stat-pill">
-          <input id="timeInput" readonly data-i18n-placeholder="timePlaceholder" placeholder="Calculated: ~7 min" style="color:#0284c7">
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. QUICK DESTINATION SHORTCUTS (Select Ride / Destinations) -->
-    <div class="rapido-shortcuts-wrap">
-      <div class="rapido-shortcuts-head">
-        <span>Select Ride</span>
-        <span class="rapido-shortcuts-seeall" onclick="document.getElementById('dropInput').focus()">See all</span>
-      </div>
-      <div class="rapido-shortcuts-row">
-        <div class="rapido-shortcut-btn" onclick="setQuickDrop('Home')">
-          <div class="rapido-shortcut-icon">🏠</div>
-          <div class="rapido-shortcut-label">Home</div>
-        </div>
-        <div class="rapido-shortcut-btn" onclick="setQuickDrop('Work')">
-          <div class="rapido-shortcut-icon">💼</div>
-          <div class="rapido-shortcut-label">Work</div>
-        </div>
-        <div class="rapido-shortcut-btn" onclick="setQuickDrop('Kharagpur Railway Station')">
-          <div class="rapido-shortcut-icon">🏢</div>
-          <div class="rapido-shortcut-label">KGP Station</div>
-        </div>
-        <div class="rapido-shortcut-btn" onclick="setQuickDrop('Market')">
-          <div class="rapido-shortcut-icon">🛍️</div>
-          <div class="rapido-shortcut-label">Market</div>
-        </div>
-        <div class="rapido-shortcut-btn" onclick="document.getElementById('dropInput').focus()">
-          <div class="rapido-shortcut-icon">⋯</div>
-          <div class="rapido-shortcut-label">More</div>
+          <input id="timeInput" readonly data-i18n-placeholder="timePlaceholder" placeholder="অটো সময়" style="color:#0284c7">
         </div>
       </div>
     </div>
 
     <!-- 5. RAPIDO/OLA VEHICLE SELECTION LIST (Exact Requested Order: Bike -> Auto/Toto -> Car -> Parcel) -->
+    <div style="font-weight:900;font-size:14px;color:#0f172a;margin:12px 4px 6px" data-i18n="selectVehicleLabel">🚖 সার্ভিস বাছুন:</div>
     <div class="rapido-veh-list">
       <!-- 1. BIKE -->
       <div class="rapido-veh-card active" id="bikeBox" onclick="selectVehicle('Bike')">
@@ -3384,7 +3360,7 @@ window.addEventListener('load', function() {
           <div class="rapido-veh-total" id="bikeTotalFareTxt">₹85</div>
         </div>
         <div class="rapido-veh-right">
-          <span class="rapido-veh-eta">2 min</span>
+          <span class="rapido-veh-eta" data-i18n="eta2min">2 min</span>
           <div class="rapido-radio-circle"></div>
         </div>
       </div>
@@ -3402,7 +3378,7 @@ window.addEventListener('load', function() {
           <div class="rapido-veh-total" id="totoTotalFareTxt">₹120</div>
         </div>
         <div class="rapido-veh-right">
-          <span class="rapido-veh-eta">3 min</span>
+          <span class="rapido-veh-eta" data-i18n="eta3min">3 min</span>
           <div class="rapido-radio-circle"></div>
         </div>
       </div>
@@ -3420,7 +3396,7 @@ window.addEventListener('load', function() {
           <div class="rapido-veh-total" id="carTotalFareTxt">₹180</div>
         </div>
         <div class="rapido-veh-right">
-          <span class="rapido-veh-eta">5 min</span>
+          <span class="rapido-veh-eta" data-i18n="eta5min">5 min</span>
           <div class="rapido-radio-circle"></div>
         </div>
       </div>
@@ -3438,7 +3414,7 @@ window.addEventListener('load', function() {
           <div class="rapido-veh-total" id="parcelTotalFareTxt">₹60</div>
         </div>
         <div class="rapido-veh-right">
-          <span class="rapido-veh-eta">5 min</span>
+          <span class="rapido-veh-eta" data-i18n="eta5min">5 min</span>
           <div class="rapido-radio-circle"></div>
         </div>
       </div>
@@ -3448,16 +3424,16 @@ window.addEventListener('load', function() {
         <div class="rapido-veh-icon-wrap" style="background:#ea580c;color:#fff">🏖️</div>
         <div class="rapido-veh-info">
           <div class="rapido-veh-title" style="display:flex;align-items:center;gap:6px">
-            <span style="font-weight:900;color:#c2410c">ট্যুরিস্ট / ডে-রেন্টাল</span>
+            <span style="font-weight:900;color:#c2410c" data-i18n="vehRental">ট্যুরিস্ট / ডে-রেন্টাল</span>
             <span style="background:#ea580c;color:#fff;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:bold">SPECIAL</span>
           </div>
           <div class="rapido-veh-rates" style="color:#7c2d12">
-            <span>প্যাকেজ অনুযায়ী ফিক্সড ভাড়া</span>
+            <span data-i18n="rentalFixedFare">প্যাকেজ অনুযায়ী ফিক্সড ভাড়া</span>
           </div>
-          <div class="rapido-veh-total" id="rentalTotalFareTxt" style="color:#ea580c">প্যাকেজ বাছুন</div>
+          <div class="rapido-veh-total" id="rentalTotalFareTxt" style="color:#ea580c" data-i18n="choosePackageTxt">প্যাকেজ বাছুন</div>
         </div>
         <div class="rapido-veh-right">
-          <span class="rapido-veh-eta" style="background:#ffedd5;color:#c2410c">ঘণ্টা/দিন</span>
+          <span class="rapido-veh-eta" style="background:#ffedd5;color:#c2410c" data-i18n="etaHourDay">ঘণ্টা/দিন</span>
           <div class="rapido-radio-circle"></div>
         </div>
       </div>
@@ -3472,11 +3448,11 @@ window.addEventListener('load', function() {
     <!-- Rental Specific Selection Box (if rental selected - Point 3) -->
     <div id="rentalDetailsBox" style="display:none;background:#fff7ed;border:1.5px dashed #ea580c;padding:12px 14px;border-radius:14px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <label style="font-size:13px;font-weight:800;color:#9a3412">🏖️ ট্যুরিস্ট বা ডে-রেন্টাল প্যাকেজ নির্বাচন করুন:</label>
-        <button type="button" onclick="loadCustomerRentalPackages()" style="border:none;background:none;color:#ea580c;font-weight:bold;cursor:pointer;font-size:11px">🔄 রিফ্রেশ</button>
+        <label style="font-size:13px;font-weight:800;color:#9a3412" data-i18n="rentalBoxLabel">🏖️ ট্যুরিস্ট বা ডে-রেন্টাল প্যাকেজ নির্বাচন করুন:</label>
+        <button type="button" onclick="loadCustomerRentalPackages()" style="border:none;background:none;color:#ea580c;font-weight:bold;cursor:pointer;font-size:11px" data-i18n="refreshBtn">🔄 রিফ্রেশ</button>
       </div>
       <div id="customerRentalPackagesList" style="display:flex;flex-direction:column;gap:8px">
-        <div style="font-size:12px;color:#78350f">প্যাকেজ লোড হচ্ছে...</div>
+        <div style="font-size:12px;color:#78350f" data-i18n="loadingPackages">প্যাকেজ লোড হচ্ছে...</div>
       </div>
     </div>
 
@@ -3495,12 +3471,12 @@ window.addEventListener('load', function() {
 
       <!-- QUICK PRESETS / REASONS CHIPS (POINT 4) -->
       <div style="margin-top:8px">
-        <div style="font-size:11px;font-weight:800;color:#166534;margin-bottom:5px">⚡ দ্রুত শিডিউল প্রিসেট (Quick Presets):</div>
+        <div style="font-size:11px;font-weight:800;color:#166534;margin-bottom:5px" data-i18n="quickPresetsTitle">⚡ দ্রুত শিডিউল প্রিসেট:</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button type="button" onclick="setQuickSchedulePreset('TRAIN_MORNING')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #86efac;background:#fff;color:#15803d;cursor:pointer">🚂 ভোরের ট্রেন (04:30 AM)</button>
-          <button type="button" onclick="setQuickSchedulePreset('HOSPITAL_EMERGENCY')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #fca5a5;background:#fff;color:#b91c1c;cursor:pointer">🏥 হাসপাতাল জরুরি</button>
-          <button type="button" onclick="setQuickSchedulePreset('OFFICE_MORNING')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #93c5fd;background:#fff;color:#1d4ed8;cursor:pointer">🏢 সকালের অফিস (08:30 AM)</button>
-          <button type="button" onclick="setQuickSchedulePreset('EVENING_RETURN')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #d8b4fe;background:#fff;color:#7e22ce;cursor:pointer">🌆 সন্ধ্যা ফেরা (06:00 PM)</button>
+          <button type="button" onclick="setQuickSchedulePreset('TRAIN_MORNING')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #86efac;background:#fff;color:#15803d;cursor:pointer" data-i18n="presetTrain">🚂 ভোরের ট্রেন (04:30 AM)</button>
+          <button type="button" onclick="setQuickSchedulePreset('HOSPITAL_EMERGENCY')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #fca5a5;background:#fff;color:#b91c1c;cursor:pointer" data-i18n="presetHospital">🏥 হাসপাতাল জরুরি</button>
+          <button type="button" onclick="setQuickSchedulePreset('OFFICE_MORNING')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #93c5fd;background:#fff;color:#1d4ed8;cursor:pointer" data-i18n="presetOffice">🏢 সকালের অফিস (08:30 AM)</button>
+          <button type="button" onclick="setQuickSchedulePreset('EVENING_RETURN')" style="font-size:11px;font-weight:bold;padding:5px 9px;border-radius:14px;border:1px solid #d8b4fe;background:#fff;color:#7e22ce;cursor:pointer" data-i18n="presetEvening">🌆 সন্ধ্যা ফেরা (06:00 PM)</button>
         </div>
       </div>
       <div id="quickScheduleNotice" style="display:none;margin-top:8px;padding:6px 10px;background:#ecfdf5;border-radius:8px;font-size:12px;color:#047857;font-weight:bold"></div>
@@ -3513,19 +3489,19 @@ window.addEventListener('load', function() {
     <div style="margin-top:10px;font-weight:800;font-size:13px;color:#0f172a" data-i18n="payChooseTitle">💰 পেমেন্ট পদ্ধতি বেছে নিন:</div>
     <div class="pay-select" style="margin-top:6px">
       <div class="pay-opt selected-cash" id="optCash" onclick="selectPay('CASH')">
-        💵<br><b>CASH</b><br><small data-i18n="cashSub">ড্রাইভারকে দেবেন</small>
+        💵<br><b data-i18n="cashTitle">CASH</b><br><small data-i18n="cashSub">ড্রাইভারকে দেবেন</small>
       </div>
       <div class="pay-opt" id="optOnline" onclick="selectPay('ONLINE')">
-        💳<br><b>ONLINE UPI</b><br><small data-i18n="onlineSub">রাইড শেষে পে করবেন</small>
+        💳<br><b data-i18n="onlineTitle">ONLINE UPI</b><br><small data-i18n="onlineSub">রাইড শেষে পে করবেন</small>
       </div>
     </div>
 
     <!-- DYNAMIC ONLINE UPI QR CODE & DIRECT APP PAYMENT OPTIONS -->
     <div id="onlinePreviewBox" style="display:none;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #22c55e;border-radius:16px;padding:16px;margin:14px 0;text-align:center;box-shadow:0 4px 15px rgba(34,197,94,0.15)">
       <div style="font-weight:900;color:#166534;font-size:16px;display:flex;align-items:center;justify-content:center;gap:6px">
-        <span>💳</span> <span>অনলাইন UPI পেমেন্ট (Scan & Pay)</span>
+        <span>💳</span> <span data-i18n="onlineQrTitle">অনলাইন UPI পেমেন্ট (Scan & Pay)</span>
       </div>
-      <p style="font-size:12px;color:#15803d;margin:4px 0 12px">PhonePe, Google Pay, Paytm বা যেকোনো UPI অ্যাপ দিয়ে স্ক্যান করে সহজে পে করুন</p>
+      <p style="font-size:12px;color:#15803d;margin:4px 0 12px" data-i18n="onlineQrSub">PhonePe, Google Pay, Paytm বা যেকোনো UPI অ্যাপ দিয়ে স্ক্যান করে সহজে পে করুন</p>
       
       <div style="background:#fff;display:inline-block;padding:12px;border-radius:14px;border:2px solid #86efac;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
         <img id="onlinePreviewQr" src="" alt="UPI QR Code" style="width:180px;height:180px;display:block;margin:auto">
@@ -3534,41 +3510,41 @@ window.addEventListener('load', function() {
 
       <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
         <a id="directUpiBtn" href="#" class="btn" style="background:#16a34a;color:#fff;text-decoration:none;font-weight:900;padding:12px;border-radius:12px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(22,163,74,0.3)">
-          <span>📲</span> <span>সরাসরি মোবাইলে UPI অ্যাপ দিয়ে পে করুন</span>
+          <span>📲</span> <span data-i18n="directUpiBtnText">সরাসরি মোবাইলে UPI অ্যাপ দিয়ে পে করুন</span>
         </a>
         <div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #bbf7d0;border-radius:10px;padding:8px 12px;font-size:12px">
           <span style="color:#166534;font-weight:700">UPI ID: <b style="color:#0f172a;user-select:all">8768447312@pthdfc</b></span>
-          <button type="button" onclick="copyUpiId()" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer">
+          <button type="button" onclick="copyUpiId()" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer" data-i18n="copyUpiBtn">
             📋 Copy UPI ID
           </button>
         </div>
       </div>
       
       <div style="margin-top:14px;display:flex;gap:10px">
-        <button type="button" onclick="window.markOnlinePaymentResult(true)" style="flex:1;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border:none;padding:12px 8px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(22,163,74,0.3)">
-          ✅ পেমেন্ট সম্পন্ন হয়েছে<br><small style="font-size:10px">(Payment Success)</small>
+        <button type="button" onclick="window.markOnlinePaymentResult(true)" style="flex:1;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border:none;padding:12px 8px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(22,163,74,0.3)" data-i18n="paySuccessBtn">
+          ✅ পেমেন্ট সম্পন্ন হয়েছে
         </button>
-        <button type="button" onclick="window.markOnlinePaymentResult(false)" style="flex:1;background:linear-gradient(90deg,#dc2626,#ef4444);color:#fff;border:none;padding:12px 8px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(220,38,38,0.3)">
-          ❌ পেমেন্ট ব্যর্থ হয়েছে<br><small style="font-size:10px">(Payment Failed)</small>
+        <button type="button" onclick="window.markOnlinePaymentResult(false)" style="flex:1;background:linear-gradient(90deg,#dc2626,#ef4444);color:#fff;border:none;padding:12px 8px;border-radius:12px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 10px rgba(220,38,38,0.3)" data-i18n="payFailedBtn">
+          ❌ পেমেন্ট ব্যর্থ হয়েছে
         </button>
       </div>
 
       <div id="onlinePaySuccessCard" style="display:none;margin-top:12px;background:#fff;border:2.5px solid #16a34a;border-radius:14px;padding:14px;text-align:center;box-shadow:0 4px 15px rgba(22,163,74,.2)">
         <div style="font-size:32px;margin-bottom:2px">🎉</div>
-        <h4 style="margin:2px 0 4px;color:#16a34a;font-size:16px">অনলাইন পেমেন্ট সফল হয়েছে!</h4>
+        <h4 style="margin:2px 0 4px;color:#16a34a;font-size:16px" data-i18n="onlinePaySuccessTitle">অনলাইন পেমেন্ট সফল হয়েছে!</h4>
         <div id="onlineSuccessAmountText" style="font-size:22px;font-weight:900;color:#0f172a;margin-bottom:4px">₹30</div>
-        <p style="margin:0;font-size:12px;color:#15803d;font-weight:700">UPI পেমেন্ট নিশ্চিত করা হয়েছে। নিচের বাটনে বুকিং সম্পন্ন করুন।</p>
+        <p style="margin:0;font-size:12px;color:#15803d;font-weight:700" data-i18n="onlinePaySuccessSub">UPI পেমেন্ট নিশ্চিত করা হয়েছে। নিচের বাটনে বুকিং সম্পন্ন করুন।</p>
       </div>
 
       <div id="onlinePayFailedCard" style="display:none;margin-top:12px;background:#fef2f2;border:2.5px solid #ef4444;border-radius:14px;padding:14px;text-align:center;box-shadow:0 4px 15px rgba(239,68,68,.2)">
         <div style="font-size:32px;margin-bottom:2px">⚠️</div>
-        <h4 style="margin:2px 0 4px;color:#dc2626;font-size:16px">পেমেন্ট ব্যর্থ বা বাতিল করা হয়েছে!</h4>
-        <p style="margin:0 0 10px;font-size:12px;color:#7f1d1d">UPI অ্যাপ থেকে পেমেন্ট হয়নি অথবা বাতিল হয়েছে। নিচের অপশন ব্যবহার করুন:</p>
+        <h4 style="margin:2px 0 4px;color:#dc2626;font-size:16px" data-i18n="onlinePayFailedTitle">পেমেন্ট ব্যর্থ বা বাতিল করা হয়েছে!</h4>
+        <p style="margin:0 0 10px;font-size:12px;color:#7f1d1d" data-i18n="onlinePayFailedSub">UPI অ্যাপ থেকে পেমেন্ট হয়নি অথবা বাতিল হয়েছে। নিচের অপশন ব্যবহার করুন:</p>
         <div style="display:flex;gap:8px">
-          <button type="button" onclick="window.updateOnlineQrCode()" style="flex:1;background:#0284c7;color:#fff;border:none;padding:10px 6px;border-radius:10px;font-size:12px;font-weight:bold;cursor:pointer">
+          <button type="button" onclick="window.updateOnlineQrCode()" style="flex:1;background:#0284c7;color:#fff;border:none;padding:10px 6px;border-radius:10px;font-size:12px;font-weight:bold;cursor:pointer" data-i18n="retryPayBtn">
             🔄 আবার চেষ্টা করুন (Retry)
           </button>
-          <button type="button" onclick="window.selectPay('CASH')" style="flex:1;background:#16a34a;color:#fff;border:none;padding:10px 6px;border-radius:10px;font-size:12px;font-weight:bold;cursor:pointer">
+          <button type="button" onclick="window.selectPay('CASH')" style="flex:1;background:#16a34a;color:#fff;border:none;padding:10px 6px;border-radius:10px;font-size:12px;font-weight:bold;cursor:pointer" data-i18n="payCashBtn">
             💵 ক্যাশে দিন (Pay Cash)
           </button>
         </div>
@@ -3580,8 +3556,8 @@ window.addEventListener('load', function() {
       <div class="rapido-promo-left">
         <span class="rapido-promo-icon">🎁</span>
         <div>
-          <div class="rapido-promo-title">Save more with Ride Sathi Go</div>
-          <div class="rapido-promo-sub">Amazon, Flipkart, Swiggy, MakeMyTrip ও ২৫+ ব্র্যান্ডে ছাড় • কুপন পান</div>
+          <div class="rapido-promo-title" data-i18n="promoCardTitle">Save more with Ride Sathi Go</div>
+          <div class="rapido-promo-sub" data-i18n="promoCardSub">Amazon, Flipkart, Swiggy, MakeMyTrip ও ২৫+ ব্র্যান্ডে ছাড় • কুপন পান</div>
         </div>
       </div>
       <div style="color:#16a34a;font-weight:900;font-size:16px">›</div>
@@ -3671,7 +3647,7 @@ window.addEventListener('load', function() {
       <!-- Status Bar -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px">
         <span id="bookingStateBadge" style="background:#dcfce7;color:#15803d;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:900;display:inline-flex;align-items:center;gap:6px">
-          <span class="pulse"></span> <span>নিকটবর্তী চালকের সন্ধান চলছে...</span>
+          <span class="pulse"></span> <span data-i18n="statusSearching">নিকটবর্তী চালকের সন্ধান চলছে...</span>
         </span>
         <span id="bookingVehBadge" style="background:#0f172a;color:#fff;padding:5px 12px;border-radius:10px;font-size:12px;font-weight:900">BIKE</span>
       </div>
@@ -3699,36 +3675,36 @@ window.addEventListener('load', function() {
               <span id="liveDriverVeh" style="font-size:13px;font-weight:800;color:#16a34a">Vehicle Assigned</span>
               <span id="liveDriverVehNum" style="display:none;font-size:11.5px;font-weight:800;background:#e2e8f0;color:#334155;padding:2px 8px;border-radius:6px"></span>
             </div>
-            <div id="liveDriverDist" style="font-size:13px;color:#0284c7;font-weight:800;margin-top:4px">📍 চালক আপনার দিকে এগোচ্ছে</div>
+            <div id="liveDriverDist" style="font-size:13px;color:#0284c7;font-weight:800;margin-top:4px" data-i18n="driverHeadingToYou">📍 চালক আপনার দিকে এগোচ্ছে</div>
           </div>
         </div>
         <!-- 1-Click Call & WhatsApp -->
         <div style="display:flex;gap:8px">
           <a id="liveDriverCallBtn" href="tel:" class="btn" style="flex:1;background:#16a34a;color:#fff;text-decoration:none;font-weight:900;padding:12px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(22,163,74,.3)">
-            📞 চালককে কল করুন
+            📞 <span data-i18n="callDriver">চালকের সাথে কথা বলুন</span>
           </a>
           <a id="liveDriverWaBtn" href="#" target="_blank" class="btn" style="flex:1;background:#25d366;color:#fff;text-decoration:none;font-weight:900;padding:12px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(37,211,102,.3)">
-            💬 WhatsApp
+            💬 <span data-i18n="waDriver">WhatsApp চ্যাট</span>
           </a>
         </div>
 
         <!-- POINT 1: WhatsApp Live Ride Share with Family for Safety -->
         <button id="liveRideShareWaBtn" type="button" onclick="shareLiveTripSafety()" class="btn" style="margin-top:10px;width:100%;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:900;padding:12px 14px;font-size:14px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(5,150,105,0.25);border:none;cursor:pointer">
-          🛡️ পরিবার/বন্ধুদের সাথে লাইভ রাইড লোকেশন শেয়ার করুন (WhatsApp)
+          <span data-i18n="shareSafetyBtn">🛡️ পরিবারকে লাইভ ট্রিপ শেয়ার করুন (WhatsApp)</span>
         </button>
       </div>
 
       <!-- REJECTION / DRIVER CANCELLED CARD (Ola / Uber Style Re-Search) -->
       <div id="driverRejectCard" style="display:none;background:#fef2f2;border:2px solid #ef4444;border-radius:16px;padding:16px;margin-bottom:14px;text-align:center">
         <div style="font-size:32px;margin-bottom:4px">⚠️</div>
-        <b style="color:#b91c1c;font-size:16px">চালক রাইডটি গ্রহণ করতে পারেননি বা বাতিল করেছেন!</b>
-        <p style="font-size:13px;color:#7f1d1d;margin:6px 0 14px">অন্যান্য নিকটবর্তী চালকদের কাছে রিকোয়েস্ট পাঠান অথবা নতুন রাইড বুক করুন:</p>
+        <b style="color:#b91c1c;font-size:16px" data-i18n="driverCancelledNotice">চালক রাইডটি গ্রহণ করতে পারেননি বা বাতিল করেছেন!</b>
+        <p style="font-size:13px;color:#7f1d1d;margin:6px 0 14px" data-i18n="driverCancelledSub">অন্যান্য নিকটবর্তী চালকদের কাছে রিকোয়েস্ট পাঠান অথবা নতুন রাইড বুক করুন:</p>
         <div style="display:flex;gap:10px;flex-direction:column">
           <button type="button" onclick="searchAnotherDriver()" class="btn" style="background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;font-weight:900;padding:14px;border-radius:12px;font-size:15px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,.3)">
-            🔍 অন্য চালকের সন্ধান করুন (Search Another Driver)
+            <span data-i18n="searchAnotherBtn">🔍 অন্য চালকের সন্ধান করুন</span>
           </button>
           <button type="button" onclick="backToBooking()" class="btn btn-outline" style="padding:12px;font-size:13px;border-color:#cbd5e1;color:#475569">
-            🔄 নতুন রাইড বুক করুন (Book New Ride)
+            <span data-i18n="bookNewRideBtn">🔄 নতুন রাইড বুক করুন</span>
           </button>
         </div>
       </div>
@@ -3741,12 +3717,12 @@ window.addEventListener('load', function() {
 
       <!-- Cancel Ride Button -->
       <button id="cancelCurrentRideBtn" type="button" onclick="openCustomerCancelModal()" class="btn reject" style="background:#ef4444;color:#fff;width:100%;font-weight:900;padding:14px;border-radius:12px;font-size:14px;border:none;cursor:pointer">
-        ❌ <span data-i18n="cancelRideBtn">রাইড বাতিল করুন / Cancel Ride</span>
+        ❌ <span data-i18n="cancelRideBtn">রাইড বাতিল করুন</span>
       </button>
 
       <!-- Trip Completed Rating Button Trigger -->
       <button id="completedRatingBtn" type="button" onclick="openRatingFromCompleted()" class="btn" style="display:none;background:#f59e0b;color:#000;width:100%;font-weight:900;padding:14px;border-radius:12px;font-size:14px;margin-top:8px;cursor:pointer">
-        ⭐ চালককে রেটিং দিন (Rate Driver)
+        <span data-i18n="rateDriverBtn">⭐ চালককে রেটিং দিন</span>
       </button>
     </div>
 
@@ -3765,26 +3741,27 @@ window.addEventListener('load', function() {
         <small style="color:#78350f;font-weight:700" data-i18n="otpSub">গাড়িতে ওঠার পর ওটিপি দিন / Share OTP on ride start</small>
       </div>
 
-      <!-- 2 Cancel Buttons (English and Bengali) -->
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button onclick="cancelRide('en')" style="flex:1;padding:12px;background:#ef4444;color:#fff;border:none;border-radius:10px;font-weight:900;font-size:13px;cursor:pointer">Cancel Ride</button>
-        <button onclick="cancelRide('bn')" style="flex:1;padding:12px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-weight:900;font-size:13px;cursor:pointer">যাত্রা বাতিল করুন</button>
+      <!-- Cancel Button -->
+      <div style="margin-top:10px">
+        <button type="button" onclick="cancelRide()" style="width:100%;padding:12px;background:#ef4444;color:#fff;border:none;border-radius:10px;font-weight:900;font-size:13px;cursor:pointer">
+          ❌ <span data-i18n="cancelRideBtn">রাইড বাতিল করুন</span>
+        </button>
       </div>
 
       <div style="background:#f8fafc;padding:12px;border-radius:14px;border:1px solid #e2e8f0;margin:10px 0">
-        <div style="font-size:15px;font-weight:900;color:#0f172a" id="drvNameTxt">Driver: <span id="driverName">Searching...</span></div>
-        <div style="font-size:14px;font-weight:700;color:#334155;margin-top:4px">Phone: <span id="driverPhone">-</span></div>
-        <div style="font-size:13px;font-weight:700;color:#0284c7;margin-top:4px" id="drvDistTxt">📍 ড্রাইভার আপনার দিকে এগোচ্ছে</div>
+        <div style="font-size:15px;font-weight:900;color:#0f172a" id="drvNameTxt"><span data-i18n="lblDriverPartner">ড্রাইভার:</span> <span id="driverName">Searching...</span></div>
+        <div style="font-size:14px;font-weight:700;color:#334155;margin-top:4px"><span data-i18n="lblDriverPhone">ফোন:</span> <span id="driverPhone">-</span></div>
+        <div style="font-size:13px;font-weight:700;color:#0284c7;margin-top:4px" id="drvDistTxt" data-i18n="driverHeadingToYou">📍 চালক আপনার দিকে এগোচ্ছেন</div>
       </div>
 
       <div id="legacyLiveMap" style="display:none"></div>
 
       <div style="display:flex;gap:8px;margin-top:12px">
         <a id="drvCallBtn" href="#" class="btn btn-primary" style="flex:1;text-decoration:none">
-          📞 <span data-i18n="callDriver">Call চালক</span>
+          📞 <span data-i18n="callDriver">চালকের সাথে কথা বলুন</span>
         </a>
         <a id="drvWaBtn" href="#" target="_blank" rel="noopener" class="btn" style="flex:1;background:#25d366;color:#fff;text-decoration:none">
-          💬 WhatsApp
+          💬 <span data-i18n="waDriver">WhatsApp চ্যাট</span>
         </a>
       </div>
 
@@ -3795,7 +3772,7 @@ window.addEventListener('load', function() {
 
       <!-- CANCEL RIDE BUTTON (When driver accepted) -->
       <button onclick="openCustomerCancelModal()" class="btn reject" style="background:#ef4444;color:#fff;margin-top:10px;font-weight:900;width:100%;padding:14px;border-radius:12px;font-size:14px;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(239,68,68,.3)">
-        ❌ <span data-i18n="cancelRideBtn">রাইড বাতিল করুন / Cancel Ride</span>
+        ❌ <span data-i18n="cancelRideBtn">রাইড বাতিল করুন</span>
       </button>
     </div>
 
@@ -4562,10 +4539,10 @@ loadOffers();
 
     <div style="display:flex;gap:8px">
       <button onclick="confirmCustomerCancel()" class="btn reject" style="flex:1;background:#dc2626;color:#fff;padding:12px;font-weight:900;border-radius:12px;border:none;cursor:pointer">
-        নিশ্চিত বাতিল করুন
+        <span data-i18n="confirmCancelAction">নিশ্চিত বাতিল করুন</span>
       </button>
       <button onclick="closeCustomerCancelModal()" class="btn" style="flex:1;background:#64748b;color:#fff;padding:12px;font-weight:bold;border-radius:12px;border:none;cursor:pointer">
-        ফিরে যান
+        <span data-i18n="closeModalAction">ফিরে যান</span>
       </button>
     </div>
   </div>
@@ -5422,7 +5399,84 @@ const TRANSLATIONS = {
     whySosTitle: "🚨 ২৪x৭ SOS ইমার্জেন্সি",
     whySosDesc: "এক ক্লিকেই পুলিশ ও হেল্পলাইনে জরুরি সাহায্য।",
     riderReviewsTitle: "যাত্রীদের অভিজ্ঞতা",
-    faqTitle: "সাধারণ জিজ্ঞাসা ও নিয়মাবলী"
+    faqTitle: "সাধারণ জিজ্ঞাসা ও নিয়মাবলী",
+
+    // Comprehensive Customer Panel UI
+    headerOfferText: "অফার",
+    liveBadge: "লাইভ রেট",
+    heroSlide1Title: "গ্রাম থেকে শহর, নির্বিঘ্ন সফর",
+    heroSlide1Sub: "বাইক, টোটো ও কার বুক করুন মাত্র এক ক্লিকে",
+    heroSlide1Pill: "বিশ্বস্ত সার্ভিস",
+    heroSlide2Title: "নিরাপদ যাত্রা, গোপন ৪-সংখ্যার OTP",
+    heroSlide2Sub: "ওটিপি যাচাইয়ের পর তবেই যাত্রা শুরু",
+    heroSlide2Pill: "১০০% সেফটি",
+    heroSlide3Title: "কোনো গোপন চার্জ নেই, স্বচ্ছ মিটার ভাড়া",
+    heroSlide3Sub: "সঠিক দূরত্বের ন্যায্য মূল্য ও ইনস্ট্যান্ট বিল",
+    heroSlide3Pill: "সাশ্রয়ী ভাড়া",
+    heroSlide4Title: "২৪x৭ ইমার্জেন্সি সাপোর্ট ও SOS",
+    heroSlide4Sub: "এক ক্লিকেই পুলিশ ও হেল্পলাইন সহায়তা",
+    heroSlide4Pill: "সর্বদা পাশে",
+    timeAutoCalc: "অটো হিসাব",
+    selectVehicleLabel: "🚖 সার্ভিস বাছুন:",
+    eta2min: "~২ মিনিট",
+    eta3min: "~৩ মিনিট",
+    eta5min: "~৫ মিনিট",
+    etaHourDay: "ঘণ্টা / দিন",
+    vehRental: "রেন্টাল",
+    rentalFixedFare: "ফিক্সড প্যাকেজ",
+    choosePackageTxt: "প্যাকেজ বাছুন",
+    rentalBoxLabel: "ঘণ্টা / দিনের রেন্টাল প্যাকেজ বেছে নিন:",
+    refreshBtn: "🔄 রিফ্রেশ",
+    loadingPackages: "প্যাকেজ লোড হচ্ছে...",
+    quickPresetsTitle: "⚡ দ্রুত ড্রপ লোকেশন বাছুন:",
+    presetTrain: "🚆 খড়গপুর স্টেশন",
+    presetHospital: "🏥 মহকুমা হাসপাতাল",
+    presetOffice: "🏛️ এসডিও অফিস / কোর্ট",
+    presetEvening: "🛍️ গোলবাজার মার্কেট",
+    directUpiBtnText: "📲 সরাসরি UPI অ্যাপ খুলুন (GPay / PhonePe / Paytm)",
+    copyUpiBtn: "📋 UPI ID কপি করুন",
+    onlinePaySuccessTitle: "পেমেন্ট সফল হয়েছে!",
+    onlinePaySuccessSub: "ড্রাইভার বুকিং কনফার্ম করা হচ্ছে...",
+    onlinePayFailedTitle: "পেমেন্ট সম্পন্ন হয়নি?",
+    onlinePayFailedSub: "আপনি কি ক্যাশ (Cash to Driver) পেমেন্টে বুক করতে চান?",
+    retryPayBtn: "🔄 আবার চেষ্টা করুন",
+    payCashBtn: "💵 ক্যাশে বুক করুন",
+    promoCardTitle: "🎁 প্রোমো ও ছাড়",
+    promoCardSub: "কুপন কোড ব্যবহার করে অতিরিক্ত ছাড় পান",
+    driverCancelledSub: "অন্য চালক খুঁজতে নিচে ক্লিক করুন",
+    lblDriverPartner: "ড্রাইভার:",
+    lblDriverPhone: "ফোন:",
+    drawerSmartToolsTitle: "🌟 স্মার্ট ট্রাভেল টুলস (Smart Tools)",
+    drawerOfflineBookingTitle: "📴 অফলাইন SMS / কল বুকিং",
+    drawerOfflineBookingSub: "ইন্টারনেট না থাকলেও রাইড বুক করুন",
+    drawerStandQrTitle: "📍 স্ট্যান্ড QR বুকিং লিংক",
+    drawerStandQrSub: "১-স্ক্যান পিকআপ QR তৈরি ও সেভ করুন",
+    drawerPartnerServicesTitle: "💼 পার্টনার সার্ভিস ও সুযোগ-সুবিধা",
+    drawerAdTitle: "📢 আপনার ব্যবসার বিজ্ঞাপন দিন",
+    drawerAdSub: "লোকাল দোকানের প্রচার • মাত্র ₹৪৯৯/মাস থেকে শুরু",
+    drawerPassTitle: "💳 চালক ০% কমিশন সাবস্ক্রিপশন পাস",
+    drawerPassSub: "১০০% ভাড়া আপনার • দৈনিক ₹১০ বা মাসিক ₹১৯৯",
+    drawerShopTitle: "🛵 রাইডার ও বাইকার শপ",
+    drawerShopSub: "আইএসআই হেলমেট, মোবাইল হোল্ডার ও অ্যাক্সেসরিজ",
+    drawerInsuranceTitle: "🛡️ বাইক ও গাড়ির ইন্স্যুরেন্স ও লোন",
+    drawerInsuranceSub: "২ মিনিটে অনলাইনে রিনিউ ও সহজ কিস্তির সুবিধা",
+    editBtnShort: "সম্পাদনা",
+    profileLangHeader: "🌐 ভাষা নির্বাচন (Select Language)",
+    support247: "২৪ ঘণ্টা সহায়তা",
+    instantAlert: "তাৎক্ষণিক সাহায্য",
+    profileMyRides: "আমার রাইডস",
+    rideHistorySub: "আগের রাইড ও বিল",
+    aiSupportSub: "স্বয়ংক্রিয় এআই সাহায্য",
+    profileSocialHeader: "যোগাযোগ ও সোশ্যাল মিডিয়া",
+    profileFb: "ফেসবুক পেজ",
+    profileInsta: "ইনস্টাগ্রাম",
+    profileLinkedin: "লিঙ্কডইন",
+    navHome: "হোম",
+    navRides: "রাইডস",
+    navOffers: "অফার",
+    navProfile: "প্রোফাইল",
+    orDirectMobile: "অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান",
+    statusSearching: "নিকটবর্তী চালকের সন্ধান চলছে..."
   },
 
   hi: {
@@ -5620,7 +5674,84 @@ const TRANSLATIONS = {
     whySosTitle: "🚨 24x7 आपातकालीन SOS",
     whySosDesc: "एक क्लिक में पुलिस और हेल्पलाइन से त्वरित मदद।",
     riderReviewsTitle: "यात्रियों के अनुभव",
-    faqTitle: "अक्सर पूछे जाने वाले सवाल"
+    faqTitle: "अक्सर पूछे जाने वाले सवाल",
+
+    // Comprehensive Customer Panel UI
+    headerOfferText: "ऑफ़र",
+    liveBadge: "लाइव दर",
+    heroSlide1Title: "गाँव से शहर, निर्बाध सफर",
+    heroSlide1Sub: "बाइक, टोटो और कार बुक करें मात्र एक क्लिक में",
+    heroSlide1Pill: "विश्वसनीय सेवा",
+    heroSlide2Title: "सुरक्षित यात्रा, गुप्त 4-अंकीय OTP",
+    heroSlide2Sub: "ओटीपी सत्यापन के बाद ही यात्रा शुरू",
+    heroSlide2Pill: "100% सुरक्षा",
+    heroSlide3Title: "कोई छुपा शुल्क नहीं, पारदर्शी मीटर किराया",
+    heroSlide3Sub: "उचित दूरी का सही मूल्य और तुरंत बिल",
+    heroSlide3Pill: "किफायती किराया",
+    heroSlide4Title: "24x7 आपातकालीन सहायता व SOS",
+    heroSlide4Sub: "एक क्लिक में पुलिस और हेल्पलाइन सहायता",
+    heroSlide4Pill: "हमेशा साथ",
+    timeAutoCalc: "स्वतः गणना",
+    selectVehicleLabel: "🚖 सेवा चुनें:",
+    eta2min: "~2 मिनट",
+    eta3min: "~3 मिनट",
+    eta5min: "~5 मिनट",
+    etaHourDay: "घंटे / दिन",
+    vehRental: "रेंटल",
+    rentalFixedFare: "फिक्स्ड पैकेज",
+    choosePackageTxt: "पैकेज चुनें",
+    rentalBoxLabel: "घंटे / दिन का रेंटल पैकेज चुनें:",
+    refreshBtn: "🔄 रीफ्रेश",
+    loadingPackages: "पैकेज लोड हो रहे हैं...",
+    quickPresetsTitle: "⚡ त्वरित ड्रॉप स्थान चुनें:",
+    presetTrain: "🚆 खड़गपुर स्टेशन",
+    presetHospital: "🏥 सब-डिवीजन अस्पताल",
+    presetOffice: "🏛️ एसडीओ ऑफिस / कोर्ट",
+    presetEvening: "🛍️ गोलबाजार मार्केट",
+    directUpiBtnText: "📲 सीधे UPI ऐप खोलें (GPay / PhonePe / Paytm)",
+    copyUpiBtn: "📋 UPI ID कॉपी करें",
+    onlinePaySuccessTitle: "भुगतान सफल रहा!",
+    onlinePaySuccessSub: "ड्राइवर बुकिंग कन्फर्म की जा रही है...",
+    onlinePayFailedTitle: "भुगतान पूरा नहीं हुआ?",
+    onlinePayFailedSub: "क्या आप नकद (Cash to Driver) भुगतान में बुक करना चाहते हैं?",
+    retryPayBtn: "🔄 पुनः प्रयास करें",
+    payCashBtn: "💵 नकद में बुक करें",
+    promoCardTitle: "🎁 प्रोमो और छूट",
+    promoCardSub: "कूपन कोड उपयोग करके अतिरिक्त छूट प्राप्त करें",
+    driverCancelledSub: "अन्य चालक खोजने के लिए नीचे क्लिक करें",
+    lblDriverPartner: "चालक:",
+    lblDriverPhone: "फ़ोन:",
+    drawerSmartToolsTitle: "🌟 स्मार्ट ट्रैवल टूल्स (Smart Tools)",
+    drawerOfflineBookingTitle: "📴 ऑफलाइन SMS / कॉल बुकिंग",
+    drawerOfflineBookingSub: "इंटरनेट के बिना भी राइड बुक करें",
+    drawerStandQrTitle: "📍 स्टैंड QR बुकिंग लिंक",
+    drawerStandQrSub: "1-स्कैन पिकअप QR बनाएं और सेव करें",
+    drawerPartnerServicesTitle: "💼 पार्टनर सेवाएं और सुविधाएं",
+    drawerAdTitle: "📢 अपने व्यवसाय का विज्ञापन दें",
+    drawerAdSub: "लोकल दुकान का प्रचार • मात्र ₹499/माह से शुरू",
+    drawerPassTitle: "💳 चालक 0% कमीशन सब्सक्रिप्शन पास",
+    drawerPassSub: "100% किराया आपका • दैनिक ₹10 या मासिक ₹199",
+    drawerShopTitle: "🛵 राइडर और बाइकर शॉप",
+    drawerShopSub: "आईएसआई हेलमेट, मोबाइल होल्डर और एक्सेसरीज",
+    drawerInsuranceTitle: "🛡️ बाइक और गाड़ी का बीमा व लोन",
+    drawerInsuranceSub: "2 मिनट में ऑनलाइन रिन्यू और आसान किस्त",
+    editBtnShort: "संपादित करें",
+    profileLangHeader: "🌐 भाषा चयन (Select Language)",
+    support247: "24 घंटे सहायता",
+    instantAlert: "तुरंत सहायता",
+    profileMyRides: "मेरी राइड्स",
+    rideHistorySub: "पिछली राइड्स और बिल",
+    aiSupportSub: "स्वचालित एआई सहायता",
+    profileSocialHeader: "संपर्क और सोशल मीडिया",
+    profileFb: "फेसबुक पेज",
+    profileInsta: "इंस्टाग्राम",
+    profileLinkedin: "लिंक्डइन",
+    navHome: "होम",
+    navRides: "राइड्स",
+    navOffers: "ऑफ़र",
+    navProfile: "प्रोफ़ाइल",
+    orDirectMobile: "या सीधे मोबाइल नंबर से आगे बढ़ें",
+    statusSearching: "निकटतम चालक की खोज जारी है..."
   },
 
   en: {
@@ -5818,12 +5949,101 @@ const TRANSLATIONS = {
     whySosTitle: "🚨 24x7 SOS Emergency",
     whySosDesc: "Instant 1-click police & admin emergency alert.",
     riderReviewsTitle: "Rider Reviews",
-    faqTitle: "Frequently Asked Questions"
+    faqTitle: "Frequently Asked Questions",
+
+    // Comprehensive Customer Panel UI
+    headerOfferText: "Offers",
+    liveBadge: "Live Rates",
+    heroSlide1Title: "From Village to City, Smooth Journey",
+    heroSlide1Sub: "Book Bike, Toto & Car in Just One Click",
+    heroSlide1Pill: "Trusted Service",
+    heroSlide2Title: "Safe Travel, Secret 4-Digit OTP",
+    heroSlide2Sub: "Trip starts only after OTP verification",
+    heroSlide2Pill: "100% Safety",
+    heroSlide3Title: "No Hidden Charges, Transparent Meter Fares",
+    heroSlide3Sub: "Fair pricing for accurate distance & instant bills",
+    heroSlide3Pill: "Affordable Fares",
+    heroSlide4Title: "24x7 Emergency Support & SOS",
+    heroSlide4Sub: "Instant police & helpline assistance in one click",
+    heroSlide4Pill: "Always with You",
+    timeAutoCalc: "Auto Calculated",
+    selectVehicleLabel: "🚖 Select Service:",
+    eta2min: "~2 mins",
+    eta3min: "~3 mins",
+    eta5min: "~5 mins",
+    etaHourDay: "Hourly / Daily",
+    vehRental: "Rental",
+    rentalFixedFare: "Fixed Package",
+    choosePackageTxt: "Choose Package",
+    rentalBoxLabel: "Select Hourly / Daily Rental Package:",
+    refreshBtn: "🔄 Refresh",
+    loadingPackages: "Loading packages...",
+    quickPresetsTitle: "⚡ Quick Drop Locations:",
+    presetTrain: "🚆 Kharagpur Station",
+    presetHospital: "🏥 Sub-Div Hospital",
+    presetOffice: "🏛️ SDO Office / Court",
+    presetEvening: "🛍️ Golbazar Market",
+    directUpiBtnText: "📲 Open Direct UPI App (GPay / PhonePe / Paytm)",
+    copyUpiBtn: "📋 Copy UPI ID",
+    onlinePaySuccessTitle: "Payment Successful!",
+    onlinePaySuccessSub: "Confirming driver booking...",
+    onlinePayFailedTitle: "Payment not completed?",
+    onlinePayFailedSub: "Would you like to book with Cash to Driver payment instead?",
+    retryPayBtn: "🔄 Retry Payment",
+    payCashBtn: "💵 Book with Cash",
+    promoCardTitle: "🎁 Promo & Discounts",
+    promoCardSub: "Use promo code to get instant savings",
+    driverCancelledSub: "Click below to search for another driver",
+    lblDriverPartner: "Driver:",
+    lblDriverPhone: "Phone:",
+    drawerSmartToolsTitle: "🌟 Smart Travel Tools",
+    drawerOfflineBookingTitle: "📴 Offline SMS / Call Booking",
+    drawerOfflineBookingSub: "Book rides even without internet",
+    drawerStandQrTitle: "📍 Stand QR Booking Link",
+    drawerStandQrSub: "Create & save 1-scan pickup QR",
+    drawerPartnerServicesTitle: "💼 Partner Services & Benefits",
+    drawerAdTitle: "📢 Advertise Your Business",
+    drawerAdSub: "Promote local business • Starting at ₹499/month",
+    drawerPassTitle: "💳 Driver 0% Commission Pass",
+    drawerPassSub: "Keep 100% fare • ₹10/day or ₹199/month",
+    drawerShopTitle: "🛵 Rider & Biker Shop",
+    drawerShopSub: "ISI Helmets, mobile mounts & accessories",
+    drawerInsuranceTitle: "🛡️ Bike & Vehicle Insurance & Loan",
+    drawerInsuranceSub: "Renew online in 2 mins with easy EMI",
+    editBtnShort: "Edit",
+    profileLangHeader: "🌐 Select Language",
+    support247: "24/7 Support",
+    instantAlert: "Instant Assistance",
+    profileMyRides: "My Rides",
+    rideHistorySub: "Previous rides & bills",
+    aiSupportSub: "Automated AI assistance",
+    profileSocialHeader: "Contact & Social Media",
+    profileFb: "Facebook Page",
+    profileInsta: "Instagram",
+    profileLinkedin: "LinkedIn",
+    navHome: "Home",
+    navRides: "Rides",
+    navOffers: "Offers",
+    navProfile: "Profile",
+    orDirectMobile: "Or continue directly with mobile number",
+    statusSearching: "Searching for nearby drivers..."
   }
 };
 
 // Fallback for legacy 'both' mode
 TRANSLATIONS.both = TRANSLATIONS.bn;
+
+// Dynamic Customer Greeting (Auto-adapts to Bengali, Hindi, English)
+window.updateCustomerGreeting = function(optName, optPhone) {
+  const greet = document.getElementById('custGreetTxt');
+  if (!greet) return;
+  const name = optName || localStorage.getItem('customerName') || localStorage.getItem('userName') || localStorage.getItem('custName') || '';
+  const phone = optPhone || localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || '';
+  const lang = window.currentLang || localStorage.getItem('customerLang') || 'bn';
+  const label = lang === 'hi' ? '👋 यात्री:' : (lang === 'en' ? '👋 Rider:' : '👋 যাত্রী:');
+  const displayName = name || (lang === 'hi' ? 'यात्री' : (lang === 'en' ? 'Rider' : 'যাত্রী'));
+  greet.innerText = phone ? `${label} ${displayName} (${phone})` : `${label} ${displayName}`;
+};
 
 let currentLang = localStorage.getItem('customerLang') || localStorage.getItem('appLang') || 'bn';
 if (!TRANSLATIONS[currentLang]) currentLang = 'bn';
@@ -5893,7 +6113,17 @@ function applyLanguageTranslations(lang) {
   const fbText = document.getElementById('feedbackText');
   if (fbText && dict.rateFeedbackPlaceholder) fbText.placeholder = dict.rateFeedbackPlaceholder;
 
-  // 5. Update dynamic badges, summary and buttons
+  // 5. Update dynamic customer greeting
+  if (typeof window.updateCustomerGreeting === 'function') {
+    window.updateCustomerGreeting();
+  }
+
+  // Update profile modal language button highlights
+  if (typeof window.updateProfileLanguageHighlight === 'function') {
+    window.updateProfileLanguageHighlight();
+  }
+
+  // Update dynamic badges, summary and buttons
   const confTiming = document.getElementById('confTiming');
   if (confTiming && window.selectedTiming === 'NOW') {
     confTiming.innerHTML = "⚡ <b style='color:#16a34a'>" + (dict.timingImmediate || 'Immediate (Now)') + "</b>";
@@ -5901,6 +6131,16 @@ function applyLanguageTranslations(lang) {
   const confPay = document.getElementById('confPay');
   if (confPay) {
     confPay.innerText = (window.selectedPayType === 'ONLINE' ? '💳 ONLINE UPI' : '💵 CASH');
+  }
+
+  // Update ride timing button texts
+  const tNow = document.getElementById('timingNowBtn');
+  if (tNow && dict.timingNow) {
+    tNow.innerHTML = `⚡ <span data-i18n="timingNow">${dict.timingNow}</span>`;
+  }
+  const tSched = document.getElementById('timingSchedBtn');
+  if (tSched && dict.timingSched) {
+    tSched.innerHTML = `📅 <span data-i18n="timingSched">${dict.timingSched}</span>`;
   }
 
   // Update dynamic rates display if function exists
@@ -5941,6 +6181,11 @@ function applyLanguageTranslations(lang) {
   }
   if (typeof window.setStarRating === 'function') {
     window.setStarRating(window.currentSelectedStars || currentSelectedStars || 5);
+  }
+
+  // 8. Refresh fare calculation
+  if (typeof calcFare === 'function') {
+    try { calcFare(); } catch(e){}
   }
 }
 
@@ -8773,8 +9018,12 @@ window.continueToBooking = function() {
 
 function showBookingPage(name, phone) {
   window.switchCustomerScreen('booking');
-  const greet = document.getElementById('custGreetTxt');
-  if (greet) greet.innerText = `👋 যাত্রী: ${name} (${phone})`;
+  if (typeof window.updateCustomerGreeting === 'function') {
+    window.updateCustomerGreeting(name, phone);
+  } else {
+    const greet = document.getElementById('custGreetTxt');
+    if (greet) greet.innerText = `👋 ${name} (${phone})`;
+  }
   try { window.initRealtimeUserProfileSync(phone); } catch(e) {}
 }
 window.showBookingPage = showBookingPage;
@@ -12579,7 +12828,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
           <div style="display:flex;align-items:center;gap:6px">
             <div id="modalCustName" style="font-weight:900;font-size:16px;letter-spacing:-0.2px;color:#0f172a">Customer Name</div>
             <button type="button" onclick="editCustomerProfileName()" style="background:#0f172a;color:#facc15;border:none;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:3px" title="নাম পরিবর্তন করুন">
-              ✏️ এডিট
+              <span data-i18n="editBtnShort">✏️ এডিট</span>
             </button>
           </div>
           <div id="modalCustPhone" style="font-size:12px;color:#475569;font-weight:700">📱 +91 XXXXXXXXXX</div>
@@ -12593,7 +12842,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
       
       <!-- Quick Language Switcher -->
       <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px 14px;box-shadow:0 2px 6px rgba(0,0,0,0.02)">
-        <div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">🌐 ভাষা পরিবর্তন / Select Language</div>
+        <div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px" data-i18n="profileLangHeader">🌐 ভাষা পরিবর্তন / SELECT LANGUAGE</div>
         <div style="display:flex;gap:8px">
           <button type="button" onclick="setLanguage('bn'); updateProfileLanguageHighlight();" id="profileLangBn" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid #e2e8f0;background:#ffffff;font-size:12px;font-weight:800;cursor:pointer">বাংলা</button>
           <button type="button" onclick="setLanguage('hi'); updateProfileLanguageHighlight();" id="profileLangHi" style="flex:1;padding:8px;border-radius:10px;border:1.5px solid #e2e8f0;background:#ffffff;font-size:12px;font-weight:800;cursor:pointer">हिंदी</button>
@@ -12607,8 +12856,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         <a href="tel:+918768447312" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;text-decoration:none;color:#0f172a;box-shadow:0 2px 6px rgba(0,0,0,0.02);transition:all 0.15s">
           <div style="width:36px;height:36px;border-radius:10px;background:#dcfce7;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:16px">📞</div>
           <div>
-            <div style="font-size:12.5px;font-weight:800">হেল্পলাইন কল</div>
-            <div style="font-size:10px;color:#16a34a;font-weight:700">24x7 Support</div>
+            <div style="font-size:12.5px;font-weight:800" data-i18n="drawerHelplineCall">হেল্পলাইন কল</div>
+            <div style="font-size:10px;color:#16a34a;font-weight:700" data-i18n="support247">24x7 Support</div>
           </div>
         </a>
 
@@ -12616,8 +12865,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         <button type="button" onclick="closeProfileModal(); if(window.triggerSosAlert) window.triggerSosAlert(); else if(window.emergencySosAction) window.emergencySosAction();" style="background:#ffffff;border:1px solid #fee2e2;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;color:#0f172a;box-shadow:0 2px 6px rgba(0,0,0,0.02);text-align:left">
           <div style="width:36px;height:36px;border-radius:10px;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:16px">🚨</div>
           <div>
-            <div style="font-size:12.5px;font-weight:800;color:#dc2626">জরুরি SOS</div>
-            <div style="font-size:10px;color:#ef4444;font-weight:700">Instant Alert</div>
+            <div style="font-size:12.5px;font-weight:800;color:#dc2626" data-i18n="drawerSosTitle">জরুরি SOS</div>
+            <div style="font-size:10px;color:#ef4444;font-weight:700" data-i18n="instantAlert">Instant Alert</div>
           </div>
         </button>
 
@@ -12625,8 +12874,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         <button type="button" onclick="closeProfileModal(); openCustomerHistoryModal();" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;color:#0f172a;box-shadow:0 2px 6px rgba(0,0,0,0.02);text-align:left">
           <div style="width:36px;height:36px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:16px">📋</div>
           <div>
-            <div style="font-size:12.5px;font-weight:800">আমার রাইড</div>
-            <div style="font-size:10px;color:#64748b;font-weight:600">Ride History</div>
+            <div style="font-size:12.5px;font-weight:800" data-i18n="profileMyRides">আমার রাইড</div>
+            <div style="font-size:10px;color:#64748b;font-weight:600" data-i18n="rideHistorySub">Ride History</div>
           </div>
         </button>
 
@@ -12634,23 +12883,23 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         <button type="button" onclick="closeProfileModal(); openLiveChatModal();" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;color:#0f172a;box-shadow:0 2px 6px rgba(0,0,0,0.02);text-align:left">
           <div style="width:36px;height:36px;border-radius:10px;background:#f3e8ff;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:16px">💬</div>
           <div>
-            <div style="font-size:12.5px;font-weight:800">লাইভ চ্যাট</div>
-            <div style="font-size:10px;color:#7c3aed;font-weight:700">AI & Support</div>
+            <div style="font-size:12.5px;font-weight:800" data-i18n="liveChatNav">লাইভ চ্যাট</div>
+            <div style="font-size:10px;color:#7c3aed;font-weight:700" data-i18n="aiSupportSub">AI & Support</div>
           </div>
         </button>
       </div>
 
       <!-- Social Media Connect Section (User's Facebook, Instagram, LinkedIn) -->
       <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,0.02)">
-        <div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">
-          🌐 আমাদের সাথে যুক্ত থাকুন / Connect With Us
+        <div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px" data-i18n="profileSocialHeader">
+          🌐 আমাদের সাথে যুক্ত থাকুন / CONNECT WITH US
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <!-- Facebook Button -->
           <a href="https://www.facebook.com/share/1EajM2z9MR/" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:space-between;background:#f0f6ff;border:1px solid #bfdbfe;color:#1877f2;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;font-size:13px;transition:all 0.15s">
             <div style="display:flex;align-items:center;gap:10px">
               <i class="fab fa-facebook" style="font-size:18px"></i>
-              <span>ফেসবুক পেজ (Facebook)</span>
+              <span data-i18n="profileFb">ফেসবুক পেজ (Facebook)</span>
             </div>
             <span style="font-size:15px">›</span>
           </a>
@@ -12659,7 +12908,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
           <a href="https://www.instagram.com/ride.sathi.go" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:space-between;background:#fdf2f8;border:1px solid #fbcfe8;color:#e11d48;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;font-size:13px;transition:all 0.15s">
             <div style="display:flex;align-items:center;gap:10px">
               <i class="fab fa-instagram" style="font-size:18px"></i>
-              <span>ইনস্টাগ্রাম (Instagram)</span>
+              <span data-i18n="profileInsta">ইনস্টাগ্রাম (Instagram)</span>
             </div>
             <span style="font-size:15px">›</span>
           </a>
@@ -12668,7 +12917,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
           <a href="https://www.linkedin.com/company/ride-sathi-go/" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:space-between;background:#f0f9ff;border:1px solid #bae6fd;color:#0284c7;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;font-size:13px;transition:all 0.15s">
             <div style="display:flex;align-items:center;gap:10px">
               <i class="fab fa-linkedin" style="font-size:18px"></i>
-              <span>লিঙ্কডইন (LinkedIn)</span>
+              <span data-i18n="profileLinkedin">লিঙ্কডইন (LinkedIn)</span>
             </div>
             <span style="font-size:15px">›</span>
           </a>
@@ -12682,7 +12931,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
           <div style="font-size:10px;color:#64748b">Paschim Medinipur, West Bengal</div>
         </div>
         <button type="button" onclick="closeProfileModal(); logoutCustomer();" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:8px 14px;border-radius:10px;font-size:11.5px;font-weight:800;cursor:pointer">
-          🚪 লগআউট
+          <span data-i18n="drawerLogout">🚪 লগআউট</span>
         </button>
       </div>
 
@@ -12696,19 +12945,19 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 <nav class="rapido-bottom-nav" aria-label="Main Navigation">
   <button type="button" class="rapido-nav-tab active" id="navHomeTab" onclick="handleNavTabClick('home', this)">
     <div class="rapido-nav-icon">🏠</div>
-    <span>Home</span>
+    <span data-i18n="navHome">Home</span>
   </button>
   <button type="button" class="rapido-nav-tab" id="navHistoryTab" onclick="handleNavTabClick('history', this)">
     <div class="rapido-nav-icon">📋</div>
-    <span>Rides</span>
+    <span data-i18n="navRides">Rides</span>
   </button>
   <button type="button" class="rapido-nav-tab" id="navReferTab" onclick="handleNavTabClick('refer', this)">
     <div class="rapido-nav-icon">🎁</div>
-    <span>Offers</span>
+    <span data-i18n="navOffers">Offers</span>
   </button>
   <button type="button" class="rapido-nav-tab" id="navProfileTab" onclick="handleNavTabClick('profile', this)">
     <div class="rapido-nav-icon">👤</div>
-    <span>Profile</span>
+    <span data-i18n="navProfile">Profile</span>
   </button>
 </nav>
 
