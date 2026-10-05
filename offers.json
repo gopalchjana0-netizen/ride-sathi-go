@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-05T12:19:19.797Z",
+  "updated_at": "2026-10-05T18:17:46.043Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Boat",
+      "d": "Score 50% Off Everything at Boat Today!",
+      "c": "5000OFF",
+      "cat": "Electronics",
+      "l": "https://www.boat-lifestyle.com/collections/5000-off-biggest-discount-ever-by-boat",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2F5000-off-biggest-discount-ever-by-boat&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Levis",
@@ -872,6 +883,17 @@
       "l": "https://www.helium10.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.helium10.com%2F&cid=324245&subid=ridesathigo",
       "img": "/photos/medium/missing.png",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Boat",
+      "d": "Boat Grand Festive Sale: Snag Up to 80% Off Plus Extra 5% Off!",
+      "c": "FESTIVE",
+      "cat": "Travel",
+      "l": "https://www.boat-lifestyle.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
       "badge": "Coupon",
       "rank": 20
     },
@@ -1576,6 +1598,17 @@
       "l": "https://www.healthkart.com/sale/workout-essentials-range",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsale%2Fworkout-essentials-range&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Big Muscles",
+      "d": "Super Savings Alert: Get 40% Off + 10% Extra + Free Gifts!",
+      "c": "BMPD10",
+      "cat": "Shopping",
+      "l": "https://www.bigmusclesnutrition.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.bigmusclesnutrition.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/11275/medium/download.png?1747123801",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2918,39 +2951,6 @@
       "l": "https://www.neuherbs.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.neuherbs.com%2F&cid=324245&subid=ridesathigo",
       "img": "/photos/medium/missing.png",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Airpaz",
-      "d": "First-Time Flyers: Grab 3% Off – Save Up to Rs. 3,000 Today!",
-      "c": "FIRSTINR",
-      "cat": "Travel",
-      "l": "https://www.airpaz.com/en/flight",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.airpaz.com%2Fen%2Fflight&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4992/medium/New_Project_-_2023-05-22T163516.009.png?1684753555",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Air India Express",
-      "d": "Score Up to Rs 600 OFF with Your Mastercard Purchase!",
-      "c": "FLYMASTER",
-      "cat": "Travel",
-      "l": "https://www.airindiaexpress.com/home",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.airindiaexpress.com%2Fhome&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/6055/medium/New_Project_-_2024-03-20T124337.262.png?1710919198",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Furlenco",
-      "d": "Rent Kid's Furniture & Get Rs. 1100 Off!",
-      "c": "KIDSDAY",
-      "cat": "Shopping",
-      "l": "https://www.furlenco.com/#/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.furlenco.com%2F%23%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3305/medium/Furlenco-logo.png?1540902137",
       "badge": "Coupon",
       "rank": 20
     }
