@@ -1413,8 +1413,8 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
     </div>
 
     <div style="margin-top:6px;font-size:12px;color:#334155;line-height:1.4">
-      <b>অ্যাডমিন UPI ID:</b> <code style="background:#f1f5f9;padding:2px 6px;border-radius:6px;color:#0f172a;font-weight:bold">8768447312@pthdfc</code><br>
-      <small style="color:#64748b">Mr Gopal Chandra Jana</small>
+      <b>অ্যাডমিন UPI ID:</b> <code id="driverModalUpiId" style="background:#f1f5f9;padding:2px 6px;border-radius:6px;color:#0f172a;font-weight:bold">8768447312@pthdfc</code><br>
+      <small id="driverModalMerchantName" style="color:#64748b">RIDE SATHI GO</small>
     </div>
 
     <!-- Direct UPI App Launch Link -->
@@ -2052,9 +2052,36 @@ async function fetchDriverCities() {
   }
 }
 
-// === CONSTANTS & STATE ===
-const MY_UPI = "8768447312@pthdfc";
-const MY_NAME = "Mr Gopal Chandra Jana";
+// === CENTRAL PAYMENT SETTINGS (/app_config/payment) ===
+let MY_UPI = "8768447312@pthdfc";
+let MY_NAME = "RIDE SATHI GO";
+
+function initDriverPaymentConfig() {
+  try {
+    const cached = localStorage.getItem('rsg_payment_config');
+    if (cached) {
+      const p = JSON.parse(cached);
+      if (p.upi_id) MY_UPI = p.upi_id;
+      if (p.merchant_name) MY_NAME = p.merchant_name;
+    }
+  } catch(e){}
+
+  if (typeof db !== 'undefined' && db && typeof ref === 'function' && typeof onValue === 'function') {
+    onValue(ref(db, 'app_config/payment'), snap => {
+      const data = snap.val() || {};
+      if (data.upi_id) MY_UPI = data.upi_id;
+      if (data.merchant_name) MY_NAME = data.merchant_name;
+      try {
+        localStorage.setItem('rsg_payment_config', JSON.stringify({ upi_id: MY_UPI, merchant_name: MY_NAME, time: Date.now() }));
+      } catch(e){}
+      const uEl = document.getElementById('driverModalUpiId');
+      const mEl = document.getElementById('driverModalMerchantName');
+      if (uEl) uEl.innerText = MY_UPI;
+      if (mEl) mEl.innerText = MY_NAME;
+    });
+  }
+}
+setTimeout(() => { initDriverPaymentConfig(); }, 100);
 
 let DRIVER_PHONE = localStorage.getItem('driverPhone') || "";
 let DRIVER_NAME = localStorage.getItem('driverName') || "";
@@ -4642,7 +4669,18 @@ function payDue() {
       if (total === 0 && fallbackDue > 0) total = fallbackDue;
       if (total === 0) total = 50;
 
-      let upi = `upi://pay?pa=${MY_UPI}&pn=${encodeURIComponent(MY_NAME)}&am=${total}&cu=INR&tn=${encodeURIComponent('ADMIN DUE ' + DRIVER_PHONE)}`;
+      const cleanDrvName = (DRIVER_NAME || 'Driver').replace(/[^a-zA-Z0-9]/g, '');
+      const cleanDrvPhone = (DRIVER_PHONE || '').replace(/[^0-9]/g, '');
+      const cleanDrvId = (DRIVER_DB_KEY || DRIVER_PHONE || 'DRV').replace(/[^a-zA-Z0-9]/g, '');
+      const remarkNote = `RideSathi-Drv-${cleanDrvName}-${cleanDrvPhone}-${cleanDrvId}`;
+
+      let upi = `upi://pay?pa=${MY_UPI}&pn=${encodeURIComponent(MY_NAME)}&am=${total}&cu=INR&tn=${encodeURIComponent(remarkNote)}`;
+      
+      const uEl = document.getElementById('driverModalUpiId');
+      const mEl = document.getElementById('driverModalMerchantName');
+      if (uEl) uEl.innerText = MY_UPI;
+      if (mEl) mEl.innerText = MY_NAME;
+
       document.getElementById('qrFare').innerHTML = `
         <div style="font-size:12px;font-weight:bold;color:#475569;text-transform:uppercase">কমিশন বকেয়া / Commission Due:</div>
         <b style="font-size:32px;color:#dc2626">₹${total}</b>

@@ -745,6 +745,33 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
 
 <!-- SETTINGS TAB (SURGE, NIGHT FARE, SUBSCRIPTION, 30D AUTO CLEAN) -->
 <div id="settingDiv" style="display:none">
+  <!-- CENTRAL PAYMENT & UPI SETTINGS (ZERO-BILL DYNAMIC QR ENGINE) -->
+  <div class="card" style="border:2px solid #0284c7;background:#f0f9ff;margin-bottom:15px;box-shadow:0 4px 15px rgba(2,132,199,0.1)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <b style="color:#0369a1;font-size:16px">💳 কেন্দ্রীয় পেমেন্ট ও UPI সেটিংস (CENTRAL PAYMENT SETTINGS)</b>
+        <p class="small" style="margin:2px 0 0;color:#0284c7">এখানে বিজনেস UPI আইডি ও নাম সেভ করলে কাস্টমার ও ড্রাইভারের অ্যাপে স্বয়ংক্রিয়ভাবে সঠিক ভাড়ার ডাইনামিক QR কোড তৈরি হবে।</p>
+      </div>
+      <span class="badge" style="background:#0284c7;color:#fff;font-weight:bold" id="upiConfigStatusBadge">🟢 LIVE ACTIVE</span>
+    </div>
+    
+    <div class="grid2" style="margin-top:12px;gap:12px">
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">💼 Business UPI ID (যেমন: gopal@paytm বা 8768447312@pthdfc):</label>
+        <input id="adminConfigUpiId" type="text" placeholder="yourname@bank বা phone@paytm" style="font-family:monospace;font-weight:bold;border:1.5px solid #0284c7;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🏢 Merchant / Business Name (যেমন: RIDE SATHI GO):</label>
+        <input id="adminConfigMerchantName" type="text" placeholder="RIDE SATHI GO" style="font-weight:bold;border:1.5px solid #0284c7;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button type="button" class="btn" onclick="saveAdminPaymentConfig()" style="background:linear-gradient(90deg,#0284c7,#0369a1);color:#fff;font-weight:bold;padding:11px 22px;border-radius:8px;border:none;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(2,132,199,0.3)">
+        💾 Save UPI Settings (সংরক্ষণ করুন)
+      </button>
+    </div>
+  </div>
+
   <!-- SURGE & NIGHT FARE CONTROLS -->
   <div class="card" style="border:2px solid #f59e0b;background:#fffbeb">
     <b>🌧️ SURGE PRICING & NIGHT CHARGE CONTROLS</b>
@@ -2398,8 +2425,83 @@ function openTab(n,el){
   }
   if(n=='cities') loadCitiesManagement();
   if(n=='sheetReport') loadGoogleSheetMetrics();
+  if(n=='setting') {
+    setTimeout(() => { if (typeof initAdminPaymentConfig === 'function') initAdminPaymentConfig(); }, 50);
+  }
   if (typeof loadDriverCommissionData === 'function') loadDriverCommissionData();
 }
+
+// === CENTRAL PAYMENT CONFIGURATION (/app_config/payment) ===
+window.currentAdminPaymentConfig = {
+  upi_id: "8768447312@pthdfc",
+  merchant_name: "RIDE SATHI GO"
+};
+
+function initAdminPaymentConfig() {
+  const upiInp = document.getElementById('adminConfigUpiId');
+  const merchInp = document.getElementById('adminConfigMerchantName');
+
+  try {
+    const cached = localStorage.getItem('rsg_payment_config');
+    if (cached) {
+      const p = JSON.parse(cached);
+      if (p.upi_id) window.currentAdminPaymentConfig.upi_id = p.upi_id;
+      if (p.merchant_name) window.currentAdminPaymentConfig.merchant_name = p.merchant_name;
+      if (upiInp && !upiInp.value) upiInp.value = window.currentAdminPaymentConfig.upi_id;
+      if (merchInp && !merchInp.value) merchInp.value = window.currentAdminPaymentConfig.merchant_name;
+    }
+  } catch(e){}
+
+  if (typeof db !== 'undefined' && db) {
+    db.ref('app_config/payment').on('value', snap => {
+      const data = snap.val() || {};
+      const uId = data.upi_id || "8768447312@pthdfc";
+      const mName = data.merchant_name || "RIDE SATHI GO";
+      window.currentAdminPaymentConfig.upi_id = uId;
+      window.currentAdminPaymentConfig.merchant_name = mName;
+      if (upiInp && !upiInp.matches(':focus')) upiInp.value = uId;
+      if (merchInp && !merchInp.matches(':focus')) merchInp.value = mName;
+      try {
+        localStorage.setItem('rsg_payment_config', JSON.stringify({ upi_id: uId, merchant_name: mName, time: Date.now() }));
+      } catch(e){}
+    });
+  }
+}
+
+window.saveAdminPaymentConfig = function() {
+  const upiInp = document.getElementById('adminConfigUpiId');
+  const merchInp = document.getElementById('adminConfigMerchantName');
+  const upiVal = (upiInp ? upiInp.value : '').trim();
+  const merchVal = (merchInp ? merchInp.value : '').trim() || 'RIDE SATHI GO';
+
+  if (!upiVal || !upiVal.includes('@')) {
+    alert('⚠️ দয়া করে একটি সঠিক UPI ID দিন (যেমন: gopal@paytm বা 8768447312@pthdfc)!');
+    if (upiInp) upiInp.focus();
+    return;
+  }
+
+  const payload = {
+    upi_id: upiVal,
+    merchant_name: merchVal,
+    updated_at: Date.now(),
+    is_active: true
+  };
+
+  if (typeof db !== 'undefined' && db) {
+    db.ref('app_config/payment').set(payload).then(() => {
+      window.currentAdminPaymentConfig.upi_id = upiVal;
+      window.currentAdminPaymentConfig.merchant_name = merchVal;
+      try {
+        localStorage.setItem('rsg_payment_config', JSON.stringify({ upi_id: upiVal, merchant_name: merchVal, time: Date.now() }));
+      } catch(e){}
+      alert('✅ কেন্দ্রীয় UPI সেটিংস সফলভাবে সেভ হয়েছে! সমস্ত কাস্টমার ও ড্রাইভারের অ্যাপে নতুন UPI ID সক্রিয় হয়ে গেছে।');
+    }).catch(err => {
+      alert('❌ সেভ করতে সমস্যা হয়েছে: ' + err.message);
+    });
+  }
+};
+
+setTimeout(() => { if (typeof initAdminPaymentConfig === 'function') initAdminPaymentConfig(); }, 500);
 
 // === ADVANCED WEB AUDIO & 3-LANGUAGE SPEECH ALERT SYSTEM ===
 let audioCtx = null;

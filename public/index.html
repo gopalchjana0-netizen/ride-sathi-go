@@ -2745,7 +2745,7 @@ window.closeNotifModal = function() {
   if (modal) modal.classList.remove('show');
 };
 
-// PAYMENT SELECTOR (CASH vs ONLINE UPI)
+// PAYMENT SELECTOR (CASH vs ONLINE UPI) - Ola / Rapido Post-Trip Settlement Flow
 window.selectPay = function(mode) {
   window.selectedPayType = mode;
   var optCash = document.getElementById('optCash');
@@ -2753,14 +2753,10 @@ window.selectPay = function(mode) {
   if (optCash) optCash.className = (mode === 'CASH' ? 'pay-opt selected-cash' : 'pay-opt');
   if (optOnline) optOnline.className = (mode === 'ONLINE' ? 'pay-opt selected-online' : 'pay-opt');
 
+  // Pre-trip: Never show QR code before ride begins
   var previewBox = document.getElementById('onlinePreviewBox');
   if (previewBox) {
-    if (mode === 'ONLINE') {
-      previewBox.style.display = 'block';
-      if (typeof window.updateOnlineQrCode === 'function') window.updateOnlineQrCode();
-    } else {
-      previewBox.style.display = 'none';
-    }
+    previewBox.style.display = 'none';
   }
 
   var cashBox = document.getElementById('cashPayBox');
@@ -2769,7 +2765,7 @@ window.selectPay = function(mode) {
   if (onlineBox) onlineBox.style.display = (mode === 'ONLINE' ? 'block' : 'none');
 
   var confPay = document.getElementById('confPay');
-  if (confPay) confPay.innerText = (mode === 'ONLINE' ? '💳 ONLINE UPI' : '💵 CASH');
+  if (confPay) confPay.innerText = (mode === 'ONLINE' ? '💳 ONLINE UPI (রাইড শেষে পে)' : '💵 CASH');
 };
 
 // DOMContentLoaded INITIALIZATION
@@ -3520,7 +3516,7 @@ window.addEventListener('load', function() {
         💵<br><b>CASH</b><br><small data-i18n="cashSub">ড্রাইভারকে দেবেন</small>
       </div>
       <div class="pay-opt" id="optOnline" onclick="selectPay('ONLINE')">
-        💳<br><b>ONLINE UPI</b><br><small data-i18n="onlineSub">GPay / PhonePe</small>
+        💳<br><b>ONLINE UPI</b><br><small data-i18n="onlineSub">রাইড শেষে পে করবেন</small>
       </div>
     </div>
 
@@ -4572,6 +4568,84 @@ loadOffers();
         ফিরে যান
       </button>
     </div>
+  </div>
+<!-- 4.9 OLA / RAPIDO STYLE PAYMENT SETTLEMENT MODAL (ZERO-BILL DYNAMIC UPI & CASH FLOW) -->
+<div id="ridePaymentModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(8px);z-index:99999998;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;pointer-events:auto">
+  <div class="modal-box" style="text-align:center;max-width:440px;width:92%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1.5px solid #e2e8f0;position:relative;z-index:99999999;pointer-events:auto;max-height:92vh;overflow-y:auto">
+    
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="text-align:left">
+        <h3 style="margin:0;color:#0f172a;font-size:18px;font-weight:900">🏁 <span id="rpmTitle">রাইড সম্পন্ন হয়েছে!</span></h3>
+        <p style="font-size:12px;color:#64748b;margin:2px 0 0" id="rpmSubtitle">অনুগ্রহ করে ভাড়া পরিশোধ করুন / Fare Settlement</p>
+      </div>
+      <button type="button" onclick="closeRidePaymentModal(true)" aria-label="Close" style="border:none;background:#f1f5f9;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;color:#475569;line-height:1">&times;</button>
+    </div>
+
+    <!-- Fare Summary Banner -->
+    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:18px;padding:14px;margin:10px 0;text-align:center">
+      <div style="font-size:12px;font-weight:bold;color:#166534;text-transform:uppercase;letter-spacing:0.5px">মোট প্রদেয় ভাড়া / Total Fare</div>
+      <div id="rpmFareDisplay" style="font-size:36px;font-weight:900;color:#15803d;margin:4px 0">₹30</div>
+      <div id="rpmDriverInfo" style="font-size:12px;color:#334155;font-weight:700">Driver: Verified Partner</div>
+    </div>
+
+    <!-- CASH PAYMENT SECTION -->
+    <div id="rpmCashSection" style="display:none;background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:16px;margin:12px 0;text-align:center">
+      <div style="font-size:44px;line-height:1;margin-bottom:6px">💵</div>
+      <b style="font-size:16px;color:#92400e;display:block">ড্রাইভারকে ক্যাশ দিয়ে দিন</b>
+      <p style="font-size:13px;color:#b45309;margin:6px 0 12px;line-height:1.4">
+        দয়া করে চালককে নগদ <b id="rpmCashAmount" style="color:#0f172a;font-size:15px">₹30</b> প্রদান করুন।
+      </p>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button type="button" class="btn" onclick="confirmRidePaymentDone('CASH')" style="width:100%;padding:14px;font-size:15px;font-weight:900;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 12px rgba(22,163,74,0.3)">
+          ✅ আমি ড্রাইভারকে ক্যাশ দিয়েছি (Cash Paid)
+        </button>
+        <button type="button" onclick="switchRpmToOnline()" style="background:none;border:none;color:#0284c7;font-size:12px;font-weight:bold;cursor:pointer;text-decoration:underline;padding:6px">
+          💳 অনলাইন UPI দিয়ে পে করতে চান? (Pay via UPI)
+        </button>
+      </div>
+    </div>
+
+    <!-- ONLINE UPI PAYMENT SECTION -->
+    <div id="rpmOnlineSection" style="display:none;background:#f8fafc;border:2px solid #cbd5e1;border-radius:16px;padding:14px;margin:12px 0;text-align:center">
+      <div style="font-weight:800;color:#0f172a;font-size:14px;margin-bottom:8px">
+        📱 QR স্ক্যান করুন বা সরাসরি UPI অ্যাপে পে করুন
+      </div>
+
+      <!-- Dynamic QR Code -->
+      <div style="background:#fff;display:inline-block;padding:10px;border-radius:14px;border:2px solid #0284c7;box-shadow:0 4px 15px rgba(2,132,199,0.15)">
+        <img id="rpmQrImg" alt="UPI QR Code" style="width:200px;height:200px;display:block;margin:auto;border-radius:8px">
+        <div id="rpmQrFareText" style="font-size:15px;font-weight:900;color:#0f172a;margin-top:6px">ভাড়া: ₹30</div>
+      </div>
+
+      <!-- Direct UPI Intent Link -->
+      <div style="margin:12px 0 8px">
+        <a id="rpmDirectUpiLink" href="#" style="background:linear-gradient(90deg,#0284c7,#0369a1);color:#fff;text-decoration:none;font-weight:900;padding:12px 18px;border-radius:12px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(2,132,199,0.3)">
+          <span>📲</span> <span>GPay / PhonePe / Paytm এ খুলুন (Open App)</span>
+        </a>
+      </div>
+
+      <!-- UPI ID & Remark Info Box -->
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;font-size:11px;color:#475569;text-align:left;line-height:1.4;margin:8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><b>UPI ID:</b> <code id="rpmUpiIdText" style="color:#0f172a;font-weight:bold">8768447312@pthdfc</code></div>
+          <button type="button" onclick="copyRpmUpiId()" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:bold;cursor:pointer">📋 Copy</button>
+        </div>
+        <div style="margin-top:2px"><b>Merchant:</b> <span id="rpmMerchantText">RIDE SATHI GO</span></div>
+        <div style="margin-top:2px;color:#0284c7"><b>Remark / Note:</b> <span id="rpmRemarkText" style="font-family:monospace;font-size:10px;word-break:break-all">RideSathi-Cust</span></div>
+      </div>
+
+      <!-- Done / Action Buttons -->
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+        <button type="button" class="btn" onclick="confirmRidePaymentDone('ONLINE')" style="width:100%;padding:14px;font-size:15px;font-weight:900;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 12px rgba(22,163,74,0.3)">
+          ✅ পেমেন্ট সম্পন্ন হয়েছে (Payment Done)
+        </button>
+        <button type="button" onclick="switchRpmToCash()" style="background:none;border:none;color:#b45309;font-size:12px;font-weight:bold;cursor:pointer;text-decoration:underline;padding:4px">
+          💵 ড্রাইভারকে নগদ দিয়ে দিয়েছেন? (Switch to Cash)
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -7525,6 +7599,197 @@ window.confirmCustomerCancel = async function() {
   }
 };
 
+// === CENTRAL PAYMENT CONFIGURATION & OLA/RAPIDO PAYMENT ENGINE ===
+window.rsgPaymentConfig = {
+  upi_id: "8768447312@pthdfc",
+  merchant_name: "RIDE SATHI GO"
+};
+
+function initCustomerPaymentConfig() {
+  try {
+    const cached = localStorage.getItem('rsg_payment_config');
+    if (cached) {
+      const p = JSON.parse(cached);
+      if (p.upi_id) window.rsgPaymentConfig.upi_id = p.upi_id;
+      if (p.merchant_name) window.rsgPaymentConfig.merchant_name = p.merchant_name;
+    }
+  } catch(e) {}
+
+  if (typeof realtimeDb !== 'undefined' && realtimeDb && typeof ref === 'function' && typeof onValue === 'function') {
+    try {
+      onValue(ref(realtimeDb, 'app_config/payment'), snap => {
+        const val = snap.val();
+        if (val) {
+          if (val.upi_id) window.rsgPaymentConfig.upi_id = val.upi_id;
+          if (val.merchant_name) window.rsgPaymentConfig.merchant_name = val.merchant_name;
+          try {
+            localStorage.setItem('rsg_payment_config', JSON.stringify({
+              upi_id: window.rsgPaymentConfig.upi_id,
+              merchant_name: window.rsgPaymentConfig.merchant_name,
+              time: Date.now()
+            }));
+          } catch(e){}
+        }
+      });
+    } catch(e) {}
+  } else if (typeof firebase !== 'undefined' && firebase.database) {
+    try {
+      firebase.database().ref('app_config/payment').on('value', snap => {
+        const val = snap.val();
+        if (val) {
+          if (val.upi_id) window.rsgPaymentConfig.upi_id = val.upi_id;
+          if (val.merchant_name) window.rsgPaymentConfig.merchant_name = val.merchant_name;
+          try {
+            localStorage.setItem('rsg_payment_config', JSON.stringify({
+              upi_id: window.rsgPaymentConfig.upi_id,
+              merchant_name: window.rsgPaymentConfig.merchant_name,
+              time: Date.now()
+            }));
+          } catch(e){}
+        }
+      });
+    } catch(e) {}
+  }
+}
+setTimeout(() => { initCustomerPaymentConfig(); }, 120);
+
+window.activeCompletedRideData = null;
+
+window.openRidePaymentModal = function(rideData) {
+  if (!rideData) return;
+  window.activeCompletedRideData = rideData;
+  const fare = rideData.fare || 30;
+  const drvName = rideData.driverName || 'Driver Partner';
+  const drvVeh = rideData.driverVehicle || 'Vehicle';
+  const payMethod = (rideData.payMethod || 'CASH').toUpperCase();
+
+  const fareDisp = document.getElementById('rpmFareDisplay');
+  if (fareDisp) fareDisp.innerText = '₹' + fare;
+  const drvInfo = document.getElementById('rpmDriverInfo');
+  if (drvInfo) drvInfo.innerText = `Driver: ${drvName} (${drvVeh})`;
+  const cashAmt = document.getElementById('rpmCashAmount');
+  if (cashAmt) cashAmt.innerText = '₹' + fare;
+
+  if (payMethod === 'ONLINE') {
+    window.renderRpmOnline(rideData);
+    const cashSec = document.getElementById('rpmCashSection');
+    const onlSec = document.getElementById('rpmOnlineSection');
+    if (cashSec) cashSec.style.display = 'none';
+    if (onlSec) onlSec.style.display = 'block';
+  } else {
+    const cashSec = document.getElementById('rpmCashSection');
+    const onlSec = document.getElementById('rpmOnlineSection');
+    if (cashSec) cashSec.style.display = 'block';
+    if (onlSec) onlSec.style.display = 'none';
+  }
+
+  const modal = document.getElementById('ridePaymentModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+};
+
+window.renderRpmOnline = function(rideData) {
+  const fare = rideData.fare || 30;
+  const rawCustName = rideData.customerName || window.customerName || localStorage.getItem('customerName') || 'Customer';
+  const rawPhone = rideData.customerPhone || window.customerPhone || localStorage.getItem('customerPhone') || '';
+  const rawRideId = rideData.rideId || 'RIDE';
+
+  const cleanName = String(rawCustName).replace(/[^a-zA-Z0-9]/g, '') || 'Customer';
+  const cleanPhone = String(rawPhone).replace(/[^0-9]/g, '') || '0000000000';
+  const cleanId = String(rawRideId).replace(/[^a-zA-Z0-9]/g, '') || 'RIDE';
+
+  const remarkNote = `RideSathi-Cust-${cleanName}-${cleanPhone}-${cleanId}`;
+  const upiId = (window.rsgPaymentConfig && window.rsgPaymentConfig.upi_id) ? window.rsgPaymentConfig.upi_id : '8768447312@pthdfc';
+  const merchantName = (window.rsgPaymentConfig && window.rsgPaymentConfig.merchant_name) ? window.rsgPaymentConfig.merchant_name : 'RIDE SATHI GO';
+
+  const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${fare}&cu=INR&tn=${encodeURIComponent(remarkNote)}`;
+
+  const qrImg = document.getElementById('rpmQrImg');
+  if (qrImg) {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+    qrImg.onerror = function() {
+      this.onerror = null;
+      this.src = `https://quickchart.io/qr?size=250&text=${encodeURIComponent(upiUrl)}`;
+    };
+  }
+
+  const directLink = document.getElementById('rpmDirectUpiLink');
+  if (directLink) {
+    directLink.href = upiUrl;
+    directLink.onclick = function() {
+      try { window.location.href = upiUrl; } catch(e){}
+    };
+  }
+
+  const upiTxt = document.getElementById('rpmUpiIdText');
+  if (upiTxt) upiTxt.innerText = upiId;
+  const merchTxt = document.getElementById('rpmMerchantText');
+  if (merchTxt) merchTxt.innerText = merchantName;
+  const remTxt = document.getElementById('rpmRemarkText');
+  if (remTxt) remTxt.innerText = remarkNote;
+  const qrFareTxt = document.getElementById('rpmQrFareText');
+  if (qrFareTxt) qrFareTxt.innerText = 'ভাড়া: ₹' + fare;
+};
+
+window.switchRpmToOnline = function() {
+  if (window.activeCompletedRideData) {
+    window.renderRpmOnline(window.activeCompletedRideData);
+  }
+  const cashSec = document.getElementById('rpmCashSection');
+  const onlSec = document.getElementById('rpmOnlineSection');
+  if (cashSec) cashSec.style.display = 'none';
+  if (onlSec) onlSec.style.display = 'block';
+};
+
+window.switchRpmToCash = function() {
+  const cashSec = document.getElementById('rpmCashSection');
+  const onlSec = document.getElementById('rpmOnlineSection');
+  if (cashSec) cashSec.style.display = 'block';
+  if (onlSec) onlSec.style.display = 'none';
+};
+
+window.copyRpmUpiId = function() {
+  const upiId = (window.rsgPaymentConfig && window.rsgPaymentConfig.upi_id) ? window.rsgPaymentConfig.upi_id : '8768447312@pthdfc';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(upiId).then(() => {
+      alert('📋 UPI ID কপি করা হয়েছে: ' + upiId);
+    }).catch(() => {
+      prompt('UPI ID কপি করুন:', upiId);
+    });
+  } else {
+    prompt('UPI ID কপি করুন:', upiId);
+  }
+};
+
+window.confirmRidePaymentDone = function(mode) {
+  const modal = document.getElementById('ridePaymentModal');
+  if (modal) modal.style.display = 'none';
+
+  if (window.activeCompletedRideData) {
+    const r = window.activeCompletedRideData;
+    if (typeof window.openCustomerRatingModal === 'function') {
+      setTimeout(() => {
+        window.openCustomerRatingModal(r.rideId, r.driverName, r.driverPhone, r.driverVehicle, r.fare);
+      }, 150);
+    }
+  }
+};
+
+window.closeRidePaymentModal = function(proceedToRating) {
+  const modal = document.getElementById('ridePaymentModal');
+  if (modal) modal.style.display = 'none';
+
+  if (proceedToRating && window.activeCompletedRideData) {
+    const r = window.activeCompletedRideData;
+    if (typeof window.openCustomerRatingModal === 'function') {
+      setTimeout(() => {
+        window.openCustomerRatingModal(r.rideId, r.driverName, r.driverPhone, r.driverVehicle, r.fare);
+      }, 150);
+    }
+  }
+};
+
 // === TRIP RATING & FEEDBACK SYSTEM (Syncs to Admin Review Tab) ===
 let activeRatingRideKey = null;
 let activeRatingDriverName = '';
@@ -8574,8 +8839,8 @@ window.selectVehicle = function(veh) {
 // Dynamic UPI QR Code generator & copy helper
 window.updateOnlineQrCode = function() {
   const fare = window.calculatedFare || 30;
-  const upiId = "8768447312@pthdfc";
-  const upiName = "RIDE Sathi GO";
+  const upiId = (window.rsgPaymentConfig && window.rsgPaymentConfig.upi_id) ? window.rsgPaymentConfig.upi_id : "8768447312@pthdfc";
+  const upiName = (window.rsgPaymentConfig && window.rsgPaymentConfig.merchant_name) ? window.rsgPaymentConfig.merchant_name : "RIDE Sathi GO";
   const upiUrl = "upi://pay?pa=" + upiId + "&pn=" + encodeURIComponent(upiName) + "&am=" + fare + "&cu=INR&tn=RideBooking";
   const intentUrl = "intent://pay?pa=" + upiId + "&pn=" + encodeURIComponent(upiName) + "&am=" + fare + "&cu=INR&tn=RideBooking#Intent;scheme=upi;end";
 
@@ -8684,20 +8949,19 @@ window.copyUpiId = function() {
   }
 };
 
-// Select Payment
+// Select Payment (Ola / Rapido Style)
 window.selectPay = function(mode) {
   window.selectedPayType = mode;
-  document.getElementById('optCash').className = mode === 'CASH' ? 'pay-opt selected-cash' : 'pay-opt';
-  document.getElementById('optOnline').className = mode === 'ONLINE' ? 'pay-opt selected-online' : 'pay-opt';
+  const optCash = document.getElementById('optCash');
+  const optOnline = document.getElementById('optOnline');
+  if (optCash) optCash.className = mode === 'CASH' ? 'pay-opt selected-cash' : 'pay-opt';
+  if (optOnline) optOnline.className = mode === 'ONLINE' ? 'pay-opt selected-online' : 'pay-opt';
   const previewBox = document.getElementById('onlinePreviewBox');
   if (previewBox) {
-    if (mode === 'ONLINE') {
-      previewBox.style.display = 'block';
-      window.updateOnlineQrCode();
-    } else {
-      previewBox.style.display = 'none';
-    }
+    previewBox.style.display = 'none';
   }
+  const confPay = document.getElementById('confPay');
+  if (confPay) confPay.innerText = mode === 'ONLINE' ? '💳 ONLINE UPI (রাইড শেষে পে)' : '💵 CASH';
 };
 
 // Calculate Haversine Road Distance (1.32 factor)
@@ -9861,7 +10125,18 @@ function listenForDriver(key, otp) {
       const drvVeh = b.driverVehicle || (window.selectedVehicle ? window.selectedVehicle.toUpperCase() : 'BIKE');
 
       if (!window._ratingModalDismissed && !window._ratedOrDismissedBookings?.[completedKey] && !localStorage.getItem('rated_or_dismissed_' + completedKey)) {
-        if (typeof window.openCustomerRatingModal === 'function') {
+        if (typeof window.openRidePaymentModal === 'function') {
+          window.openRidePaymentModal({
+            rideId: completedKey,
+            driverName: drvName,
+            driverPhone: drvPhone,
+            driverVehicle: drvVeh,
+            fare: finalFare,
+            payMethod: b.payType || b.paymentMethod || b.paymentType || window.selectedPayType || 'CASH',
+            customerName: b.customerName || b.name || window.customerName || localStorage.getItem('customerName') || 'Customer',
+            customerPhone: b.customerPhone || b.phone || window.customerPhone || localStorage.getItem('customerPhone') || ''
+          });
+        } else if (typeof window.openCustomerRatingModal === 'function') {
           window.openCustomerRatingModal(completedKey, drvName, drvPhone, drvVeh, finalFare);
         }
       }
@@ -10252,14 +10527,23 @@ function searchAnotherDriver() {
 }
 window.searchAnotherDriver = searchAnotherDriver;
 
-// Open Rating Modal Helper for Completed Rides
+// Open Rating Modal Helper for Completed Rides (Routes through Payment Settlement first)
 function openRatingFromCompleted() {
   const bKey = window.currentBookingKey || window.currentBookingId || localStorage.getItem('last_completed_booking_key') || localStorage.getItem('activeBookingKey') || ('RSG-' + Date.now());
   const drvName = (document.getElementById('liveDriverName') ? document.getElementById('liveDriverName').innerText : 'Driver Partner');
   const drvPhone = (document.getElementById('liveDriverCallBtn') ? document.getElementById('liveDriverCallBtn').href.replace('tel:', '') : '');
   const drvVeh = (document.getElementById('liveDriverVeh') ? document.getElementById('liveDriverVeh').innerText : (window.selectedVehicle || 'BIKE'));
   const fare = window.calculatedFare || 30;
-  if (typeof window.openCustomerRatingModal === 'function') {
+  if (typeof window.openRidePaymentModal === 'function') {
+    window.openRidePaymentModal({
+      rideId: bKey,
+      driverName: drvName,
+      driverPhone: drvPhone,
+      driverVehicle: drvVeh,
+      fare: fare,
+      payMethod: window.selectedPayType || 'CASH'
+    });
+  } else if (typeof window.openCustomerRatingModal === 'function') {
     window.openCustomerRatingModal(bKey, drvName, drvPhone, drvVeh, fare);
   }
 }
