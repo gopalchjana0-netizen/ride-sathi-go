@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-04T18:14:50.952Z",
+  "updated_at": "2026-10-05T00:21:28.758Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -492,17 +492,6 @@
     },
     {
       "b": "Trip.com",
-      "d": "Special Offer: Get 20% Off Iryo Trains Across Spain!",
-      "c": "IRYO20",
-      "cat": "Travel",
-      "l": "https://www.trip.com/sale/w/3g5idiy89zicu25s/sep-super-destination-exploreeurope.html?locale=en-XX&transparentBar=1",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.trip.com%2Fsale%2Fw%2F3g5idiy89zicu25s%2Fsep-super-destination-exploreeurope.html%3Flocale%3Den-XX%26transparentBar%3D1&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3135/medium/trip.png?1520838491",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Trip.com",
       "d": "Save 8% on Your Next Car Rental Booking!",
       "c": "TRIPCAR8",
       "cat": "Travel",
@@ -784,17 +773,6 @@
       "l": "https://www.helium10.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.helium10.com%2F&cid=324245&subid=ridesathigo",
       "img": "/photos/medium/missing.png",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Boat",
-      "d": "Boat Grand Festive Sale: Snag Up to 80% Off Plus Extra 5% Off!",
-      "c": "FESTIVE",
-      "cat": "Travel",
-      "l": "https://www.boat-lifestyle.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
       "badge": "Coupon",
       "rank": 20
     },
@@ -1477,17 +1455,6 @@
       "l": "https://mymuse.in/products/groove-plus-app-controlled-massager",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fmymuse.in%2Fproducts%2Fgroove-plus-app-controlled-massager&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/5212/medium/images.png?1693814422",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Klook",
-      "d": "Snag 5% Off on Curated Tours & Activities with Klook's Special Offer!",
-      "c": "TNA2026EARLYAUTUMN",
-      "cat": "Travel",
-      "l": "https://www.klook.com/en-IN/promotion/program/613781267/?spm=CouponHowToUse.ApplicableAid&clickId=eecac4b3c9",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2Fen-IN%2Fpromotion%2Fprogram%2F613781267%2F%3Fspm%3DCouponHowToUse.ApplicableAid%26clickId%3Deecac4b3c9&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2951,6 +2918,39 @@
       "l": "https://www.edx.org/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.edx.org%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3681/medium/edx.png?1588599269",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Mymuse",
+      "d": "Get Your MyMuse Massager & Snag an Extra 5% Off!",
+      "c": "CHECKOUT5",
+      "cat": "Health",
+      "l": "https://mymuse.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fmymuse.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/5212/medium/images.png?1693814422",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Mymuse",
+      "d": "Grab a Fantastic 7% Off Your Order of Rs. 5000 and Above at MyMuse!",
+      "c": "BIG7",
+      "cat": "Health",
+      "l": "https://mymuse.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fmymuse.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/5212/medium/images.png?1693814422",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Mymuse",
+      "d": "Save 10% When You Spend Over Rs. 7000!",
+      "c": "BIGGER10",
+      "cat": "Health",
+      "l": "https://mymuse.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fmymuse.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/5212/medium/images.png?1693814422",
       "badge": "Coupon",
       "rank": 20
     }
