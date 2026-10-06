@@ -3353,7 +3353,13 @@ function renderAllIncoming() {
             ${parcelBadgeHtml}
             ${cityBadgeHtml}
             ${surgeBadgeHtml}
-            <span style="background:#dcfce7;color:#16a34a;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:bold">${d.payType || 'CASH'}</span>
+            ${(function(){
+              const pt = (d.payType || d.paymentMethod || 'CASH').toString().toUpperCase();
+              if (pt.includes('ONLINE') || pt.includes('UPI')) {
+                return '<span style="background:#e0f2fe;color:#0284c7;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:bold">💳 ONLINE UPI</span>';
+              }
+              return '<span style="background:#dcfce7;color:#16a34a;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:bold">💵 CASH</span>';
+            })()}
           </div>
         </div>
 
@@ -3364,7 +3370,13 @@ function renderAllIncoming() {
           </div>
           <b style="font-size:38px;color:#16a34a">₹${full}</b>
           <div style="font-size:13px;font-weight:700;color:#0f172a;margin-top:2px">
-            💵 ${currentLang === 'bn' ? 'যাত্রী সরাসরি আপনাকে পরিশোধ করবে' : 'Passenger pays directly to you'}
+            ${(function(){
+              const pt = (d.payType || d.paymentMethod || 'CASH').toString().toUpperCase();
+              if (pt.includes('ONLINE') || pt.includes('UPI')) {
+                return (currentLang === 'bn' ? '💳 যাত্রী অনলাইন UPI এর মাধ্যমে ভাড়া পরিশোধ করবে' : '💳 Passenger will pay via Online UPI');
+              }
+              return (currentLang === 'bn' ? '💵 যাত্রী সরাসরি নগদ/QR এ আপনাকে পরিশোধ করবে' : '💵 Passenger pays directly to you');
+            })()}
           </div>
         </div>
 
@@ -3958,7 +3970,7 @@ function listenAccepted() {
             <span style="background:#0284c7;color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:900">
               📍 ${currentLang === 'bn' ? 'পিকআপে রওনা হয়েছেন (En Route)' : 'En Route to Pickup'}
             </span>
-            <span style="background:#16a34a;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold">${d.payType || 'CASH'}</span>
+            <span style="background:${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE')) ? '#0284c7' : '#16a34a'};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold">${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE')) ? '💳 ONLINE UPI' : '💵 CASH'}</span>
           </div>
 
           <!-- 1. PROMINENT CUSTOMER PICKUP LOCATION & GPS ROUTE NAVIGATION -->
@@ -3980,7 +3992,7 @@ function listenAccepted() {
           <div style="background:#fff;padding:12px;border-radius:14px;margin:8px 0;border:1px solid #e2e8f0;font-size:13px">
             <div style="font-size:15px;font-weight:800;color:#0f172a;margin-bottom:6px">👤 ${dict.customerLabel}: ${cName}</div>
             <div class="detail-row"><span>📞 ${dict.phoneLabel}</span><b><a href="tel:${cPhone}" style="color:#0284c7;text-decoration:none">${cPhone}</a></b></div>
-            <div class="detail-row"><span>💰 ${currentLang === 'bn' ? 'মোট ভাড়া' : 'Total Fare'}</span><b>₹${full} (${d.payType || 'CASH'})</b></div>
+            <div class="detail-row"><span>💰 ${currentLang === 'bn' ? 'মোট ভাড়া' : 'Total Fare'}</span><b>₹${full} (${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE')) ? 'ONLINE UPI' : 'CASH'})</b></div>
           </div>
 
           <!-- CALL & WHATSAPP ACTION BUTTONS -->
@@ -4032,7 +4044,7 @@ function listenAccepted() {
             <span style="background:#16a34a;color:#fff;padding:4px 10px;border-radius:14px;font-size:12px;font-weight:900">
               🏁 ${dict.ongoingBadge || 'ট্রিপ চলছে (Ongoing)'}
             </span>
-            <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold">${d.payType || 'CASH'}</span>
+            <span style="background:${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE')) ? '#0284c7' : '#16a34a'};color:#fff;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold">${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE')) ? '💳 ONLINE UPI' : '💵 CASH'}</span>
           </div>
 
           <!-- 1. BIG MAP NAVIGATION TO DROP DESTINATION -->
@@ -4046,8 +4058,10 @@ function listenAccepted() {
               💰 ${currentLang === 'bn' ? 'যাত্রীর থেকে সংগ্রহ করার মোট ভাড়া' : 'Total Fare to Collect'}
             </div>
             <b style="font-size:36px;color:#16a34a">₹${full}</b>
-            <div style="font-size:13px;font-weight:700;color:#166534;margin-top:2px">
-              💵 ${currentLang === 'bn' ? 'নগদ বা আপনার QR কোডে সরাসরি ভাড়া সংগ্রহ করুন' : 'Collect cash or via your QR code'}
+            <div style="font-size:13px;font-weight:700;color:${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE')) ? '#0284c7' : '#166534'};margin-top:2px">
+              ${((d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE'))
+                ? (currentLang === 'bn' ? '💳 যাত্রী অনলাইন UPI এর মাধ্যমে ভাড়া মেটাবে' : '💳 Passenger will pay via Online UPI')
+                : (currentLang === 'bn' ? '💵 নগদ বা আপনার QR কোডে সরাসরি ভাড়া সংগ্রহ করুন' : '💵 Collect cash or via your QR code')}
             </div>
           </div>
 
@@ -4286,7 +4300,7 @@ function completeRide(key) {
         fare: full,
         driverEarning: earn,
         customerName: d.name || d.customerName || 'Customer',
-        paymentMethod: d.payType || 'CASH_OR_ONLINE',
+        paymentMethod: (d.payType || d.paymentMethod || 'CASH').toString().toUpperCase().includes('ONLINE') ? 'ONLINE' : 'CASH',
         time: Date.now()
       });
 

@@ -2774,7 +2774,9 @@ window.closeNotifModal = function() {
 
 // PAYMENT SELECTOR (CASH vs ONLINE UPI) - Ola / Rapido Post-Trip Settlement Flow
 window.selectPay = function(mode) {
+  mode = (mode || 'CASH').toUpperCase();
   window.selectedPayType = mode;
+  try { localStorage.setItem('selectedPayType', mode); } catch(e){}
   var optCash = document.getElementById('optCash');
   var optOnline = document.getElementById('optOnline');
   if (optCash) optCash.className = (mode === 'CASH' ? 'pay-opt selected-cash' : 'pay-opt');
@@ -7245,8 +7247,18 @@ window.generateAndDownloadInvoicePDF = function(rideData) {
       distance = distance + ' KM';
     }
 
-    var rawPay = String(rideData.paymentMethod || rideData.payMode || 'Cash').toUpperCase();
-    var paymentMethod = (rawPay.indexOf('ONLINE') !== -1 || rawPay.indexOf('UPI') !== -1) ? 'Online' : 'Cash';
+    var rawPay = (
+      rideData.paymentMethod ||
+      rideData.payMethod ||
+      rideData.payType ||
+      rideData.paymentType ||
+      rideData.payMode ||
+      window.selectedPayType ||
+      localStorage.getItem('selectedPayType') ||
+      'Cash'
+    ).toString().trim().toUpperCase();
+    var isOnline = (rawPay.indexOf('ONLINE') !== -1 || rawPay.indexOf('UPI') !== -1 || rawPay.indexOf('QR') !== -1);
+    var paymentMethod = isOnline ? 'Online' : 'Cash';
 
     // 6. Driver Details (if available)
     var driverName = rideData.driverName || (document.getElementById('liveDriverName') ? document.getElementById('liveDriverName').innerText : 'Verified Partner');
@@ -7326,7 +7338,11 @@ window.generateAndDownloadInvoicePDF = function(rideData) {
     doc.text('PAYMENT MODE:', 20, 65.5);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.setTextColor(15, 23, 42);
+    if (paymentMethod === 'Online') {
+      doc.setTextColor(2, 132, 199);
+    } else {
+      doc.setTextColor(15, 23, 42);
+    }
     doc.text(paymentMethod, 50, 65.5);
 
     // Right Column (Customer Name, Customer Mobile, Ride Type, Total Distance)
@@ -7459,8 +7475,12 @@ window.generateAndDownloadInvoicePDF = function(rideData) {
     doc.setFontSize(9);
     doc.setTextColor(71, 85, 105);
     doc.text('Payment Status:', 20, fareY + 46);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    if (paymentMethod === 'Online') {
+      doc.setTextColor(2, 132, 199);
+    } else {
+      doc.setTextColor(21, 128, 61);
+    }
     doc.text('PAID via ' + paymentMethod + ' (Settled in Full)', 54, fareY + 46);
 
     // Footer Divider
@@ -7697,9 +7717,14 @@ window.openCustomerHistoryModal = function() {
                 distance: b.distance || b.km || '',
                 fare: fAmt,
                 baseFare: baseAmt,
-                distanceCharge: Math.max(0, fAmt - baseAmt),
-                paymentMethod: (b.paymentMethod || b.payMode || 'Cash').toUpperCase().includes('ONLINE') ? 'Online' : 'Cash',
-                vehicleType: veh.includes('CAR') ? 'Car' : (veh.includes('TOTO') ? 'Auto' : (veh.includes('PARCEL') ? 'Parcel' : 'Bike')),
+                paymentMethod: (function() {
+                  const p = (b.paymentMethod || b.payType || b.payMethod || b.paymentType || b.payMode || 'Cash').toString().toUpperCase();
+                  return (p.includes('ONLINE') || p.includes('UPI') || p.includes('QR')) ? 'Online' : 'Cash';
+                })(),
+                payType: (function() {
+                  const p = (b.paymentMethod || b.payType || b.payMethod || b.paymentType || b.payMode || 'CASH').toString().toUpperCase();
+                  return (p.includes('ONLINE') || p.includes('UPI') || p.includes('QR')) ? 'ONLINE' : 'CASH';
+                })(),
                 customerName: b.customerName || b.name || b.custName || b.userName || localStorage.getItem('customerName') || 'Valued Rider',
                 customerMobile: phone,
                 status: b.status || 'COMPLETED',
@@ -8157,7 +8182,15 @@ window.renderRpmOnline = function(rideData) {
 };
 
 window.switchRpmToOnline = function() {
+  window.selectedPayType = 'ONLINE';
+  try { localStorage.setItem('selectedPayType', 'ONLINE'); } catch(e){}
   if (window.activeCompletedRideData) {
+    window.activeCompletedRideData.paymentMethod = 'Online';
+    window.activeCompletedRideData.payType = 'ONLINE';
+    window.activeCompletedRideData.payMethod = 'ONLINE';
+    if (typeof window.saveRideToHistory === 'function') {
+      window.saveRideToHistory(window.activeCompletedRideData);
+    }
     window.renderRpmOnline(window.activeCompletedRideData);
   }
   const cashSec = document.getElementById('rpmCashSection');
@@ -8167,6 +8200,16 @@ window.switchRpmToOnline = function() {
 };
 
 window.switchRpmToCash = function() {
+  window.selectedPayType = 'CASH';
+  try { localStorage.setItem('selectedPayType', 'CASH'); } catch(e){}
+  if (window.activeCompletedRideData) {
+    window.activeCompletedRideData.paymentMethod = 'Cash';
+    window.activeCompletedRideData.payType = 'CASH';
+    window.activeCompletedRideData.payMethod = 'CASH';
+    if (typeof window.saveRideToHistory === 'function') {
+      window.saveRideToHistory(window.activeCompletedRideData);
+    }
+  }
   const cashSec = document.getElementById('rpmCashSection');
   const onlSec = document.getElementById('rpmOnlineSection');
   if (cashSec) cashSec.style.display = 'block';
@@ -8187,10 +8230,22 @@ window.copyRpmUpiId = function() {
 };
 
 window.confirmRidePaymentDone = function(mode) {
+  const selectedMode = (mode || window.selectedPayType || localStorage.getItem('selectedPayType') || 'CASH').toUpperCase();
+  window.selectedPayType = selectedMode;
+  try { localStorage.setItem('selectedPayType', selectedMode); } catch(e){}
+
   const modal = document.getElementById('ridePaymentModal');
   if (modal) modal.style.display = 'none';
 
+  const payDisp = (selectedMode.includes('ONLINE') || selectedMode.includes('UPI') || selectedMode.includes('QR')) ? 'Online' : 'Cash';
+
   if (window.activeCompletedRideData) {
+    window.activeCompletedRideData.paymentMethod = payDisp;
+    window.activeCompletedRideData.payType = selectedMode;
+    window.activeCompletedRideData.payMethod = selectedMode;
+    if (typeof window.saveRideToHistory === 'function') {
+      window.saveRideToHistory(window.activeCompletedRideData);
+    }
     const r = window.activeCompletedRideData;
     if (typeof window.openCustomerRatingModal === 'function') {
       setTimeout(() => {
@@ -8906,7 +8961,7 @@ window.shareLiveTripSafety = function() {
 
 // Global App State
 window.selectedVehicle = "Bike";
-window.selectedPayType = "CASH";
+window.selectedPayType = localStorage.getItem('selectedPayType') || "CASH";
 window.pickupCoords = null;
 window.dropCoords = null;
 window.calculatedKm = 0;
@@ -9379,7 +9434,9 @@ window.copyUpiId = function() {
 
 // Select Payment (Ola / Rapido Style)
 window.selectPay = function(mode) {
+  mode = (mode || 'CASH').toUpperCase();
   window.selectedPayType = mode;
+  try { localStorage.setItem('selectedPayType', mode); } catch(e){}
   const optCash = document.getElementById('optCash');
   const optOnline = document.getElementById('optOnline');
   if (optCash) optCash.className = mode === 'CASH' ? 'pay-opt selected-cash' : 'pay-opt';
@@ -9388,6 +9445,10 @@ window.selectPay = function(mode) {
   if (previewBox) {
     previewBox.style.display = 'none';
   }
+  const cashBox = document.getElementById('cashPayBox');
+  const onlineBox = document.getElementById('onlinePayBox');
+  if (cashBox) cashBox.style.display = (mode === 'CASH' ? 'block' : 'none');
+  if (onlineBox) onlineBox.style.display = (mode === 'ONLINE' ? 'block' : 'none');
   const confPay = document.getElementById('confPay');
   if (confPay) confPay.innerText = mode === 'ONLINE' ? '💳 ONLINE UPI (রাইড শেষে পে)' : '💵 CASH';
 };
@@ -10324,7 +10385,9 @@ window.confirmAndPlaceBooking = async function(e) {
     cityId: (window.currentCity ? window.currentCity.id : 'kolkata'),
     vehicle: vTypeUpper,
     vehicleType: vTypeLower,
-    payType: window.selectedPayType || 'CASH',
+    payType: (window.selectedPayType || localStorage.getItem('selectedPayType') || 'CASH').toUpperCase(),
+    paymentMethod: (window.selectedPayType || localStorage.getItem('selectedPayType') || 'CASH').toUpperCase() === 'ONLINE' ? 'Online' : 'Cash',
+    payMethod: (window.selectedPayType || localStorage.getItem('selectedPayType') || 'CASH').toUpperCase(),
     couponApplied: window.appliedCoupon || null,
     otp: String(otp)
   };
