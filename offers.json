@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-06T00:21:41.049Z",
+  "updated_at": "2026-10-06T06:18:03.952Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Boat",
+      "d": "Don't Miss Out: 50% Off Your Favorite Boat Products!",
+      "c": "DROP50",
+      "cat": "Travel",
+      "l": "https://www.boat-lifestyle.com/collections/boat50",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2Fboat50&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Levis",
@@ -1679,6 +1690,17 @@
       "rank": 20
     },
     {
+      "b": "TrueBasics",
+      "d": "Save 22% + Extra 5% on Your 1 kg Clean Plant Protein Pack of Two!",
+      "c": "CLEAN5",
+      "cat": "Health",
+      "l": "https://www.truebasics.com/sv/truebasics-clean-plant-protein/SP-136871?navKey=VRNT-288769",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.truebasics.com%2Fsv%2Ftruebasics-clean-plant-protein%2FSP-136871%3FnavKey%3DVRNT-288769&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3719/medium/Truebsia.png?1593148676",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
       "b": "GharSoaps",
       "d": "Dive into 40% Off the Charming Magic Baby Bar + Add an Extra 10% Discount",
       "c": "AFFILIATE10",
@@ -2929,28 +2951,6 @@
       "l": "https://www.airpaz.com/en/flight",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.airpaz.com%2Fen%2Fflight&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4992/medium/New_Project_-_2023-05-22T163516.009.png?1684753555",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Air India Express",
-      "d": "Score Up to Rs 600 OFF with Your Mastercard Purchase!",
-      "c": "FLYMASTER",
-      "cat": "Travel",
-      "l": "https://www.airindiaexpress.com/home",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.airindiaexpress.com%2Fhome&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/6055/medium/New_Project_-_2024-03-20T124337.262.png?1710919198",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Furlenco",
-      "d": "Rent Kid's Furniture & Get Rs. 1100 Off!",
-      "c": "KIDSDAY",
-      "cat": "Shopping",
-      "l": "https://www.furlenco.com/#/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.furlenco.com%2F%23%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3305/medium/Furlenco-logo.png?1540902137",
       "badge": "Coupon",
       "rank": 20
     }
