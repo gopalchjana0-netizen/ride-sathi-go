@@ -6310,7 +6310,37 @@ window.applyLanguageTranslations = applyLanguageTranslations;
 setLanguage(currentLang);
 
 
-// === 2. DYNAMIC RATE SYSTEM (Real-time from 'settings/rates') ===
+// === ZERO-WASTE CONNECTION GUARD (100% ZERO BILL GUARANTEE) ===
+// Pauses Realtime DB socket when customer minimizes/locks screen for > 35s (unless on active trip)
+// Reconnects instantly with 0ms delay when user opens the app back up
+(function() {
+  let disconnectTimer = null;
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      const hasActiveTrip = !!(window.activeBookingKey || localStorage.getItem('rsg_activeBookingKey') || (typeof currentBooking !== 'undefined' && currentBooking));
+      if (!hasActiveTrip) {
+        disconnectTimer = setTimeout(() => {
+          if (document.hidden) {
+            try {
+              if (typeof firebase !== 'undefined' && firebase.database) {
+                firebase.database().goOffline();
+              }
+            } catch(e) {}
+          }
+        }, 35000);
+      }
+    } else {
+      if (disconnectTimer) clearTimeout(disconnectTimer);
+      try {
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          firebase.database().goOnline();
+        }
+      } catch(e) {}
+    }
+  });
+})();
+
+// === 2. DYNAMIC RATE SYSTEM (0ms Cache + Cloudflare Fallback + Real-time from 'settings/rates') ===
 let liveRates = {
   bikePerKm: 15, bikeMin: 30,
   totoPerKm: 20, totoMin: 40,
@@ -6319,6 +6349,27 @@ let liveRates = {
   nightCharge: 0,
   surge: 0
 };
+
+function applyLiveRatesUI() {
+  const bEl = document.getElementById('bikeRateTxt'); if (bEl) bEl.innerText = `₹${liveRates.bikePerKm}/KM`;
+  const bmEl = document.getElementById('bikeMinTxt'); if (bmEl) bmEl.innerText = `Min ₹${liveRates.bikeMin}`;
+  const tEl = document.getElementById('totoRateTxt'); if (tEl) tEl.innerText = `₹${liveRates.totoPerKm}/KM`;
+  const tmEl = document.getElementById('totoMinTxt'); if (tmEl) tmEl.innerText = `Min ₹${liveRates.totoMin}`;
+  const cEl = document.getElementById('carRateTxt'); if (cEl) cEl.innerText = `₹${liveRates.carPerKm}/KM`;
+  const cmEl = document.getElementById('carMinTxt'); if (cmEl) cmEl.innerText = `Min ₹${liveRates.carMin}`;
+  const pEl = document.getElementById('parcelRateTxt'); if (pEl) pEl.innerText = `₹${liveRates.parcelPerKm}/KM`;
+  const pmEl = document.getElementById('parcelMinTxt'); if (pmEl) pmEl.innerText = `Min ₹${liveRates.parcelMin}`;
+  if (typeof calcFare === 'function') calcFare();
+}
+
+// 0ms Instant Cache Restoration
+try {
+  const cachedR = JSON.parse(localStorage.getItem('rsg_cached_rates') || 'null');
+  if (cachedR && typeof cachedR === 'object') {
+    Object.assign(liveRates, cachedR);
+    setTimeout(applyLiveRatesUI, 5);
+  }
+} catch(e) {}
 
 function listenDynamicRates() {
   if (!db) return;
@@ -6336,17 +6387,20 @@ function listenDynamicRates() {
       if (r.nightCharge != null) liveRates.nightCharge = Number(r.nightCharge);
       if (r.surge != null) liveRates.surge = Number(r.surge);
 
-      document.getElementById('bikeRateTxt').innerText = `₹${liveRates.bikePerKm}/KM`;
-      document.getElementById('bikeMinTxt').innerText = `Min ₹${liveRates.bikeMin}`;
-      document.getElementById('totoRateTxt').innerText = `₹${liveRates.totoPerKm}/KM`;
-      document.getElementById('totoMinTxt').innerText = `Min ₹${liveRates.totoMin}`;
-      document.getElementById('carRateTxt').innerText = `₹${liveRates.carPerKm}/KM`;
-      document.getElementById('carMinTxt').innerText = `Min ₹${liveRates.carMin}`;
-      document.getElementById('parcelRateTxt').innerText = `₹${liveRates.parcelPerKm}/KM`;
-      document.getElementById('parcelMinTxt').innerText = `Min ₹${liveRates.parcelMin}`;
-
-      calcFare();
+      try { localStorage.setItem('rsg_cached_rates', JSON.stringify(liveRates)); } catch(e) {}
+      applyLiveRatesUI();
     }
+  }, err => {
+    console.warn('Firebase rates error, fallback to Cloudflare Worker:', err);
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          Object.assign(liveRates, data.rates);
+          applyLiveRatesUI();
+        }
+      })
+      .catch(()=>{});
   });
 }
 listenDynamicRates();

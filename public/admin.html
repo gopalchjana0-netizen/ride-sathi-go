@@ -5270,7 +5270,12 @@ function saveRate(){
 
   Promise.all([
     db.ref('settings/rates').set(r),
-    db.ref('settings/social').set(social)
+    db.ref('settings/social').set(social),
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(r)
+    }).catch(()=>{})
   ]).then(()=>{
     if (btn) { btn.innerText = '💾 SAVE - Customer + Driver Live Update'; btn.disabled = false; }
     const msg = document.getElementById('rateMsg');

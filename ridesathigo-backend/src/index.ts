@@ -75,6 +75,42 @@ export default {
       });
     }
 
+    // 0.1 SETTINGS & DYNAMIC RATES (Edge Cached & D1 Backup)
+    if (path === "/api/settings" || path === "/api/rates") {
+      if (request.method === "POST") {
+        try {
+          const body = await request.json();
+          await safeRun(env.DB, "CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT)");
+          await safeRun(
+            env.DB,
+            "INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES ('rates', ?, datetime('now'))",
+            [JSON.stringify(body)]
+          );
+          return jsonResponse({ success: true, message: "Rates updated on Cloudflare D1" });
+        } catch(e: any) {
+          return jsonResponse({ success: false, error: e.message }, 500);
+        }
+      } else {
+        const q = await safeQuery(env.DB, "SELECT value FROM app_settings WHERE key='rates' LIMIT 1");
+        if (q.success && q.result?.results?.[0]?.value) {
+          try {
+            return jsonResponse({ success: true, rates: JSON.parse(q.result.results[0].value), source: "cloudflare_d1" });
+          } catch(e) {}
+        }
+        return jsonResponse({
+          success: true,
+          rates: {
+            bikePerKm: 15, bikeMin: 30,
+            totoPerKm: 20, totoMin: 40,
+            carPerKm: 25, carMin: 80,
+            parcelPerKm: 12, parcelMin: 25,
+            nightCharge: 0, surge: 0
+          },
+          source: "cloudflare_default"
+        });
+      }
+    }
+
     // 1. MANUAL CLEANUP API FOR ADMIN
     if (path === "/api/admin/cleanup" && (request.method === "POST" || request.method === "GET")) {
       const authKey = request.headers.get("x-admin-key") || url.searchParams.get("key");

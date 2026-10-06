@@ -3188,40 +3188,26 @@ function startLiveTracking() {
       });
     } catch(e) {}
 
-    get(ref(db, 'accepted_rides')).then(snap => {
-      if (!snap.exists()) return;
-      snap.forEach(ch => {
-        let d = ch.val();
-        if (cleanPhone(d.driverPhone) === DRIVER_PHONE && (d.status === 'ACCEPTED' || d.status === 'ONGOING')) {
-          update(ref(db, 'accepted_rides/' + ch.key), {
-            driverLat: lat,
-            driverLng: lng,
-            lastLocationUpdate: now
-          });
-          update(ref(db, 'bookings/' + ch.key), {
-            driverLat: lat,
-            driverLng: lng,
-            lastLocationUpdate: now
-          }).catch(()=>{});
-          update(ref(db, 'rides/' + ch.key), {
-            driverLat: lat,
-            driverLng: lng,
-            lastLocationUpdate: now
-          }).catch(()=>{});
-          try {
-            set(ref(db, 'live_trips/' + ch.key), {
-              driverPhone: DRIVER_PHONE,
-              driverName: DRIVER_NAME,
-              driverLat: lat,
-              driverLng: lng,
-              updatedAt: now,
-              customerMobile: d.mobile || d.customerMobile || '',
-              status: d.status
-            });
-          } catch(e) {}
-        }
-      });
-    });
+    if (window.activeTripKey) {
+      const activeKey = window.activeTripKey;
+      const tripUpdates = {
+        driverLat: lat,
+        driverLng: lng,
+        lastLocationUpdate: now
+      };
+      update(ref(db, 'accepted_rides/' + activeKey), tripUpdates).catch(()=>{});
+      update(ref(db, 'bookings/' + activeKey), tripUpdates).catch(()=>{});
+      update(ref(db, 'rides/' + activeKey), tripUpdates).catch(()=>{});
+      try {
+        update(ref(db, 'live_trips/' + activeKey), {
+          driverPhone: DRIVER_PHONE,
+          driverName: DRIVER_NAME,
+          driverLat: lat,
+          driverLng: lng,
+          updatedAt: now
+        }).catch(()=>{});
+      } catch(e) {}
+    }
   }
 
   navigator.geolocation.getCurrentPosition(pushCoords, () => {}, { enableHighAccuracy: true });
@@ -4928,6 +4914,17 @@ function listenAdminRates() {
       let s2 = document.getElementById('pendingSupportNum');
       if (s2) s2.innerText = systemSupportPhone;
     }
+  }, err => {
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.rates) {
+          let r = data.rates;
+          if (r.commission != null) systemCommission = Number(r.commission);
+          if (r.dueLimit != null) systemDueLimit = Number(r.dueLimit);
+          if (r.autoLockMin != null) systemAutoLockMin = Number(r.autoLockMin);
+        }
+      }).catch(()=>{});
   });
 }
 
