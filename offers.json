@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-06T18:15:35.427Z",
+  "updated_at": "2026-10-07T04:58:54.939Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Grab Up to 90% Off on Fashion + Extra Rs.400 Off Your Purchase!",
+      "c": "ALLSTARS400",
+      "cat": "Health",
+      "l": "https://www.ajio.com/s/allstars400-409907",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.ajio.com%2Fs%2Fallstars400-409907&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Palmonas",
@@ -453,17 +464,6 @@
       "cat": "Electronics",
       "l": "https://www.boat-lifestyle.com/collections/5000-off-biggest-discount-ever-by-boat",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2F5000-off-biggest-discount-ever-by-boat&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Boat",
-      "d": "Don't Miss Out: 50% Off Your Favorite Boat Products!",
-      "c": "DROP50",
-      "cat": "Travel",
-      "l": "https://www.boat-lifestyle.com/collections/boat50",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2Fboat50&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
       "badge": "Coupon",
       "rank": 20
@@ -1092,17 +1092,6 @@
       "l": "https://www.boat-lifestyle.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Mymuse",
-      "d": "MyMuse Quickie Sale: Steals of 35% Off + Extra 7% Savings!",
-      "c": "DDMM7",
-      "cat": "Health",
-      "l": "https://mymuse.in/collections/quickie-sale",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fmymuse.in%2Fcollections%2Fquickie-sale&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/5212/medium/images.png?1693814422",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2010,7 +1999,7 @@
     },
     {
       "b": "Firstcry",
-      "d": "Unlock Flat ₹500 Off on Orders Over ���1111 + Enjoy Free Shipping!",
+      "d": "Unlock Flat ₹500 Off on Orders Over ₹1111 + Enjoy Free Shipping!",
       "c": "FIRSTCRY500",
       "cat": "Shopping",
       "l": "https://www.firstcry.com/",
@@ -2950,6 +2939,17 @@
       "cat": "Health",
       "l": "https://nutrabay.com/brand/superyou",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fnutrabay.com%2Fbrand%2Fsuperyou&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/5340/medium/New_Project_-_2023-10-25T104650.172.png?1698211039",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Nutrabay",
+      "d": "Claim Flat Rs. 100 Off on Wellbeing Nutrition Marine Collagen!",
+      "c": "WELL100",
+      "cat": "Health",
+      "l": "https://nutrabay.com/brand/wellbeing-nutrition",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fnutrabay.com%2Fbrand%2Fwellbeing-nutrition&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/5340/medium/New_Project_-_2023-10-25T104650.172.png?1698211039",
       "badge": "Coupon",
       "rank": 20
