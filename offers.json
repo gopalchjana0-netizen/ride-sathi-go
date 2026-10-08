@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T13:02:01.100Z",
+  "updated_at": "2026-10-08T23:04:28.145Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,83 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Hkvitals",
+      "d": "Save Up to 50% + Extra 7% Discount!",
+      "c": "VITALS7",
+      "cat": "Health",
+      "l": "https://www.hkvitals.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.hkvitals.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4158/medium/New_Project_-_2021-08-05T170551.551_%281%29.png?1628163471",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "HealthKart",
+      "d": "Don’t Miss Out: Exclusive Discounts on Dymatize Supplements!",
+      "c": "AFDM",
+      "cat": "Health",
+      "l": "https://www.healthkart.com/sale/dymatize",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsale%2Fdymatize&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "HealthKart",
+      "d": "Avvatar Protein: Claim Your 10% Off on Orders Above Rs. 999!",
+      "c": "AFAVV",
+      "cat": "Health",
+      "l": "https://www.healthkart.com/sale/avvatar",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsale%2Favvatar&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "HealthKart",
+      "d": "Score Up to 30% Off One Science Protein + Extra Savings Inside!",
+      "c": "AFOS",
+      "cat": "Health",
+      "l": "https://www.healthkart.com/sale/one-science",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsale%2Fone-science&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "HealthKart",
+      "d": "Myprotein Supplements: Save Extra 10% Up to ₹150 Today!",
+      "c": "AFMY",
+      "cat": "Health",
+      "l": "https://www.healthkart.com/sale/myprotein",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsale%2Fmyprotein&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "HealthKart",
+      "d": "Score an Extra 10% Off MuscleBlaze Yeast Protein, 1 kg",
+      "c": "YEAST",
+      "cat": "Health",
+      "l": "https://www.healthkart.com/sv/muscleblaze-yeast-protein/SP-141387?navKey=VRNT-286703",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsv%2Fmuscleblaze-yeast-protein%2FSP-141387%3FnavKey%3DVRNT-286703&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "HealthKart",
+      "d": "Enjoy a Flat Rs. 150 Off on 1 kg of Protein!",
+      "c": "HMHK",
+      "cat": "Health",
+      "l": "https://www.healthkart.com/sale/top-1kg-proteins",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fsale%2Ftop-1kg-proteins&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Tata Cliq",
@@ -1080,17 +1157,6 @@
       "cat": "Shopping",
       "l": "https://luxury.tatacliq.com/luxury/c-LSH1?page=0&q=:relevance:category:LSH2111100:genderbeauty-classification:Unisex:genderbeauty-classification:Men:genderbeauty-classification:Women&isSortFlow=false",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxury.tatacliq.com%2Fluxury%2Fc-LSH1%3Fpage%3D0%26q%3D%3Arelevance%3Acategory%3ALSH2111100%3Agenderbeauty-classification%3AUnisex%3Agenderbeauty-classification%3AMen%3Agenderbeauty-classification%3AWomen%26isSortFlow%3Dfalse&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/2126/medium/tata.png?1495706175",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Tata Cliq",
-      "d": "Grab 11% OFF on Select Luxury Items Today!",
-      "c": "LUXNORETURN",
-      "cat": "Shopping",
-      "l": "https://luxury.tatacliq.com/?cid=af:homepage:admitad:301233_20260930cllvphzll6ak:83d77ea05c12b69ec81ef96f4f7f950e",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fluxury.tatacliq.com%2F%3Fcid%3Daf%3Ahomepage%3Aadmitad%3A301233_20260930cllvphzll6ak%3A83d77ea05c12b69ec81ef96f4f7f950e&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/2126/medium/tata.png?1495706175",
       "badge": "Coupon",
       "rank": 20
@@ -2885,72 +2951,6 @@
       "l": "https://www.klook.com/en-IN/tetris/promo/in-hotel-deals/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2Fen-IN%2Ftetris%2Fpromo%2Fin-hotel-deals%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "KKday",
-      "d": "Exclusive: Get 10% OFF Japan Transportation for $50+ Orders!",
-      "c": "JPTERF10",
-      "cat": "Travel",
-      "l": "https://www.kkday.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.kkday.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3025/medium/kkday_%281%29.png?1514378232",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "KKday",
-      "d": "Exclusive Japan Tickets Deal: Extra 6% OFF When You Spend $50 or More!",
-      "c": "JPAT6",
-      "cat": "Travel",
-      "l": "https://www.kkday.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.kkday.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3025/medium/kkday_%281%29.png?1514378232",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "R for Rabbit",
-      "d": "Back to School Special: Grab Up to Rs.800 Off + Extra 5% Cashback Today!",
-      "c": "DAYONE",
-      "cat": "Health",
-      "l": "https://rforrabbit.com/collections/back-to-school-sale",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Frforrabbit.com%2Fcollections%2Fback-to-school-sale&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4425/medium/logo20250811-880075-5fgge5.jpg?1755830048",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Hyugalife",
-      "d": "Save Big: Enjoy Flat Rs. 50 Off on Select HyugaLife Items!",
-      "c": "FLAT50OFF",
-      "cat": "Shopping",
-      "l": "https://hyugalife.com/product-category/offer-zone",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhyugalife.com%2Fproduct-category%2Foffer-zone&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4991/medium/New_Project_-_2023-05-22T154619.403.png?1684750623",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Kindlife",
-      "d": "Take 5% Off All K-Beauty Products at Kindlife Today!",
-      "c": "KLOVE",
-      "cat": "Health",
-      "l": "https://www.kindlife.in/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.kindlife.in%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4851/medium/kindlifeLogo.png?1676551654",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Kindlife",
-      "d": "Save Up to 20% on Beauty Of Joseon + Additional 25% Off",
-      "c": "BOJ25",
-      "cat": "Health",
-      "l": "https://www.kindlife.in/beauty-of-joseon/?srsltid=AfmBOoqGChd9F-XXj_-ogvm-nqvGFmchOOv5f9JoautAlT_qpxpj3BDl&sort_by=on_sale&sort_order=desc",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.kindlife.in%2Fbeauty-of-joseon%2F%3Fsrsltid%3DAfmBOoqGChd9F-XXj_-ogvm-nqvGFmchOOv5f9JoautAlT_qpxpj3BDl%26sort_by%3Don_sale%26sort_order%3Ddesc&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4851/medium/kindlifeLogo.png?1676551654",
       "badge": "Coupon",
       "rank": 20
     }
