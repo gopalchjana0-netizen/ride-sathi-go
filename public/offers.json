@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-08T23:04:28.145Z",
+  "updated_at": "2026-10-09T05:12:29.443Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Hyugalife",
+      "d": "Unlock Huge Savings: Up to 80% Off Protein & Extra 10% Off!",
+      "c": "BIG10",
+      "cat": "Health",
+      "l": "https://hyugalife.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhyugalife.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4991/medium/New_Project_-_2023-05-22T154619.403.png?1684750623",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Hkvitals",
@@ -2940,17 +2951,6 @@
       "l": "https://www.nykaafashion.com/op/9296?coupon_offer_id=9296&couponId=NEW4YOU",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.nykaafashion.com%2Fop%2F9296%3Fcoupon_offer_id%3D9296%26couponId%3DNEW4YOU&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3517/medium/New_Project_-_2024-03-20T173036.420.png?1710936083",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Klook",
-      "d": "Amazing Savings on Indian Hotels: Get Extra Rs. 2000 Off!",
-      "c": "UNPACKINDIA",
-      "cat": "Travel",
-      "l": "https://www.klook.com/en-IN/tetris/promo/in-hotel-deals/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2Fen-IN%2Ftetris%2Fpromo%2Fin-hotel-deals%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
       "badge": "Coupon",
       "rank": 20
     }
