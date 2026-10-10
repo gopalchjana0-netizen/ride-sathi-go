@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-10T04:57:36.558Z",
+  "updated_at": "2026-10-10T12:06:48.077Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -205,6 +205,83 @@
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
     },
     {
+      "b": "Sleepycat",
+      "d": "Get a Free Surprise Gift for Orders Over Rs. 15000 Today!",
+      "c": "FREEPRO",
+      "cat": "Shopping",
+      "l": "https://sleepycat.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fsleepycat.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3848/medium/SleepyCat.png?1602931511",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Biba",
+      "d": "Biba's Awesome Festive Discounts: 10% Off 1 Item, 15% Off When You Buy 2!",
+      "c": "FESTIVE",
+      "cat": "Health",
+      "l": "https://www.biba.in/?cjdata=MXxOfDB8WXww&cjevent=d69acadcc49711f182aa01330a1981f9&utm_source=Lyxel_Affiliate&utm_medium=CPS&utm_campaign=LA341",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.biba.in%2F%3Fcjdata%3DMXxOfDB8WXww%26cjevent%3Dd69acadcc49711f182aa01330a1981f9%26utm_source%3DLyxel_Affiliate%26utm_medium%3DCPS%26utm_campaign%3DLA341&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/1820/medium/Biba.png?1516178916",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Vijay Sales",
+      "d": "Vijay Sales Grand Electronics Sale: Up to 80% Off + Extra Rs. 500 to Save!",
+      "c": "DDS500",
+      "cat": "Electronics",
+      "l": "https://www.vijaysales.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.vijaysales.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3782/medium/Vijay_sales.png?1597990363",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Akasa Air",
+      "d": "Fly High with Akasa Air: Enjoy a Festive 20% Discount on Flights!",
+      "c": "FLYAKASA",
+      "cat": "Travel",
+      "l": "https://www.akasaair.com/offers/festive-sale",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.akasaair.com%2Foffers%2Ffestive-sale&cid=324245&subid=ridesathigo",
+      "img": "/photos/medium/missing.png",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "R for Rabbit",
+      "d": "Go Big on Savings: Up to 40% Off BioMimic Kids Care Products Awaits!",
+      "c": "CAREPAIR",
+      "cat": "Shopping",
+      "l": "https://rforrabbit.com/collections/biomimic-kids-care",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Frforrabbit.com%2Fcollections%2Fbiomimic-kids-care&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4425/medium/logo20250811-880075-5fgge5.jpg?1755830048",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "R for Rabbit",
+      "d": "Get 10% Off When You Shop Over Rs. 499!",
+      "c": "FIESTA",
+      "cat": "Shopping",
+      "l": "https://rforrabbit.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Frforrabbit.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4425/medium/logo20250811-880075-5fgge5.jpg?1755830048",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Klook",
+      "d": "October Offer: Chop Rs. 1500 Off Your Rs. 9999 Spend",
+      "c": "OCTFESTWKND",
+      "cat": "Travel",
+      "l": "https://www.klook.com/en-IN/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2Fen-IN%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
       "b": "Timex",
       "d": "World Watch Day Special: Get 40% Off + Bonus 15% Discount!",
       "c": "DD15",
@@ -283,7 +360,7 @@
     },
     {
       "b": "GharSoaps",
-      "d": "Celebrate Diwali: Enjoy Up to 70% Off + Extra 10% Discount!",
+      "d": "Celebrate Diwali: Enjoy Up to 70% Off + Extra 10% Discount + Freebies!",
       "c": "SAVE10",
       "cat": "Health",
       "l": "https://www.gharsoaps.shop/",
@@ -2482,6 +2559,17 @@
       "rank": 20
     },
     {
+      "b": "Havells",
+      "d": "Save Up to 10% on Selected BLDC Fans!",
+      "c": "EXTRAOFF10",
+      "cat": "Food",
+      "l": "https://havells.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhavells.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3568/medium/Havelles.png?1579861918",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
       "b": "Gonoise",
       "d": "Get GPS Smartwatches at Up to 40% Off + Rs.500 Off & Bank Discount!",
       "c": "SAVE500",
@@ -2863,94 +2951,6 @@
       "l": "https://shop.timexindia.com/collections/bestseller?usf_sort=bestselling&uff_j7igan_tags=Men",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fshop.timexindia.com%2Fcollections%2Fbestseller%3Fusf_sort%3Dbestselling%26uff_j7igan_tags%3DMen&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4328/medium/New_Project_-_2022-02-09T180721.963.png?1644410306",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Digihaat",
-      "d": "Grab Rs. 55 Off Your Purchase of Organic Sattva Yummy Pops Makhana!",
-      "c": "FLAVOUREDMAKHANA",
-      "cat": "Shopping",
-      "l": "https://digihaat.in/en/product?domain=ONDC%3ARET10&provider_id=XgMbGEEMhBmyEg6iOK99&bpp_id=ondc.addble.com&item_id=ScciZvyjE42RCUNw8W3G",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fdigihaat.in%2Fen%2Fproduct%3Fdomain%3DONDC%3ARET10%26provider_id%3DXgMbGEEMhBmyEg6iOK99%26bpp_id%3Dondc.addble.com%26item_id%3DScciZvyjE42RCUNw8W3G&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "khadi Natural",
-      "d": "Exclusive Sale Alert: Grab Up to 45% Off on Khadi Natural's Beauty Range!",
-      "c": "45OFF",
-      "cat": "Food",
-      "l": "https://www.khadinatural.com/collections/45-off-sale",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.khadinatural.com%2Fcollections%2F45-off-sale&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/39355/medium/New_Project_-_2025-12-02T185508.098.png?1764681944",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Klook",
-      "d": "Special Offer: Take 5% Off Your First Booking at Klook!",
-      "c": "EATSKLOOK",
-      "cat": "Travel",
-      "l": "https://www.klook.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Boat",
-      "d": "Grab Your Rs. 2000 Discount on Soundbars & Speakers Now!",
-      "c": "GRAB2000",
-      "cat": "Travel",
-      "l": "https://www.boat-lifestyle.com/collections/get-extra-2000-off",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.boat-lifestyle.com%2Fcollections%2Fget-extra-2000-off&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3856/medium/New_Project_%2851%29_%281%29.png?1603884246",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Trip.com",
-      "d": "Limited Time Offer: Slash Your Bill by Up to $43.50 on Homes & Apts!",
-      "c": "GIESWKNFXG",
-      "cat": "Travel",
-      "l": "https://in.trip.com/hotels/?locale=en-IN&curr=INR",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fin.trip.com%2Fhotels%2F%3Flocale%3Den-IN%26curr%3DINR&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3135/medium/trip.png?1520838491",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Firstcry",
-      "d": "Don’t Miss Out: 40% Off on Kids’ Apparel - Up to Rs. 6000 Off!",
-      "c": "BTQSSS",
-      "cat": "Shopping",
-      "l": "https://www.firstcry.com/boutique/new-arrivals-up-to-14y/39669?ref2=homepage&c=BTQSSS",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.firstcry.com%2Fboutique%2Fnew-arrivals-up-to-14y%2F39669%3Fref2%3Dhomepage%26c%3DBTQSSS&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/47/medium/FC-Logo-big_store_tagline.png?1582718962",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Neemans",
-      "d": "Flat 10% Off on Stylish Street Collection Sneakers!",
-      "c": "STREET10",
-      "cat": "Shopping",
-      "l": "https://neemans.com/pages/street-collection-sneakers",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fneemans.com%2Fpages%2Fstreet-collection-sneakers&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3730/medium/neems.png?1594360814",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Fyva",
-      "d": "Save 15% Instantly on Pinacolada Clothing Orders Over Rs. 1599!",
-      "c": "STEAL15",
-      "cat": "Shopping",
-      "l": "https://fyva.in/collections/pinacolada",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Ffyva.in%2Fcollections%2Fpinacolada&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
       "badge": "Coupon",
       "rank": 20
     }
