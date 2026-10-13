@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-13T13:48:25.427Z",
+  "updated_at": "2026-10-13T22:25:08.999Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -256,17 +256,6 @@
       "l": "https://www.gonoise.com/collections/festive-sale-2026",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.gonoise.com%2Fcollections%2Ffestive-sale-2026&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/2863/medium/NoiseLogo-01_%281%29.png?1713530613",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Soulflower",
-      "d": "It's a Birthday Treat: Buy 1, Get 1 Free on Soulflower Goodies!",
-      "c": "BIRTHDAYB1G1",
-      "cat": "Health",
-      "l": "https://www.soulflower.in/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.soulflower.in%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3066/medium/soulflower.png?1513665044",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2951,6 +2940,17 @@
       "l": "https://www.kindlife.in/beauty-of-joseon/?srsltid=AfmBOoqGChd9F-XXj_-ogvm-nqvGFmchOOv5f9JoautAlT_qpxpj3BDl&sort_by=on_sale&sort_order=desc",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.kindlife.in%2Fbeauty-of-joseon%2F%3Fsrsltid%3DAfmBOoqGChd9F-XXj_-ogvm-nqvGFmchOOv5f9JoautAlT_qpxpj3BDl%26sort_by%3Don_sale%26sort_order%3Ddesc&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4851/medium/kindlifeLogo.png?1676551654",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Ajio Gram",
+      "d": "Score Big with Puma: 40% Discount + Extra 15% Off on Rs.3,299 Purchases!",
+      "c": "PUMASPL",
+      "cat": "Shopping",
+      "l": "https://www.ajio.com/s/pumaspl-186894",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.ajio.com%2Fs%2Fpumaspl-186894&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/2127/medium/Ajio.png?1516080186",
       "badge": "Coupon",
       "rank": 20
     }
