@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-14T11:26:02.015Z",
+  "updated_at": "2026-10-14T16:47:15.495Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Hyugalife",
+      "d": "Incredible Offer: Up to 80% Off Protein + Extra 8% Discount",
+      "c": "BIG8",
+      "cat": "Shopping",
+      "l": "https://hyugalife.com/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhyugalife.com%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4991/medium/New_Project_-_2023-05-22T154619.403.png?1684750623",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Cellecor",
@@ -674,17 +685,6 @@
       "l": "https://www.healthkart.com/brand/beastlife?navKey=BR-5055",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.healthkart.com%2Fbrand%2Fbeastlife%3FnavKey%3DBR-5055&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/671/medium/Healthkart.png?1490272720",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Hyugalife",
-      "d": "Unlock Huge Savings: Up to 80% Off Protein & Extra 10% Off!",
-      "c": "BIG10",
-      "cat": "Health",
-      "l": "https://hyugalife.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhyugalife.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/4991/medium/New_Project_-_2023-05-22T154619.403.png?1684750623",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2450,7 +2450,7 @@
     },
     {
       "b": "HealthKart",
-      "d": "Save 10% Instantly on Yoga Bar Proteins – No Minimum Purchase Needed!",
+      "d": "Save 10% Instantly on Yoga Bar Proteins ��� No Minimum Purchase Needed!",
       "c": "YOGA10",
       "cat": "Health",
       "l": "https://www.healthkart.com/brand/yogabars?navKey=BR-1699",
