@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-15T03:46:41.325Z",
+  "updated_at": "2026-10-15T11:02:55.784Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -212,17 +212,6 @@
       "l": "https://hyugalife.com/",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fhyugalife.com%2F&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4991/medium/New_Project_-_2023-05-22T154619.403.png?1684750623",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Cellecor",
-      "d": "Unmissable Navratri Offer: Get 10% Off Your Purchase!",
-      "c": "NAVRATRI10",
-      "cat": "Electronics",
-      "l": "https://cellecor.com/?click_id=6acf5e7c25a4563617f8a55d&utm_campaign=trackier_13637_vcommission&utm_medium=sales_100503_20261014clw4gdfx5ghg&utm_source=vcommission",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fcellecor.com%2F%3Fclick_id%3D6acf5e7c25a4563617f8a55d%26utm_campaign%3Dtrackier_13637_vcommission%26utm_medium%3Dsales_100503_20261014clw4gdfx5ghg%26utm_source%3Dvcommission&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
       "badge": "Coupon",
       "rank": 20
     },
@@ -2911,7 +2900,7 @@
       "rank": 20
     },
     {
-      "b": "blackberrys",
+      "b": "Blackberrys",
       "d": "Unbeatable Style Sale: Enjoy 50% Off + Extra 5% Discount!",
       "c": "EXTRA5",
       "cat": "Health",
@@ -2950,6 +2939,17 @@
       "cat": "Beauty",
       "l": "https://www.nykaafashion.com/op/1099273?coupon_offer_id=1099273&couponId=NTBCL10",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.nykaafashion.com%2Fop%2F1099273%3Fcoupon_offer_id%3D1099273%26couponId%3DNTBCL10&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3517/medium/New_Project_-_2024-03-20T173036.420.png?1710936083",
+      "badge": "Coupon",
+      "rank": 20
+    },
+    {
+      "b": "Nykaa Fashion",
+      "d": "Snag 10% Off on Tommy Hilfiger Today!",
+      "c": "NTBTH",
+      "cat": "Beauty",
+      "l": "https://www.nykaafashion.com/op/1099269?coupon_offer_id=1099269&couponId=NTBTH",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.nykaafashion.com%2Fop%2F1099269%3Fcoupon_offer_id%3D1099269%26couponId%3DNTBTH&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3517/medium/New_Project_-_2024-03-20T173036.420.png?1710936083",
       "badge": "Coupon",
       "rank": 20
