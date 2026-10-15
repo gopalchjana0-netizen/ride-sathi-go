@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-15T11:02:55.784Z",
+  "updated_at": "2026-10-15T16:33:05.762Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Only",
+      "d": "Sale Mid Season: Enjoy 30% Off + Get 10% For First-Time Shoppers + Rs.200 Off",
+      "c": "ON200",
+      "cat": "Health",
+      "l": "https://www.only.in/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.only.in%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/3244/medium/only.png?1530166409",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Hyugalife",
@@ -2939,17 +2950,6 @@
       "cat": "Beauty",
       "l": "https://www.nykaafashion.com/op/1099273?coupon_offer_id=1099273&couponId=NTBCL10",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.nykaafashion.com%2Fop%2F1099273%3Fcoupon_offer_id%3D1099273%26couponId%3DNTBCL10&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3517/medium/New_Project_-_2024-03-20T173036.420.png?1710936083",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Nykaa Fashion",
-      "d": "Snag 10% Off on Tommy Hilfiger Today!",
-      "c": "NTBTH",
-      "cat": "Beauty",
-      "l": "https://www.nykaafashion.com/op/1099269?coupon_offer_id=1099269&couponId=NTBTH",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.nykaafashion.com%2Fop%2F1099269%3Fcoupon_offer_id%3D1099269%26couponId%3DNTBTH&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/3517/medium/New_Project_-_2024-03-20T173036.420.png?1710936083",
       "badge": "Coupon",
       "rank": 20
