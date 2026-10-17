@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-17T10:20:11.235Z",
+  "updated_at": "2026-10-17T15:12:42.225Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Oyela",
+      "d": "Fashion Flash Alert: Buy 2, Get 1 Free on Fab Women's Styles!",
+      "c": "B2G1",
+      "cat": "Health",
+      "l": "https://oyela.in/?utm_source=optimisemedia&utm_medium=cps_2353888_20261017clwmgz4wk5ld&utm_campaign=optimisemedia_cps&sskey=b9f3852b03cc4aaca7305cb004f55389",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Foyela.in%2F%3Futm_source%3Doptimisemedia%26utm_medium%3Dcps_2353888_20261017clwmgz4wk5ld%26utm_campaign%3Doptimisemedia_cps%26sskey%3Db9f3852b03cc4aaca7305cb004f55389&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/7117/medium/Screenshot_2024-07-25_183635.png?1721912840",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Nuawomen",
@@ -2940,17 +2951,6 @@
       "l": "https://shop.timexindia.com/collections/bestseller?usf_sort=bestselling&uff_j7igan_tags=Men",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fshop.timexindia.com%2Fcollections%2Fbestseller%3Fusf_sort%3Dbestselling%26uff_j7igan_tags%3DMen&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/4328/medium/New_Project_-_2022-02-09T180721.963.png?1644410306",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Digihaat",
-      "d": "Grab Rs. 55 Off Your Purchase of Organic Sattva Yummy Pops Makhana!",
-      "c": "FLAVOUREDMAKHANA",
-      "cat": "Shopping",
-      "l": "https://digihaat.in/en/product?domain=ONDC%3ARET10&provider_id=XgMbGEEMhBmyEg6iOK99&bpp_id=ondc.addble.com&item_id=ScciZvyjE42RCUNw8W3G",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fdigihaat.in%2Fen%2Fproduct%3Fdomain%3DONDC%3ARET10%26provider_id%3DXgMbGEEMhBmyEg6iOK99%26bpp_id%3Dondc.addble.com%26item_id%3DScciZvyjE42RCUNw8W3G&cid=324245&subid=ridesathigo",
-      "img": "/photos/medium/missing.png",
       "badge": "Coupon",
       "rank": 20
     }
