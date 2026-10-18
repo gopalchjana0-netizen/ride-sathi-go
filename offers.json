@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T03:39:12.972Z",
+  "updated_at": "2026-10-18T10:35:42.291Z",
   "channel_id": "324245",
   "publisher_id": "276694",
   "total_offers": 270,
@@ -203,6 +203,17 @@
       "badge": "Audio",
       "rank": 20,
       "aff": "https://linksredirect.com/?cid=324245&subid=ridesathigo&url=https%3A%2F%2Fwww.boat-lifestyle.com"
+    },
+    {
+      "b": "Oppo India",
+      "d": "Limited Time: Save Rs. 2000 on the Oppo F35 Mobile Phones!",
+      "c": "10-35F-18",
+      "cat": "Electronics",
+      "l": "https://www.oppo.com/in/smartphones/series-f/f35-pro-5g/",
+      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.oppo.com%2Fin%2Fsmartphones%2Fseries-f%2Ff35-pro-5g%2F&cid=324245&subid=ridesathigo",
+      "img": "https://cdn0.cuelinks.com/merchant/4048/medium/New_Project_%2812%29_%281%29.png?1620806235",
+      "badge": "Coupon",
+      "rank": 20
     },
     {
       "b": "Oyela",
@@ -2940,17 +2951,6 @@
       "l": "https://www.khadinatural.com/collections/45-off-sale",
       "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.khadinatural.com%2Fcollections%2F45-off-sale&cid=324245&subid=ridesathigo",
       "img": "https://cdn0.cuelinks.com/merchant/39355/medium/New_Project_-_2025-12-02T185508.098.png?1764681944",
-      "badge": "Coupon",
-      "rank": 20
-    },
-    {
-      "b": "Klook",
-      "d": "Special Offer: Take 5% Off Your First Booking at Klook!",
-      "c": "EATSKLOOK",
-      "cat": "Travel",
-      "l": "https://www.klook.com/",
-      "aff": "https://linksredirect.com/?pub_id=276694&url=https%3A%2F%2Fwww.klook.com%2F&cid=324245&subid=ridesathigo",
-      "img": "https://cdn0.cuelinks.com/merchant/3157/medium/New_Project_-_2025-05-29T172428.907.png?1748519707",
       "badge": "Coupon",
       "rank": 20
     }
