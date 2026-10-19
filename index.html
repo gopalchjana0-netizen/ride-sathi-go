@@ -3259,7 +3259,7 @@ window.closeLiveChatModal = function() {
       <button class="lang-opt" id="langBtn_en" onclick="setLanguage('en')">ENG</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
-      <button type="button" id="headerVoiceRideBtn" onclick="triggerVoiceRideBooking()" class="rapido-quick-pill" style="border-color:#10b981;color:#047857;background:#ecfdf5;font-weight:900" title="মুখে বলে বুকিং (Voice Ride Booking)">
+      <button type="button" id="headerVoiceRideBtn" onclick="triggerVoiceRideBooking()" class="rapido-quick-pill" style="border-color:#FF671F;color:#000080;background:linear-gradient(135deg,#fff7ed 0%,#f0fdf4 100%);font-weight:900" title="মুখে বলে বুকিং (Voice Ride Booking)">
         🎙️ <span id="headerVoiceBtnText" data-i18n="headerVoiceRide">ভয়েস</span>
       </button>
       <button type="button" onclick="triggerSOS()" class="rapido-quick-pill" style="border-color:#ef4444;color:#dc2626;font-weight:900" title="জরুরি সাহায্য">
@@ -13490,14 +13490,14 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   transform: translateY(-1px);
 }
 
-/* Voice Ride Booking Modal Styles */
-@keyframes voicePulseRing {
+/* Voice Ride Booking Modal Styles (Proud Indian Tiranga Theme 🇮🇳) */
+@keyframes voiceTirangaPulse {
   0% { transform: scale(0.92); opacity: 0.85; }
-  50% { transform: scale(1.22); opacity: 0.25; }
+  50% { transform: scale(1.24); opacity: 0.25; }
   100% { transform: scale(0.92); opacity: 0.85; }
 }
 .voice-pulse-active {
-  animation: voicePulseRing 1.8s infinite ease-in-out;
+  animation: voiceTirangaPulse 1.8s infinite ease-in-out;
 }
 .voice-lang-btn {
   padding: 5px 14px;
@@ -13511,10 +13511,10 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   transition: all 0.2s;
 }
 .voice-lang-btn.active {
-  background: #059669;
+  background: linear-gradient(135deg, #FF671F 0%, #ea580c 100%);
   color: #ffffff;
-  border-color: #047857;
-  box-shadow: 0 2px 6px rgba(5,150,105,0.25);
+  border-color: #c2410c;
+  box-shadow: 0 2px 8px rgba(255,103,31,0.35);
 }
 .voice-example-chip {
   text-align: left;
@@ -13530,27 +13530,30 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   width: 100%;
 }
 .voice-example-chip:hover, .voice-example-chip:active {
-  background: #ecfdf5;
-  border-color: #10b981;
-  color: #047857;
+  background: #fff7ed;
+  border-color: #FF671F;
+  color: #c2410c;
 }
 </style>
 
 <!-- ============================================== -->
-<!-- 🎙️ MULTI-LANGUAGE VOICE RIDE BOOKING MODAL -->
+<!-- 🎙️ MULTI-LANGUAGE VOICE RIDE BOOKING MODAL (TIRANGA THEME 🇮🇳) -->
 <!-- ============================================== -->
 <div id="voiceRideModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.72);z-index:999999;backdrop-filter:blur(6px);justify-content:center;align-items:flex-end;">
   <div style="background:#ffffff;width:100%;max-width:480px;border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -12px 40px rgba(0,0,0,0.35);overflow:hidden;border:1px solid #cbd5e1;display:flex;flex-direction:column;animation:slideUpSheet 0.3s cubic-bezier(0.16,1,0.3,1);">
     
+    <!-- Top Indian Flag Ribbon (Saffron - White - Green) -->
+    <div style="height:5px;background:linear-gradient(90deg, #FF671F 0%, #FF671F 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #046A38 66.6%, #046A38 100%)"></div>
+
     <!-- Modal Header -->
-    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+    <div style="background:linear-gradient(135deg,#1e3a8a 0%,#000080 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.15)">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:20px">
-          🎙️
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;border:1.5px solid rgba(255,255,255,0.4)">
+          🇮🇳
         </div>
         <div>
           <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" id="voiceModalTitle">মুখে বলে রাইড বুকিং</div>
-          <div style="font-size:11.5px;color:#d1fae5" id="voiceModalSub">বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন</div>
+          <div style="font-size:11.5px;color:#bfdbfe" id="voiceModalSub">বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন</div>
         </div>
       </div>
       <button type="button" onclick="closeVoiceRideModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center" title="বন্ধ করুন">✕</button>
@@ -13565,17 +13568,22 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
     <!-- Modal Body -->
     <div style="padding:20px 18px 24px;text-align:center">
-      <!-- Pulsing Waveform Ring around Mic Button -->
-      <div style="position:relative;width:110px;height:110px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
-        <div id="voiceRingOuter" class="voice-pulse-ring voice-pulse-active" style="position:absolute;width:100%;height:100%;border-radius:50%;background:rgba(16,185,129,0.2)"></div>
-        <div id="voiceRingMid" class="voice-pulse-ring voice-pulse-active" style="position:absolute;width:82%;height:82%;border-radius:50%;background:rgba(16,185,129,0.35);animation-delay:0.3s"></div>
-        <button type="button" id="voiceModalMicBtn" onclick="toggleVoiceRecording()" style="position:relative;z-index:2;width:72px;height:72px;border-radius:50%;border:none;background:linear-gradient(135deg,#10b981,#059669);color:#ffffff;font-size:32px;cursor:pointer;box-shadow:0 6px 20px rgba(16,185,129,0.45);display:flex;align-items:center;justify-content:center;transition:transform 0.15s">
-          <span id="voiceMicIcon">🎙️</span>
+      <!-- Pulsing Waveform Ring around Mic Button (Indian Flag Colors 🇮🇳) -->
+      <div style="position:relative;width:116px;height:116px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+        <!-- Outer Saffron Tiranga Ring -->
+        <div id="voiceRingOuter" class="voice-pulse-ring voice-pulse-active" style="position:absolute;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle, rgba(255,103,31,0.32) 0%, rgba(255,103,31,0.06) 72%);border:2px solid rgba(255,103,31,0.45)"></div>
+        <!-- Mid India Green Ring -->
+        <div id="voiceRingMid" class="voice-pulse-ring voice-pulse-active" style="position:absolute;width:82%;height:82%;border-radius:50%;background:radial-gradient(circle, rgba(4,106,56,0.32) 0%, rgba(4,106,56,0.06) 72%);border:2px solid rgba(4,106,56,0.45);animation-delay:0.35s"></div>
+        <!-- Center Indian Tricolor Mic Button with Ashoka Chakra Blue core -->
+        <button type="button" id="voiceModalMicBtn" onclick="toggleVoiceRecording()" style="position:relative;z-index:2;width:76px;height:76px;border-radius:50%;padding:4px;border:none;background:linear-gradient(180deg, #FF671F 0%, #FF671F 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #046A38 66.6%, #046A38 100%);box-shadow:0 8px 24px rgba(255,103,31,0.35), 0 4px 14px rgba(4,106,56,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s">
+          <div id="voiceMicCore" style="width:100%;height:100%;border-radius:50%;background:radial-gradient(circle, #000080 0%, #000055 100%);display:flex;align-items:center;justify-content:center;color:#ffffff;box-shadow:inset 0 0 10px rgba(0,0,0,0.45);border:1.5px solid rgba(255,255,255,0.7)">
+            <span id="voiceMicIcon" style="font-size:30px;line-height:1;display:inline-block">🎙️</span>
+          </div>
         </button>
       </div>
 
       <!-- Live Listening Status -->
-      <div id="voiceStatusTxt" style="font-size:14px;font-weight:800;color:#047857;margin-bottom:8px">
+      <div id="voiceStatusTxt" style="font-size:14px;font-weight:800;color:#c2410c;margin-bottom:8px">
         🎙️ শুনছি... বলুন আপনি কোথা থেকে কোথায় যাবেন
       </div>
 
@@ -13585,15 +13593,15 @@ window.closeDriverVerifyPopup = function(focusBooking) {
       </div>
 
       <!-- Parsed Output Preview -->
-      <div id="voiceParsedPreview" style="display:none;background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:14px;padding:10px 12px;margin-bottom:14px;text-align:left">
-        <div style="font-size:11px;font-weight:800;color:#059669;margin-bottom:4px">✅ শনাক্ত হয়েছে (Identified):</div>
-        <div style="font-size:13px;color:#065f46;display:flex;align-items:center;gap:6px">
+      <div id="voiceParsedPreview" style="display:none;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:14px;padding:10px 12px;margin-bottom:14px;text-align:left">
+        <div style="font-size:11px;font-weight:800;color:#c2410c;margin-bottom:4px">✅ শনাক্ত হয়েছে (Identified):</div>
+        <div style="font-size:13px;color:#0f172a;display:flex;align-items:center;gap:6px">
           <span>📍 <b>পিকআপ:</b> <span id="voiceParsedPickup">-</span></span>
         </div>
-        <div style="font-size:13px;color:#065f46;margin-top:2px;display:flex;align-items:center;gap:6px">
+        <div style="font-size:13px;color:#0f172a;margin-top:2px;display:flex;align-items:center;gap:6px">
           <span>🏁 <b>গন্তব্য:</b> <span id="voiceParsedDrop">-</span></span>
         </div>
-        <div id="voiceParsedVehRow" style="font-size:12px;color:#047857;margin-top:2px;display:none">
+        <div id="voiceParsedVehRow" style="font-size:12px;color:#000080;margin-top:2px;display:none">
           <span>🚖 <b>গাড়ি:</b> <span id="voiceParsedVehicle">-</span></span>
         </div>
       </div>
@@ -13609,7 +13617,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
             🗣️ "মেদিনীপুর স্টেশন থেকে সেন্ট্রাল বাস স্ট্যান্ড"
           </button>
           <button type="button" class="voice-example-chip" onclick="demoVoiceSpoken('দীঘা যাব')">
-            🗣️ "দীঘা যাব" <small style="color:#059669">(বর্তমান লোকেশন থেকে অটো পিকআপ)</small>
+            🗣️ "দীঘা যাব" <small style="color:#c2410c">(বর্তমান লোকেশন থেকে অটো পিকআপ)</small>
           </button>
         </div>
       </div>
@@ -13619,7 +13627,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         <button type="button" onclick="closeVoiceRideModal()" style="flex:1;padding:10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer">
           বাতিল করুন (Cancel)
         </button>
-        <button type="button" id="voiceApplyBtn" onclick="applySpokenBooking()" style="flex:1;padding:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:13px;cursor:pointer;display:none;box-shadow:0 4px 12px rgba(16,185,129,0.3)">
+        <button type="button" id="voiceApplyBtn" onclick="applySpokenBooking()" style="flex:1;padding:10px;background:linear-gradient(135deg,#FF671F 0%,#ea580c 100%);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:13px;cursor:pointer;display:none;box-shadow:0 4px 14px rgba(255,103,31,0.35)">
           ✅ রাইড দেখুন (See Fares) ➡️
         </button>
       </div>
@@ -14171,6 +14179,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     const titleEl = document.getElementById('voiceModalTitle');
     const subEl = document.getElementById('voiceModalSub');
 
+    if (statusEl) statusEl.style.color = '#c2410c';
+
     if (currentVoiceLang === 'hi') {
       if (titleEl) titleEl.innerText = "बोलकर राइड बुक करें";
       if (subEl) subEl.innerText = "हिंदी, बांग्ला या अंग्रेजी में बोलें";
@@ -14244,9 +14254,9 @@ window.closeDriverVerifyPopup = function(focusBooking) {
       isListening = true;
       if (ringOuter) ringOuter.classList.add('voice-pulse-active');
       if (ringMid) ringMid.classList.add('voice-pulse-active');
-      if (micIcon) micIcon.innerText = '🔴';
+      if (micIcon) micIcon.innerText = '🎙️';
       if (statusEl) {
-        statusEl.style.color = '#059669';
+        statusEl.style.color = '#c2410c';
         statusEl.innerText = (currentVoiceLang === 'en') ? "🎙️ Listening... Speak now..." :
           (currentVoiceLang === 'hi' ? "🎙️ सुन रहा हूँ... अभी बोलिए..." : "🎙️ শুনছি... এখন বলুন...");
       }
@@ -14409,7 +14419,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     if (applyBtn) applyBtn.style.display = 'block';
 
     if (statusEl) {
-      statusEl.style.color = '#047857';
+      statusEl.style.color = '#000080';
       statusEl.innerText = "✅ রুট শনাক্ত হয়েছে! স্বয়ংক্রিয়ভাবে ভাড়া হিসেব হচ্ছে...";
     }
 
