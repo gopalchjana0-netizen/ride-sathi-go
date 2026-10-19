@@ -5,19 +5,6 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9969728698158156"
      crossorigin="anonymous"></script>
 <meta charset="UTF-8">
-<meta name="cuelinks-verification" content="VERIFY-CL-KOIS6KEQ">
-<!-- Cuelinks Official Verified Channel Script (Channel ID: 324245) -->
-<script type="text/javascript">
-  var cId = '324245';
-  (function(d, t) {
-    var s = document.createElement('script');
-    s.type = 'text/javascript';
-    s.async = true;
-    s.src = (document.location.protocol == 'https:' ? 'https://cdn0.cuelinks.com/js/' : 'http://cdn0.cuelinks.com/js/') + 'cuelinksv2.js';
-    var head = document.getElementsByTagName('head')[0] || document.documentElement;
-    head.appendChild(s);
-  }());
-</script>
 <script src="security-shield.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>RIDE SATHI GO - সাশ্রয়ী বাইক, টোটো ও কার বুকিং | পশ্চিম ও পূর্ব মেদিনীপুর সহ সমগ্র পশ্চিমবঙ্গ</title>
@@ -3614,7 +3601,7 @@ function showOffers(list) {
     var fallbackFavicon = getBrandFavicon(o.b, o.l);
     var logoSrc = o.img || fallbackFavicon;
     var badgeHtml = o.badge ? ('<span style="background:#f1f5f9;color:#475569;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:6px">' + o.badge + '</span>') : '';
-    var aff = o.aff || ('https://linksredirect.com/?cid=324245&subid=ridesathigo&url=' + encodeURIComponent(o.l));
+    var aff = o.aff || o.l || "#";
 
     return '<div class="offer-card">' +
       '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1">' +
@@ -3660,13 +3647,7 @@ function copyShop(code, link, brand) {
     }, 2800);
   }
 
-  // Ensure Cuelinks Lifetime Publisher Tracking Redirect (Channel ID: 324245)
-  var targetUrl = link;
-  if (!targetUrl.includes('linksredirect.com')) {
-    targetUrl = 'https://linksredirect.com/?cid=324245&subid=ridesathigo&url=' + encodeURIComponent(link);
-  } else if (!targetUrl.includes('cid=324245')) {
-    targetUrl += '&cid=324245&subid=ridesathigo';
-  }
+  var targetUrl = link || "#";
 
   setTimeout(function() {
     window.open(targetUrl, '_blank', 'noopener,noreferrer');

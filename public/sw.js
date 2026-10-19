@@ -1,10 +1,9 @@
-// RideSathiGo Service Worker - v2.6.0 (High Performance Edge Caching + Lifetime Free Push)
-const CACHE_NAME = 'rsg-cache-v2.6.0';
+// RideSathiGo Service Worker - v2.7.8 (Superfast Instant Open & Dynamic i18n)
+const CACHE_NAME = 'rsg-cache-v2.7.8';
 const CORE_STATIC_ASSETS = [
   '/',
   '/index.html',
   '/driver.html',
-  '/admin.html',
   '/logo.png',
   '/index-192.png',
   '/index-512.png',
@@ -57,6 +56,7 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('googlesyndication') ||
     url.hostname.includes('monetag') ||
     url.pathname.includes('socket') ||
+    url.pathname.includes('admin') ||
     url.search.includes('key=')
   ) {
     return;
@@ -96,44 +96,31 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. HTML Pages (Navigation): Fast Open (Network with 1.2s timeout fallback to Cache)
+  // 3. HTML Pages (Navigation): Superfast Instant Open (Cache-First + Background Revalidate)
   if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      new Promise((resolve) => {
-        let isSettled = false;
-        const timer = setTimeout(() => {
-          if (!isSettled) {
-            caches.match(req).then((cached) => {
-              if (cached) {
-                isSettled = true;
-                resolve(cached);
-              }
-            });
+      caches.match(req).then((cached) => {
+        // Background fetch to update cache seamlessly
+        const fetchPromise = fetch(req).then((networkRes) => {
+          if (networkRes && networkRes.status === 200) {
+            const resClone = networkRes.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(()=>{});
           }
-        }, 1200);
+          return networkRes;
+        }).catch(() => null);
 
-        fetch(req)
-          .then((networkRes) => {
-            clearTimeout(timer);
-            if (!isSettled) {
-              isSettled = true;
-              if (networkRes && networkRes.status === 200) {
-                const resClone = networkRes.clone();
-                caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(()=>{});
-              }
-              resolve(networkRes);
-            }
-          })
-          .catch(() => {
-            clearTimeout(timer);
-            if (!isSettled) {
-              isSettled = true;
-              caches.match(req).then((cached) => {
-                if (cached) resolve(cached);
-                else caches.match('/index.html').then((fallback) => resolve(fallback || new Response('Offline', { status: 503 })));
-              });
-            }
-          });
+        // INSTANT RESPONSE: If page is in cache, deliver immediately in ~5ms!
+        if (cached) {
+          return cached;
+        }
+
+        // If not in cache yet (brand-new visitor), wait for network
+        return fetchPromise.then((networkRes) => {
+          if (networkRes) return networkRes;
+          // Offline fallback
+          const fallbackPath = url.pathname.includes('driver') ? '/driver.html' : '/index.html';
+          return caches.match(fallbackPath).then((fallback) => fallback || new Response('Offline', { status: 503 }));
+        });
       })
     );
     return;

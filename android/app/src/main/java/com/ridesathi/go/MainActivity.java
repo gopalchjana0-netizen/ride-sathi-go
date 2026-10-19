@@ -24,6 +24,15 @@ public class MainActivity extends AppCompatActivity {
     setTheme(R.style.AppTheme_NoActionBar);
     super.onCreate(savedInstanceState);
 
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+      if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        requestPermissions(new String[]{
+          android.Manifest.permission.ACCESS_FINE_LOCATION,
+          android.Manifest.permission.ACCESS_COARSE_LOCATION
+        }, 1001);
+      }
+    }
+
     try {
       FrameLayout rootLayout = new FrameLayout(this);
       rootLayout.setLayoutParams(new ViewGroup.LayoutParams(

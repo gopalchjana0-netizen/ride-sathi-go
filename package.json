@@ -7,7 +7,7 @@
   "scripts": {
     "cap:sync": "cap sync",
     "cap:build": "cap build",
-    "sync-offers": "node sync_cuelinks_offers.cjs && npx firebase deploy --only hosting"
+    "sync-offers": "node sync_earnkaro_offers.cjs && npx firebase deploy --only hosting"
   },
   "keywords": [
     "ridesathigo",
