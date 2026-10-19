@@ -3259,6 +3259,9 @@ window.closeLiveChatModal = function() {
       <button class="lang-opt" id="langBtn_en" onclick="setLanguage('en')">ENG</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center">
+      <button type="button" id="headerVoiceRideBtn" onclick="triggerVoiceRideBooking()" class="rapido-quick-pill" style="border-color:#10b981;color:#047857;background:#ecfdf5;font-weight:900" title="মুখে বলে বুকিং (Voice Ride Booking)">
+        🎙️ <span id="headerVoiceBtnText" data-i18n="headerVoiceRide">ভয়েস</span>
+      </button>
       <button type="button" onclick="triggerSOS()" class="rapido-quick-pill" style="border-color:#ef4444;color:#dc2626;font-weight:900" title="জরুরি সাহায্য">
         <span data-i18n="sosNav">🆘 SOS</span>
       </button>
@@ -3268,7 +3271,7 @@ window.closeLiveChatModal = function() {
       <button type="button" id="headerChatBtn" onclick="openLiveChatModal()" class="rapido-quick-pill" style="border-color:#c4b5fd;color:#6d28d9" title="২৪x৭ লাইভ চ্যাট">
         💬 <span data-i18n="headerChatText" id="headerChatText">চ্যাট</span>
       </button>
-      </div>
+    </div>
   </div>
 </header>
 
@@ -5819,6 +5822,8 @@ const TRANSLATIONS = {
     helpline: "হেল্প",
     headerChatText: "চ্যাট",
     headerChatTitle: "২৪x৭ লাইভ চ্যাট",
+    headerVoiceRide: "ভয়েস",
+    headerVoiceTitle: "মুখে বলে রাইড বুকিং (বাংলা, হিন্দি বা ইংরেজি)",
 
     // Drawer Menu
     drawerTitleHistory: "📜 রাইড হিস্ট্রি ও ট্যাক্স ইনভয়েস",
@@ -6094,6 +6099,8 @@ const TRANSLATIONS = {
     helpline: "हेल्प",
     headerChatText: "लाइव चैट",
     headerChatTitle: "24x7 लाइव चैट",
+    headerVoiceRide: "वॉइस",
+    headerVoiceTitle: "बोलकर राइड बुक करें (हिंदी, बांग्ला या अंग्रेजी)",
 
     // Drawer Menu
     drawerTitleHistory: "📜 राइड इतिहास और टैक्स इनवॉइस",
@@ -6369,6 +6376,8 @@ const TRANSLATIONS = {
     helpline: "Help",
     headerChatText: "Live Chat",
     headerChatTitle: "24x7 Live Chat",
+    headerVoiceRide: "Voice",
+    headerVoiceTitle: "Voice Ride Booking (Bengali, Hindi or English)",
 
     // Drawer Menu
     drawerTitleHistory: "📜 Ride History & Tax Invoices",
@@ -6668,6 +6677,14 @@ function applyLanguageTranslations(lang) {
   const chatBtnEl = document.getElementById('headerChatBtn');
   if (chatBtnEl && dict.headerChatTitle) {
     chatBtnEl.title = dict.headerChatTitle;
+  }
+  const voiceTextEl = document.getElementById('headerVoiceBtnText');
+  if (voiceTextEl && dict.headerVoiceRide) {
+    voiceTextEl.innerText = dict.headerVoiceRide;
+  }
+  const voiceBtnEl = document.getElementById('headerVoiceRideBtn');
+  if (voiceBtnEl && dict.headerVoiceTitle) {
+    voiceBtnEl.title = dict.headerVoiceTitle;
   }
 
   // 3. Translate all [data-i18n-placeholder] inputs
@@ -13472,7 +13489,144 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   border-color: #6d28d9;
   transform: translateY(-1px);
 }
+
+/* Voice Ride Booking Modal Styles */
+@keyframes voicePulseRing {
+  0% { transform: scale(0.92); opacity: 0.85; }
+  50% { transform: scale(1.22); opacity: 0.25; }
+  100% { transform: scale(0.92); opacity: 0.85; }
+}
+.voice-pulse-active {
+  animation: voicePulseRing 1.8s infinite ease-in-out;
+}
+.voice-lang-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.voice-lang-btn.active {
+  background: #059669;
+  color: #ffffff;
+  border-color: #047857;
+  box-shadow: 0 2px 6px rgba(5,150,105,0.25);
+}
+.voice-example-chip {
+  text-align: left;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+}
+.voice-example-chip:hover, .voice-example-chip:active {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
 </style>
+
+<!-- ============================================== -->
+<!-- 🎙️ MULTI-LANGUAGE VOICE RIDE BOOKING MODAL -->
+<!-- ============================================== -->
+<div id="voiceRideModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.72);z-index:999999;backdrop-filter:blur(6px);justify-content:center;align-items:flex-end;">
+  <div style="background:#ffffff;width:100%;max-width:480px;border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -12px 40px rgba(0,0,0,0.35);overflow:hidden;border:1px solid #cbd5e1;display:flex;flex-direction:column;animation:slideUpSheet 0.3s cubic-bezier(0.16,1,0.3,1);">
+    
+    <!-- Modal Header -->
+    <div style="background:linear-gradient(135deg,#059669 0%,#047857 100%);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:20px">
+          🎙️
+        </div>
+        <div>
+          <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" id="voiceModalTitle">মুখে বলে রাইড বুকিং</div>
+          <div style="font-size:11.5px;color:#d1fae5" id="voiceModalSub">বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন</div>
+        </div>
+      </div>
+      <button type="button" onclick="closeVoiceRideModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center" title="বন্ধ করুন">✕</button>
+    </div>
+
+    <!-- Language Selector Pill Bar -->
+    <div style="display:flex;justify-content:center;gap:8px;padding:10px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0">
+      <button type="button" class="voice-lang-btn active" id="voiceLang_bn" onclick="setVoiceModalLang('bn')">বাং বাংলা</button>
+      <button type="button" class="voice-lang-btn" id="voiceLang_hi" onclick="setVoiceModalLang('hi')">हिंदी हिन्दी</button>
+      <button type="button" class="voice-lang-btn" id="voiceLang_en" onclick="setVoiceModalLang('en')">ENG English</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding:20px 18px 24px;text-align:center">
+      <!-- Pulsing Waveform Ring around Mic Button -->
+      <div style="position:relative;width:110px;height:110px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+        <div id="voiceRingOuter" class="voice-pulse-ring voice-pulse-active" style="position:absolute;width:100%;height:100%;border-radius:50%;background:rgba(16,185,129,0.2)"></div>
+        <div id="voiceRingMid" class="voice-pulse-ring voice-pulse-active" style="position:absolute;width:82%;height:82%;border-radius:50%;background:rgba(16,185,129,0.35);animation-delay:0.3s"></div>
+        <button type="button" id="voiceModalMicBtn" onclick="toggleVoiceRecording()" style="position:relative;z-index:2;width:72px;height:72px;border-radius:50%;border:none;background:linear-gradient(135deg,#10b981,#059669);color:#ffffff;font-size:32px;cursor:pointer;box-shadow:0 6px 20px rgba(16,185,129,0.45);display:flex;align-items:center;justify-content:center;transition:transform 0.15s">
+          <span id="voiceMicIcon">🎙️</span>
+        </button>
+      </div>
+
+      <!-- Live Listening Status -->
+      <div id="voiceStatusTxt" style="font-size:14px;font-weight:800;color:#047857;margin-bottom:8px">
+        🎙️ শুনছি... বলুন আপনি কোথা থেকে কোথায় যাবেন
+      </div>
+
+      <!-- Spoken Transcript Box -->
+      <div id="voiceTranscriptBox" style="background:#f1f5f9;border:1.5px dashed #cbd5e1;border-radius:14px;padding:12px 14px;min-height:54px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#1e293b;margin-bottom:14px;text-align:center;word-break:break-word">
+        <span style="color:#94a3b8;font-weight:600">"আমি পিংলা বাজার থেকে খড়গপুর যাব..."</span>
+      </div>
+
+      <!-- Parsed Output Preview -->
+      <div id="voiceParsedPreview" style="display:none;background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:14px;padding:10px 12px;margin-bottom:14px;text-align:left">
+        <div style="font-size:11px;font-weight:800;color:#059669;margin-bottom:4px">✅ শনাক্ত হয়েছে (Identified):</div>
+        <div style="font-size:13px;color:#065f46;display:flex;align-items:center;gap:6px">
+          <span>📍 <b>পিকআপ:</b> <span id="voiceParsedPickup">-</span></span>
+        </div>
+        <div style="font-size:13px;color:#065f46;margin-top:2px;display:flex;align-items:center;gap:6px">
+          <span>🏁 <b>গন্তব্য:</b> <span id="voiceParsedDrop">-</span></span>
+        </div>
+        <div id="voiceParsedVehRow" style="font-size:12px;color:#047857;margin-top:2px;display:none">
+          <span>🚖 <b>গাড়ি:</b> <span id="voiceParsedVehicle">-</span></span>
+        </div>
+      </div>
+
+      <!-- Helpful Examples -->
+      <div style="text-align:left;margin-top:8px">
+        <div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:6px">💡 উদাহরণ (যেভাবে বলতে পারেন):</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <button type="button" class="voice-example-chip" onclick="demoVoiceSpoken('আমি পিংলা বাজার থেকে খড়গপুর যাব')">
+            🗣️ "আমি পিংলা বাজার থেকে খড়গপুর যাব"
+          </button>
+          <button type="button" class="voice-example-chip" onclick="demoVoiceSpoken('আমাকে মেদিনীপুর স্টেশন থেকে সেন্ট্রাল বাস স্ট্যান্ড যেতে হবে')">
+            🗣️ "মেদিনীপুর স্টেশন থেকে সেন্ট্রাল বাস স্ট্যান্ড"
+          </button>
+          <button type="button" class="voice-example-chip" onclick="demoVoiceSpoken('দীঘা যাব')">
+            🗣️ "দীঘা যাব" <small style="color:#059669">(বর্তমান লোকেশন থেকে অটো পিকআপ)</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Close / Action -->
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button type="button" onclick="closeVoiceRideModal()" style="flex:1;padding:10px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer">
+          বাতিল করুন (Cancel)
+        </button>
+        <button type="button" id="voiceApplyBtn" onclick="applySpokenBooking()" style="flex:1;padding:10px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:13px;cursor:pointer;display:none;box-shadow:0 4px 12px rgba(16,185,129,0.3)">
+          ✅ রাইড দেখুন (See Fares) ➡️
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <div id="liveChatModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.65);z-index:99999;backdrop-filter:blur(4px);justify-content:center;align-items:flex-end;">
   <div style="background:#ffffff;width:100%;max-width:480px;height:90vh;max-height:680px;border-top-left-radius:24px;border-top-right-radius:24px;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #e2e8f0">
@@ -13969,6 +14123,385 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   } else {
     initCarousel();
   }
+})();
+</script>
+
+<!-- ============================================== -->
+<!-- 🎙️ MULTI-LANGUAGE VOICE RIDE BOOKING CONTROLLER -->
+<!-- Supports: Bengali (bn-IN), Hindi (hi-IN), English (en-IN) -->
+<!-- ============================================== -->
+<script>
+(function initVoiceRideBookingSystem() {
+  let voiceRecognition = null;
+  let isListening = false;
+  let currentVoiceLang = (localStorage.getItem('appLang') || window.currentLang || 'bn');
+  let autoApplyTimer = null;
+  let lastParsedResult = null;
+
+  const SPEECH_LANG_CODES = {
+    'bn': 'bn-IN',
+    'hi': 'hi-IN',
+    'en': 'en-IN'
+  };
+
+  window.triggerVoiceRideBooking = function() {
+    const modal = document.getElementById('voiceRideModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    setVoiceModalLang(localStorage.getItem('appLang') || window.currentLang || 'bn');
+    resetVoiceModalState();
+    startVoiceRecording();
+  };
+
+  window.closeVoiceRideModal = function() {
+    stopVoiceRecording();
+    if (autoApplyTimer) { clearTimeout(autoApplyTimer); autoApplyTimer = null; }
+    const modal = document.getElementById('voiceRideModal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  window.setVoiceModalLang = function(lang) {
+    currentVoiceLang = lang || 'bn';
+    ['bn', 'hi', 'en'].forEach(function(l) {
+      const btn = document.getElementById('voiceLang_' + l);
+      if (btn) btn.classList.toggle('active', l === currentVoiceLang);
+    });
+
+    const statusEl = document.getElementById('voiceStatusTxt');
+    const titleEl = document.getElementById('voiceModalTitle');
+    const subEl = document.getElementById('voiceModalSub');
+
+    if (currentVoiceLang === 'hi') {
+      if (titleEl) titleEl.innerText = "बोलकर राइड बुक करें";
+      if (subEl) subEl.innerText = "हिंदी, बांग्ला या अंग्रेजी में बोलें";
+      if (statusEl) statusEl.innerText = "🎙️ सुन रहा हूँ... बोलिए आप कहाँ से कहाँ जाना चाहते हैं";
+    } else if (currentVoiceLang === 'en') {
+      if (titleEl) titleEl.innerText = "Voice Ride Booking";
+      if (subEl) subEl.innerText = "Speak in English, Bengali or Hindi";
+      if (statusEl) statusEl.innerText = "🎙️ Listening... Tell me your pickup & drop destination";
+    } else {
+      if (titleEl) titleEl.innerText = "মুখে বলে রাইড বুকিং";
+      if (subEl) subEl.innerText = "বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন";
+      if (statusEl) statusEl.innerText = "🎙️ শুনছি... বলুন আপনি কোথা থেকে কোথায় যাবেন";
+    }
+
+    if (isListening) {
+      stopVoiceRecording();
+      setTimeout(startVoiceRecording, 200);
+    }
+  };
+
+  function resetVoiceModalState() {
+    lastParsedResult = null;
+    const transcriptEl = document.getElementById('voiceTranscriptBox');
+    const previewEl = document.getElementById('voiceParsedPreview');
+    const applyBtn = document.getElementById('voiceApplyBtn');
+    if (transcriptEl) {
+      transcriptEl.innerHTML = '<span style="color:#94a3b8;font-weight:600">"আমি পিংলা বাজার থেকে খড়গপুর যাব..."</span>';
+    }
+    if (previewEl) previewEl.style.display = 'none';
+    if (applyBtn) applyBtn.style.display = 'none';
+  }
+
+  window.toggleVoiceRecording = function() {
+    if (isListening) {
+      stopVoiceRecording();
+    } else {
+      startVoiceRecording();
+    }
+  };
+
+  function startVoiceRecording() {
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const ringOuter = document.getElementById('voiceRingOuter');
+    const ringMid = document.getElementById('voiceRingMid');
+    const micIcon = document.getElementById('voiceMicIcon');
+    const statusEl = document.getElementById('voiceStatusTxt');
+
+    if (!SpeechRec) {
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color:#dc2626">⚠️ ব্রাউজারে স্পিচ রিকগনিশন নেই। নিচে টাইপ করুন:</span>';
+      }
+      const userSpoken = prompt(
+        currentVoiceLang === 'en' ? "Tell your ride request (e.g. From Pingla to Kharagpur):" :
+        (currentVoiceLang === 'hi' ? "अपनी राइड बताइए (उदा: खड़गपुर से मेदिनीपुर जाना है):" : "রাইডের তথ্য বলুন বা লিখুন (যেমন: পিংলা থেকে খড়্গপুর যাব):")
+      );
+      if (userSpoken && userSpoken.trim()) {
+        processSpokenText(userSpoken.trim());
+      }
+      return;
+    }
+
+    try {
+      if (voiceRecognition) {
+        try { voiceRecognition.abort(); } catch(e) {}
+      }
+      voiceRecognition = new SpeechRec();
+      voiceRecognition.lang = SPEECH_LANG_CODES[currentVoiceLang] || 'bn-IN';
+      voiceRecognition.continuous = false;
+      voiceRecognition.interimResults = true;
+
+      isListening = true;
+      if (ringOuter) ringOuter.classList.add('voice-pulse-active');
+      if (ringMid) ringMid.classList.add('voice-pulse-active');
+      if (micIcon) micIcon.innerText = '🔴';
+      if (statusEl) {
+        statusEl.style.color = '#059669';
+        statusEl.innerText = (currentVoiceLang === 'en') ? "🎙️ Listening... Speak now..." :
+          (currentVoiceLang === 'hi' ? "🎙️ सुन रहा हूँ... अभी बोलिए..." : "🎙️ শুনছি... এখন বলুন...");
+      }
+
+      voiceRecognition.onresult = function(e) {
+        let interim = '';
+        let finalStr = '';
+        for (let i = 0; i < e.results.length; ++i) {
+          if (e.results[i].isFinal) {
+            finalStr += e.results[i][0].transcript;
+          } else {
+            interim += e.results[i][0].transcript;
+          }
+        }
+        const currentText = (finalStr || interim).trim();
+        const transcriptEl = document.getElementById('voiceTranscriptBox');
+        if (transcriptEl && currentText) {
+          transcriptEl.innerHTML = '<span style="color:#0f172a">🗣️ ' + escapeHtml(currentText) + '</span>';
+        }
+
+        if (finalStr && finalStr.trim()) {
+          processSpokenText(finalStr.trim());
+        }
+      };
+
+      voiceRecognition.onerror = function(err) {
+        console.warn("Voice booking error:", err);
+        stopVoiceRecording();
+        if (err.error === 'not-allowed') {
+          if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626">❌ মাইক্রোফোন পারমিশন ব্লক করা আছে! অনুগ্রহ করে এলাও করুন।</span>';
+        } else if (err.error === 'no-speech') {
+          if (statusEl) statusEl.innerText = "⏳ কোনো শব্দ শোনা যায়নি। আবার মাইকে চাপ দিয়ে বলুন।";
+        }
+      };
+
+      voiceRecognition.onend = function() {
+        stopVoiceRecording();
+      };
+
+      voiceRecognition.start();
+    } catch(err) {
+      console.warn("Failed to start speech recognition:", err);
+      stopVoiceRecording();
+    }
+  }
+
+  function stopVoiceRecording() {
+    isListening = false;
+    const ringOuter = document.getElementById('voiceRingOuter');
+    const ringMid = document.getElementById('voiceRingMid');
+    const micIcon = document.getElementById('voiceMicIcon');
+    if (ringOuter) ringOuter.classList.remove('voice-pulse-active');
+    if (ringMid) ringMid.classList.remove('voice-pulse-active');
+    if (micIcon) micIcon.innerText = '🎙️';
+    if (voiceRecognition) {
+      try { voiceRecognition.stop(); } catch(e) {}
+    }
+  }
+
+  window.demoVoiceSpoken = function(demoText) {
+    const transcriptEl = document.getElementById('voiceTranscriptBox');
+    if (transcriptEl) transcriptEl.innerHTML = '<span style="color:#0f172a">🗣️ ' + escapeHtml(demoText) + '</span>';
+    processSpokenText(demoText);
+  };
+
+  function escapeHtml(str) {
+    return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  window.parseSpokenRideRequest = function(rawText) {
+    let text = (rawText || '').trim();
+    let vehicle = null;
+
+    if (/(?:মোটরসাইকেল|motorcycle|বাইকে|বাইক|bike)/i.test(text)) vehicle = 'Bike';
+    else if (/(?:ই-রিকশা|রিকশা|rickshaw|টোটোয়|টোটো|टोटो|অটোয়|অটো|ऑटो|toto|auto)/i.test(text)) vehicle = 'Toto';
+    else if (/(?:ট্যাক্সি|taxi|ক্যাব|cab|গাড়িতে|গাড়িতে|গাড়ীতে|গাড়ী|গাড়ি|গাড়ি|কার|কারে|car|cab|कार|गाड़ी|गाड़ी)/i.test(text)) vehicle = 'Car';
+    else if (/(?:কুরিয়ার|courier|ডেলিভারি|পার্সেল|parcel|पार्सल)/i.test(text)) vehicle = 'Parcel';
+
+    let clean = text
+      .replace(/(?:দয়া করে|দয়া করে|প্লিজ|please|kindly|kripya|kripaya)/gi, ' ')
+      .replace(/(?:নমস্কার|হ্যালো|hello|hi)/gi, ' ')
+      .replace(/(?:বুক করতে চাই|বুক করুন|বুক করো|বুক|নিয়ে চলো|নিয়ে চলো|লে চলো|चलो|যেতে চাই|যেতে হবে|যাওয়া দরকার|যাবো|যাব|जाना है|जाना चाहता हूँ|जाऊंगा|লাগবে|চাই)/gi, ' ')
+      .replace(/(?:book a ride|book ride|book a|book)/gi, ' ')
+      .replace(/(?:i want to go to|i want to go|take me to|take me)/gi, ' ')
+      .replace(/(?:^|\s+)(?:আমি|আমাকে|আমার|আমরা|আমাকে|मुझे|हमको|हम|mera|mere ko)(?:\s+|$)/gi, ' ')
+      .replace(/(?:একটি|একটা|এক|ek|ekta)\s+(?:বাইক|টোটো|অটো|কার|গাড়িতে|গাড়িতে|গাড়ি|গাড়ি|bike|toto|auto|car|cab|পার্সেল|parcel|टोटो|ऑटो|कार|गाड़ी)?/gi, ' ')
+      .replace(/(?:বাইকে|বাইক|টোটোয়|টোটো|অটোয়|অটো|গাড়িতে|গাড়িতে|গাড়ীতে|গাড়ি|গাড়ি|কারে|কার|bike|toto|auto|car|cab|পার্সেল|parcel|टोटो|ऑटो|कार|गाड़ी)\s*(?:में|দ্বারা|দিয়ে|দিয়ে|করে|তে)?/gi, ' ')
+      .replace(/\b(?:by|in)\s+(?:bike|toto|auto|car|cab|parcel)\b/gi, ' ')
+      .trim();
+
+    let pickup = '', drop = '';
+
+    if (/(?:\s+থেকে\s+|\s+হতে\s+)/.test(clean) || /(?:থেকে|হতে)/.test(clean)) {
+      const parts = clean.split(/(?:থেকে|হতে)/);
+      pickup = (parts[0] || '').trim();
+      drop = (parts.slice(1).join(' ') || '').trim();
+    } else if (/\s+से\s+/.test(clean)) {
+      const parts = clean.split(/\s+से\s+/);
+      pickup = (parts[0] || '').trim();
+      drop = (parts.slice(1).join(' ') || '').trim();
+    } else if (/\bto\b/i.test(clean)) {
+      const m = clean.match(/(?:from\s+)?(.+?)\s+to\s+(.+)/i);
+      if (m) {
+        pickup = m[1].trim();
+        drop = m[2].trim();
+      }
+    } else {
+      drop = clean;
+      pickup = 'বর্তমান লোকেশন';
+    }
+
+    function cleanLocationStr(str) {
+      if (!str) return '';
+      return str
+        .replace(/^from\s+/i, '')
+        .replace(/^to\s+/i, '')
+        .replace(/\s+(?:from|to|by|in|দ্বারা|দিয়ে|দিয়ে|করে|তে|মে|में)$/gi, '')
+        .replace(/^(?:আমি|আমাকে|আমার|আমাকে|मुझे|हमको|हम)\s+/gi, '')
+        .replace(/(?:যেতে হবে|যেতে চাই|যাবো|যাব|जाना है|चाहिए|হবে|চাই)$/gi, '')
+        .replace(/[.,!?;:]+$/, '')
+        .replace(/^[.,!?;:]+/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    pickup = cleanLocationStr(pickup);
+    drop = cleanLocationStr(drop);
+
+    if (!pickup || /^(?:বর্তমান|এখানে|here|current|current location|my location|আমার লোকেশন)$/i.test(pickup)) {
+      pickup = 'বর্তমান লোকেশন';
+    }
+
+    return { pickup, drop, vehicle, raw: rawText };
+  };
+
+  function processSpokenText(spokenText) {
+    const parsed = window.parseSpokenRideRequest(spokenText);
+    lastParsedResult = parsed;
+
+    const previewEl = document.getElementById('voiceParsedPreview');
+    const pEl = document.getElementById('voiceParsedPickup');
+    const dEl = document.getElementById('voiceParsedDrop');
+    const vRow = document.getElementById('voiceParsedVehRow');
+    const vEl = document.getElementById('voiceParsedVehicle');
+    const applyBtn = document.getElementById('voiceApplyBtn');
+    const statusEl = document.getElementById('voiceStatusTxt');
+
+    if (pEl) pEl.innerText = parsed.pickup || 'বর্তমান লোকেশন';
+    if (dEl) dEl.innerText = parsed.drop || '-';
+    if (vRow && vEl) {
+      if (parsed.vehicle) {
+        vRow.style.display = 'block';
+        vEl.innerText = parsed.vehicle;
+      } else {
+        vRow.style.display = 'none';
+      }
+    }
+
+    if (previewEl) previewEl.style.display = 'block';
+    if (applyBtn) applyBtn.style.display = 'block';
+
+    if (statusEl) {
+      statusEl.style.color = '#047857';
+      statusEl.innerText = "✅ রুট শনাক্ত হয়েছে! স্বয়ংক্রিয়ভাবে ভাড়া হিসেব হচ্ছে...";
+    }
+
+    if (parsed.drop && parsed.drop.length >= 2) {
+      if (autoApplyTimer) clearTimeout(autoApplyTimer);
+      autoApplyTimer = setTimeout(function() {
+        applySpokenBooking();
+      }, 1500);
+    }
+  }
+
+  window.applySpokenBooking = async function() {
+    if (autoApplyTimer) { clearTimeout(autoApplyTimer); autoApplyTimer = null; }
+    if (!lastParsedResult || !lastParsedResult.drop) return;
+
+    const parsed = lastParsedResult;
+    closeVoiceRideModal();
+
+    // 1. Transition to customer booking screen
+    if (typeof window.switchCustomerScreen === 'function') {
+      window.switchCustomerScreen('booking');
+    }
+
+    const pInput = document.getElementById('pickupInput');
+    const dInput = document.getElementById('dropInput');
+
+    // 2. Set Pickup
+    if (parsed.pickup === 'বর্তমান লোকেশন') {
+      if (typeof window.useCurrentLocation === 'function') {
+        window.useCurrentLocation();
+      } else if (pInput) {
+        pInput.value = "📍 বর্তমান লোকেশন (Live GPS)";
+      }
+    } else if (pInput) {
+      pInput.value = parsed.pickup;
+      pInput.dispatchEvent(new Event('input', { bubbles: true }));
+      pInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // 3. Set Drop
+    if (dInput) {
+      dInput.value = parsed.drop;
+      dInput.dispatchEvent(new Event('input', { bubbles: true }));
+      dInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // 4. Select Vehicle if mentioned
+    if (parsed.vehicle && typeof window.selectVehicle === 'function') {
+      window.selectVehicle(parsed.vehicle);
+    }
+
+    // 5. Trigger auto distance & fare calculation
+    if (typeof window.autoResolveAndCalcKM === 'function') {
+      try {
+        await window.autoResolveAndCalcKM();
+      } catch(e) {
+        console.warn("autoResolveAndCalcKM error:", e);
+      }
+    }
+
+    // 6. Smoothly scroll to the vehicle selection list
+    const vehListEl = document.querySelector('.rapido-veh-list') || document.getElementById('bikeBox');
+    if (vehListEl) {
+      setTimeout(function() {
+        vehListEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 400);
+    }
+
+    // 7. Voice / Speech confirmation
+    speakBookingConfirmation(parsed.pickup, parsed.drop);
+  };
+
+  function speakBookingConfirmation(pickup, drop) {
+    try {
+      if ('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance();
+        if (currentVoiceLang === 'hi') {
+          utter.lang = 'hi-IN';
+          utter.text = pickup + " से " + drop + " का किराया तय हो गया है।";
+        } else if (currentVoiceLang === 'en') {
+          utter.lang = 'en-IN';
+          utter.text = "Ride route set from " + pickup + " to " + drop + ".";
+        } else {
+          utter.lang = 'bn-IN';
+          utter.text = pickup + " থেকে " + drop + " এর ভাড়া হিসাব করা হয়েছে।";
+        }
+        utter.rate = 1.0;
+        window.speechSynthesis.speak(utter);
+      }
+    } catch(e) {}
+  }
+
 })();
 </script>
 
