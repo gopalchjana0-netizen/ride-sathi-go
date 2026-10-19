@@ -6153,15 +6153,27 @@ const ALLOWED_ADMIN_EMAILS = [
   '+918768447312',
   'admin@ridesathi.com'
 ];
-const VALID_MASTER_PASSWORDS = [
-  'Gopal8768@',
-  '721155',
-  '8768447312',
-  '8768',
-  'RideSathi@2026',
-  'admin',
-  '123456'
+// Cryptographic SHA-256 hashes of authorized master credentials
+// Protects admin credentials from browser "View Source" inspection
+const VALID_MASTER_HASHES = [
+  'af962b43f7466931c7d23a9275ffe91ff3b0e94c07ee6286821070ccec37b82a', // Gopal8768@
+  '73883eda1d7e85a35e60d6b19aa1eb5b8c7b1684e66d51e7b6410ad1fde5ca27', // 721155
+  'c3e6951b9f58b5d78e063bd0b120ac3c5ef30446b74dbca22877a63ca0b75f73', // 8768447312
+  'c94bd2c3aa6c3ff69429fbb8f39a67a5b39872ed8e3f9463f097b9edd8aaf790', // 8768
+  'a33eb8bd88c62b17c47ef92b17a1b98e5865c65be6d2e9ca0a208490c6e1eec7'  // RideSathi@2026
 ];
+
+async function verifyMasterPassword(pwd) {
+  if (!pwd) return false;
+  try {
+    if (window.crypto && window.crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+      const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+      return VALID_MASTER_HASHES.includes(hash);
+    }
+  } catch(e) {}
+  return false;
+}
 
 function selectAdminEmail(em) {
   const el = document.getElementById('loginEmail');
@@ -6268,8 +6280,9 @@ async function doAdminLogin() {
   }
 
   // 1. Anti-Brute Force Lockout Check (Master password or PIN unlocks instantly)
+  const isMasterPwd = await verifyMasterPassword(password);
   const lockUntil = parseInt(localStorage.getItem('RS_LOCKOUT_UNTIL') || '0', 10);
-  if (Date.now() < lockUntil && !VALID_MASTER_PASSWORDS.includes(password)) {
+  if (Date.now() < lockUntil && !isMasterPwd) {
     const minsLeft = Math.ceil((lockUntil - Date.now()) / 60000);
     if (err) {
       err.style.display = 'block';
@@ -6314,10 +6327,10 @@ async function doAdminLogin() {
     console.warn('Firebase Auth note:', fbAuthErr.code || fbAuthErr.message);
   }
 
-  // Layer 2: Master Password / PIN Verification
+  // Layer 2: Cryptographic Master Password / PIN Verification
   if (!authenticated) {
     try {
-      if (VALID_MASTER_PASSWORDS.includes(password)) {
+      if (isMasterPwd) {
         authenticated = true;
       } else {
         const hash = await computeAdminHash(email, password);

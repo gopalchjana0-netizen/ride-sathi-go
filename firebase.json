@@ -28,7 +28,21 @@
       "scratch/**",
       "package*.json",
       "deep_audit_result.json",
-      "service-account*.json"
+      "service-account*.json",
+      "database.rules.json",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "storage.rules",
+      "GOOGLE_APPS_SCRIPT_CODE.js",
+      "sync_earnkaro_offers.cjs",
+      "scratch_recovered_recharge.cjs",
+      "legacy_backup/**",
+      "marketing_docs/**",
+      "old_pngs/**",
+      "release_v*/**",
+      "temp_v*/**",
+      "*.md",
+      "*.log"
     ],
     "headers": [
       {

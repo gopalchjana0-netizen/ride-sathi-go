@@ -8147,6 +8147,7 @@ window.openCustomerHistoryModal = function() {
 
   function isRideDeleted(item) {
     if (!item) return true;
+    if (item.customerDeleted === true || item.status === 'PURGED_BY_CUSTOMER') return true;
     const itemTime = Number(item.createdAt || item.time || (item.date ? new Date(item.date).getTime() : 0));
     if (purgeTimestamp > 0 && itemTime > 0 && itemTime <= purgeTimestamp) {
       return true;
@@ -9912,7 +9913,7 @@ window.markOnlinePaymentResult = function(isSuccess) {
 };
 
 window.copyUpiId = function() {
-  const upi = "8768447312@pthdfc";
+  const upi = (window.rsgPaymentConfig && window.rsgPaymentConfig.upi_id) ? window.rsgPaymentConfig.upi_id : "8768447312@pthdfc";
   if (navigator.clipboard) {
     navigator.clipboard.writeText(upi).then(() => {
       alert("✅ UPI ID কপি হয়েছে: " + upi);
@@ -11608,11 +11609,12 @@ window.deleteSingleCustomerBooking = async function(id, invKey) {
     }
   }
 
-  // 4. Firestore delete if active
+  // 4. Firestore update if active (mark purged to comply with security rules)
   if (typeof firebase !== 'undefined' && firebase.firestore) {
     try {
-      if (safeId) firebase.firestore().collection('bookings').doc(safeId).delete().catch(()=>{});
-      if (safeInv) firebase.firestore().collection('bookings').doc(safeInv).delete().catch(()=>{});
+      const purgeUpdate = { customerDeleted: true, status: 'PURGED_BY_CUSTOMER', purgedAt: Date.now() };
+      if (safeId) firebase.firestore().collection('bookings').doc(safeId).update(purgeUpdate).catch(()=>{});
+      if (safeInv) firebase.firestore().collection('bookings').doc(safeInv).update(purgeUpdate).catch(()=>{});
     } catch(e) {}
   }
 
@@ -11693,15 +11695,16 @@ window.deleteCustomerBookingHistory = async function() {
     }
   }
 
-  // 3. Firestore Deep Purge
+  // 3. Firestore Deep Purge (mark purged to comply with security rules)
   if (typeof firebase !== 'undefined' && firebase.firestore && phone) {
+    const purgeUpdate = { customerDeleted: true, status: 'PURGED_BY_CUSTOMER', purgedAt: Date.now() };
     try {
       const fsSnap = await firebase.firestore().collection('bookings').where('customerPhone', '==', phone).get().catch(()=>null);
-      if (fsSnap) fsSnap.forEach(d => d.ref.delete().catch(()=>{}));
+      if (fsSnap) fsSnap.forEach(d => d.ref.update(purgeUpdate).catch(()=>{}));
     } catch(e) {}
     try {
       const fsSnap2 = await firebase.firestore().collection('bookings').where('phone', '==', phone).get().catch(()=>null);
-      if (fsSnap2) fsSnap2.forEach(d => d.ref.delete().catch(()=>{}));
+      if (fsSnap2) fsSnap2.forEach(d => d.ref.update(purgeUpdate).catch(()=>{}));
     } catch(e) {}
   }
 
