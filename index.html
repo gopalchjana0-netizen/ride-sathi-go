@@ -3348,7 +3348,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="rsgSplashOverlay" style="display:none;position:fixed;inset:0;background:#090d16;z-index:999999999;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:opacity 0.5s ease">
   <!-- Top Skip Button -->
   <button id="rsgSplashSkipBtn" type="button" onclick="window.dismissSplash(true)" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.18);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 18px;border-radius:24px;font-size:13px;font-weight:900;cursor:pointer;z-index:20;display:flex;align-items:center;gap:6px;box-shadow:0 4px 15px rgba(0,0,0,0.4)">
-    <span>এড়িয়ে যান (Skip)</span> <span>›</span>
+    <span data-i18n="splashSkip">এড়িয়ে যান (Skip) ›</span>
   </button>
 
   <!-- Media Container -->
@@ -3357,7 +3357,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <!-- Bottom Branding & Animated Progress Bar -->
   <div style="position:absolute;bottom:26px;left:20px;right:20px;display:flex;flex-direction:column;align-items:center;z-index:20">
-    <div id="rsgSplashTagline" style="color:#ffffff;font-size:15px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,0.8);margin-bottom:12px;text-align:center">
+    <div id="rsgSplashTagline" style="color:#ffffff;font-size:15px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,0.8);margin-bottom:12px;text-align:center" data-i18n="splashTagline">
       RIDE SATHI GO • গ্রামের পথে, শহরের গতিতে 🚀
     </div>
     <div style="width:100%;max-width:320px;height:4px;background:rgba(255,255,255,0.25);border-radius:4px;overflow:hidden">
@@ -3401,15 +3401,15 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="drawer-card" style="background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;border:none;box-shadow:0 4px 15px rgba(220,38,38,0.35);cursor:pointer;padding:14px" onclick="openMedicalEmergencyModal(event);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <span style="font-weight:900;color:#fff;font-size:14px;display:flex;align-items:center;gap:8px">
-            <span style="font-size:22px">🚨</span> <span>জরুরি মেডিকেল / হাসপাতাল রাইড</span>
+            <span style="font-size:22px">🚨</span> <span data-i18n="drawerMedEmergencyTitle">জরুরি মেডিকেল / হাসপাতাল রাইড</span>
           </span>
           <span style="background:#fee2e2;color:#dc2626;font-size:10px;font-weight:900;padding:2px 8px;border-radius:12px">24x7 SOS</span>
         </div>
-        <div style="font-size:11.5px;color:#fecaca;line-height:1.4;margin-bottom:10px">
+        <div style="font-size:11.5px;color:#fecaca;line-height:1.4;margin-bottom:10px" data-i18n="drawerMedEmergencySub">
           জরুরি অবস্থায় রোগীকে হাসপাতালে পৌঁছানোর জন্য সর্বোচ্চ অগ্রাধিকার (High-Priority Ambulance Speed Service)।
         </div>
         <button type="button" onclick="openMedicalEmergencyModal(event);" style="width:100%;background:#ffffff;color:#dc2626;border:none;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">
-          <span>🚨 এখনই মেডিকেল রাইড বুক করুন ➔</span>
+          <span data-i18n="drawerMedEmergencyBtn">🚨 এখনই মেডিকেল রাইড বুক করুন ➔</span>
         </button>
       </div>
     </div>
@@ -3989,17 +3989,17 @@ window.closeLiveChatModal = function() {
 
       <!-- 🛺 SHARED TOTO SELECTION PILL (NextGen Point 1) -->
       <div id="sharedTotoOptionWrap" style="display:none;margin:8px 0;background:#fef9c3;border:1.5px solid #facc15;border-radius:12px;padding:10px;text-align:center">
-        <div style="font-size:12px;font-weight:800;color:#854d0e;margin-bottom:6px">🛺 টোটো বুকিংয়ের ধরণ বাছুন:</div>
+        <div style="font-size:12px;font-weight:800;color:#854d0e;margin-bottom:6px" data-i18n="totoSelectType">🛺 টোটো বুকিংয়ের ধরণ বাছুন:</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
           <button type="button" id="btnTotoSharedSeat" onclick="setTotoBookingType('shared')" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:8px 6px;font-size:12px;font-weight:800;cursor:pointer">
-            🟢 শেয়ার্ড সিট (<span id="txtSharedTotoFare">₹15</span>/সিট)
+            🟢 <span data-i18n="totoSharedSeat">শেয়ার্ড সিট</span> (<span id="txtSharedTotoFare">₹15</span>/<span data-i18n="perSeat">সিট</span>)
           </button>
           <button type="button" id="btnTotoFullReserve" onclick="setTotoBookingType('full')" style="background:#e2e8f0;color:#334155;border:none;border-radius:8px;padding:8px 6px;font-size:12px;font-weight:800;cursor:pointer">
             🔵 ফুল টোটো রিজার্ভ
           </button>
         </div>
         <div id="sharedTotoSeatsRow" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px">
-          <span style="font-size:12px;font-weight:700;color:#854d0e">সিট সংখ্যা:</span>
+          <span style="font-size:12px;font-weight:700;color:#854d0e" data-i18n="totoSeatsLabel">সিট সংখ্যা:</span>
           <select id="selSharedTotoSeats" onchange="updateSharedTotoFare()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:bold">
             <option value="1">১টি সিট</option>
             <option value="2">২টি সিট</option>
@@ -4070,11 +4070,11 @@ window.closeLiveChatModal = function() {
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:24px">🎒</span>
           <div>
-            <div style="font-size:13.5px;font-weight:900;color:#1e40af">স্কুল ও অফিস মাসিক পাস (School & Daily Pass)</div>
-            <div style="font-size:11px;color:#3b82f6" id="txtSchoolPassSub">মাসিক সাশ্রয়ী প্যাকেজ • বিশ্বস্ত স্থায়ী চালক</div>
+            <div style="font-size:13.5px;font-weight:900;color:#1e40af" data-i18n="schoolPassTitle">স্কুল ও অফিস মাসিক পাস (School & Daily Pass)</div>
+            <div style="font-size:11px;color:#3b82f6" id="txtSchoolPassSub" data-i18n="schoolPassSub">মাসিক সাশ্রয়ী প্যাকেজ • বিশ্বস্ত স্থায়ী চালক</div>
           </div>
         </div>
-        <span style="background:#2563eb;color:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:bold">আবেদন করুন ➔</span>
+        <span style="background:#2563eb;color:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:bold" data-i18n="schoolPassApplyBtn">আবেদন করুন ➔</span>
       </div>
     </div>
 
@@ -4190,20 +4190,8 @@ window.closeLiveChatModal = function() {
       </div>
     </div>
 
-    <!-- 6. SAVE MORE / PROMO BANNER (With Gift Box) -->
-    <div class="rapido-promo-card" onclick="openReferralModal()">
-      <div class="rapido-promo-left">
-        <span class="rapido-promo-icon">🎁</span>
-        <div>
-          <div class="rapido-promo-title" data-i18n="promoCardTitle">Save more with Ride Sathi Go</div>
-          <div class="rapido-promo-sub" data-i18n="promoCardSub">Amazon, Flipkart, Swiggy, MakeMyTrip ও ২৫+ ব্র্যান্ডে ছাড় • কুপন পান</div>
-        </div>
-      </div>
-      <div style="color:#16a34a;font-weight:900;font-size:16px">›</div>
-    </div>
-
     <!-- Coupon Input -->
-    <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+    <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
       <input id="couponInput" data-i18n-placeholder="couponPlaceholder" placeholder="🎟️ কুপন / প্রোমো কোড" style="flex:1;text-transform:uppercase;margin:0">
       <button onclick="applyManualCoupon()" class="btn" style="width:auto;margin:0;padding:12px 18px;background:#f59e0b;color:#fff;font-weight:900" data-i18n="applyCouponBtn">Apply</button>
     </div>
@@ -5985,7 +5973,7 @@ window.submitElectricBillRequest = function() {
   <div class="modal-box" style="background:#ffffff;color:#0f172a;max-width:440px;width:100%;border-radius:24px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.5);border:2px solid #0284c7">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #e2e8f0;padding-bottom:10px">
       <h3 style="margin:0;font-size:16px;color:#0369a1;display:flex;align-items:center;gap:6px">
-        <span>📴</span> <span>অফলাইন SMS / কল বুকিং (No-Internet)</span>
+        <span>📴</span> <span data-i18n="offlineModalTitle">অফলাইন SMS / কল বুকিং (No-Internet)</span>
       </h3>
       <button type="button" onclick="closeOfflineBookingModal()" style="background:#f1f5f9;border:none;border-radius:50%;width:30px;height:30px;font-weight:bold;cursor:pointer">✕</button>
     </div>
@@ -6041,7 +6029,7 @@ window.submitElectricBillRequest = function() {
   <div class="modal-box" style="background:#ffffff;color:#0f172a;max-width:440px;width:100%;border-radius:24px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.5);border:2px solid #ca8a04;text-align:center">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #e2e8f0;padding-bottom:10px">
       <h3 style="margin:0;font-size:16px;color:#854d0e;display:flex;align-items:center;gap:6px">
-        <span>📍</span> <span>স্ট্যান্ড ১-স্ক্যান QR বুকিং (Stand QR)</span>
+        <span>📍</span> <span data-i18n="standQrTitle">স্ট্যান্ড ১-স্ক্যান QR বুকিং (Stand QR)</span>
       </h3>
       <button type="button" onclick="closeStandQrModal()" style="background:#f1f5f9;border:none;border-radius:50%;width:30px;height:30px;font-weight:bold;cursor:pointer">✕</button>
     </div>
@@ -6575,6 +6563,46 @@ const TRANSLATIONS = {
 
     // Live Tracking & Status
     statusSearching: "নিকটবর্তী চালকের সন্ধান চলছে...",
+    // Splash & Branding
+    splashSkip: "এড়িয়ে যান (Skip) ›",
+    splashTagline: "RIDE SATHI GO • গ্রামের পথে, শহরের গতিতে 🚀",
+
+    // Shared Toto & Reserve
+    totoSelectType: "🛺 টোটো বুকিংয়ের ধরণ বাছুন:",
+    totoSharedSeat: "শেয়ার্ড সিট",
+    perSeat: "সিট",
+    totoFullReserve: "ফুল টোটো রিজার্ভ",
+    totoSeatsLabel: "সিট সংখ্যা:",
+    totoSeat1: "১টি সিট",
+    totoSeat2: "২টি সিট",
+    totoSeat3: "৩টি সিট",
+
+    // School & Office Pass
+    schoolPassTitle: "স্কুল ও অফিস মাসিক পাস (School & Daily Pass)",
+    schoolPassSub: "মাসিক সাশ্রয়ী প্যাকেজ • বিশ্বস্ত স্থায়ী চালক",
+    schoolPassApplyBtn: "আবেদন করুন ➔",
+
+    // Drawer Medical Emergency
+    drawerMedEmergencyTitle: "জরুরি মেডিকেল / হাসপাতাল রাইড",
+    drawerMedEmergencySub: "জরুরি অবস্থায় রোগীকে হাসপাতালে পৌঁছানোর জন্য সর্বোচ্চ অগ্রাধিকার (High-Priority Ambulance Speed Service)।",
+    drawerMedEmergencyBtn: "🚨 এখনই মেডিকেল রাইড বুক করুন ➔",
+
+    // Voice & Offline Booking Modals
+    voiceModalTitle: "মুখে বলে রাইড বুকিং (Voice Ride)",
+    voiceModalSub: "বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন...",
+    voiceListeningTxt: "🎙️ শুনছি... বলুন আপনি কোথা থেকে কোথায় যাবেন",
+    voiceCancelBtn: "বাতিল করুন (Cancel)",
+    voiceSeeFaresBtn: "✅ রাইড দেখুন (See Fares) ➔",
+    offlineModalTitle: "অফলাইন SMS / কল বুকিং (No-Internet)",
+    offlinePickupLabel: "পিকআপ লোকেশন (কোথা থেকে):",
+    offlineDropLabel: "ড্রপ লোকেশন (কোথায় যাবেন):",
+    offlineSendSmsBtn: "💬 সরাসরি SMS পাঠান (Offline Booking)",
+    offlineCallHelpBtn: "📞 সরাসরি হেল্পলাইনে কল করুন (8768447312)",
+    standQrTitle: "স্ট্যান্ড ১-স্ক্যান QR বুকিং (Stand QR)",
+    standQrSaveBtn: "📥 পোস্টার সেভ করুন (PNG)",
+    standQrCopyBtn: "🔗 লিঙ্ক কপি",
+    promoCardTitle: "Ride Sathi Go-তে আরো সাশ্রয় করুন",
+    promoCardSub: "কুপন কোড ব্যবহার করে প্রতিটি রাইডে ছাড় পান",
     otpNotice: "🔐 আপনার সিক্রেট বুকিং OTP:",
     otpSub: "গাড়িতে ওঠার পর এই OTP টি চালককে বলুন",
     driverAssignedTitle: "চালক আপনার রাইড গ্রহণ করেছেন!",
@@ -6852,6 +6880,46 @@ const TRANSLATIONS = {
 
     // Live Tracking & Status
     statusSearching: "निकटतम चालक की खोज जारी है...",
+    // Splash & Branding
+    splashSkip: "छोड़ें (Skip) ›",
+    splashTagline: "RIDE SATHI GO • गाँव की राह, शहर की रफ़्तार 🚀",
+
+    // Shared Toto & Reserve
+    totoSelectType: "🛺 टोटो बुकिंग का प्रकार चुनें:",
+    totoSharedSeat: "शेयर्ड सीट",
+    perSeat: "सीट",
+    totoFullReserve: "फुल टोटो रिजर्व",
+    totoSeatsLabel: "सीटों की संख्या:",
+    totoSeat1: "1 सीट",
+    totoSeat2: "2 सीट",
+    totoSeat3: "3 सीट",
+
+    // School & Office Pass
+    schoolPassTitle: "स्कूल व ऑफिस मासिक पास (School & Daily Pass)",
+    schoolPassSub: "मासिक किफायती पैकेज • विश्वसनीय स्थायी चालक",
+    schoolPassApplyBtn: "आवेदन करें ➔",
+
+    // Drawer Medical Emergency
+    drawerMedEmergencyTitle: "आपातकालीन मेडिकल / अस्पताल राइड",
+    drawerMedEmergencySub: "आपात स्थिति में मरीज को अस्पताल पहुंचाने के लिए सर्वोच्च प्राथमिकता (High-Priority Ambulance Speed Service)।",
+    drawerMedEmergencyBtn: "🚨 अभी मेडिकल राइड बुक करें ➔",
+
+    // Voice & Offline Booking Modals
+    voiceModalTitle: "बोलकर राइड बुकिंग (Voice Ride)",
+    voiceModalSub: "हिंदी, बांग्ला या अंग्रेजी में बोलें...",
+    voiceListeningTxt: "🎙️ सुन रहे हैं... बताएं आप कहाँ से कहाँ जाना चाहते हैं",
+    voiceCancelBtn: "रद्द करें (Cancel)",
+    voiceSeeFaresBtn: "✅ किराया देखें (See Fares) ➔",
+    offlineModalTitle: "ऑफलाइन SMS / कॉल बुकिंग (बिना इंटरनेट)",
+    offlinePickupLabel: "पिकअप स्थान (कहाँ से):",
+    offlineDropLabel: "ड्रॉप स्थान (कहाँ जाना है):",
+    offlineSendSmsBtn: "💬 सीधे SMS भेजें (Offline Booking)",
+    offlineCallHelpBtn: "📞 सीधे हेल्पलाइन पर कॉल करें (8768447312)",
+    standQrTitle: "स्टैंड 1-स्कैन QR बुकिंग (Stand QR)",
+    standQrSaveBtn: "📥 पोस्टर सेव करें (PNG)",
+    standQrCopyBtn: "🔗 लिंक कॉपी करें",
+    promoCardTitle: "Ride Sathi Go के साथ और बचत करें",
+    promoCardSub: "कूपन कोड का उपयोग करें और हर राइड पर छूट पाएं",
     otpNotice: "🔐 आपका गुप्त बुकिंग OTP:",
     otpSub: "गाड़ी में बैठने के बाद यह OTP चालक को बताएं",
     driverAssignedTitle: "चालक ने आपकी राइड स्वीकार कर ली है!",
@@ -7271,7 +7339,47 @@ const TRANSLATIONS = {
     navOffers: "Offers",
     navProfile: "Profile",
     orDirectMobile: "Or continue directly with mobile number",
-    statusSearching: "Searching for nearby drivers..."
+    statusSearching: "Searching for nearby drivers...",
+    // Splash & Branding
+    splashSkip: "Skip ›",
+    splashTagline: "RIDE SATHI GO • Rural Routes, City Speed 🚀",
+
+    // Shared Toto & Reserve
+    totoSelectType: "🛺 Select Toto Booking Type:",
+    totoSharedSeat: "Shared Seat",
+    perSeat: "seat",
+    totoFullReserve: "Full Toto Reserve",
+    totoSeatsLabel: "No. of Seats:",
+    totoSeat1: "1 Seat",
+    totoSeat2: "2 Seats",
+    totoSeat3: "3 Seats",
+
+    // School & Office Pass
+    schoolPassTitle: "School & Office Monthly Pass (Daily Pass)",
+    schoolPassSub: "Affordable Monthly Package • Trusted Permanent Driver",
+    schoolPassApplyBtn: "Apply Now ➔",
+
+    // Drawer Medical Emergency
+    drawerMedEmergencyTitle: "Emergency Medical / Hospital Ride",
+    drawerMedEmergencySub: "Top priority dispatch to safely transport patients to hospitals (High-Priority Ambulance Speed Service).",
+    drawerMedEmergencyBtn: "🚨 Book Emergency Ride Now ➔",
+
+    // Voice & Offline Booking Modals
+    voiceModalTitle: "Book Ride by Voice (Voice Ride)",
+    voiceModalSub: "Speak in Bengali, Hindi, or English...",
+    voiceListeningTxt: "🎙️ Listening... Tell us your pickup & destination",
+    voiceCancelBtn: "Cancel",
+    voiceSeeFaresBtn: "✅ See Fares ➔",
+    offlineModalTitle: "Offline SMS / Call Booking (No Internet)",
+    offlinePickupLabel: "Pickup Location (From):",
+    offlineDropLabel: "Drop Destination (Where to):",
+    offlineSendSmsBtn: "💬 Send Direct SMS (Offline Booking)",
+    offlineCallHelpBtn: "📞 Call Direct Helpline (8768447312)",
+    standQrTitle: "Stand 1-Scan QR Booking (Stand QR)",
+    standQrSaveBtn: "📥 Save Poster (PNG)",
+    standQrCopyBtn: "🔗 Copy Link",
+    promoCardTitle: "Save more with Ride Sathi Go",
+    promoCardSub: "Use coupon codes to get discounts on every ride"
   }
 };
 
@@ -13440,6 +13548,95 @@ window.generateAiCustomerResponse = function(query, lang) {
       return "🛺 **Ride Sathi GO টোটো ও অটো সেবা:**\n\n• **সহজলভ্যতা:** শহর, বাজার এবং প্রত্যন্ত গ্রাম জুড়ে আমাদের ভেরিফায়েড টোটো ও অটোর বিশাল নেটওয়ার্ক রয়েছে।\n• **ভাড়া:** নামমাত্র বেস ভাড়া ₹২০ + প্রতি কিমি মাত্র ₹৭।\n• **সুবিধা:** ৪ জন পর্যন্ত যাত্রী নিয়ে বাজার, স্টেশন, স্কুল বা ডাক্তারের কাছে সাশ্রয়ে যাওয়ার জন্য সেরা মাধ্যম।\n• **বুকিংয়ের উপায়:** হোমপেজে পিকআপ ও গন্তব্য দিয়ে **'টোটো' (Toto)** অপশনটি সিলেক্ট করে 'Book Ride'-এ ক্লিক করুন!";
     }
   }
+  // 5A. SHARED TOTO & RESERVE TOTO BOOKING
+  if (q.includes('শেয়ার্ড') || q.includes('শেয়ার্ড') || (q.includes('টোটো') && q.includes('সিট')) || q.includes('শেয়ার্ড টোটো') || q.includes('ফুল টোটো') || q.includes('রিজার্ভ টোটো') || q.includes('শেयर्ड') || q.includes('शेयरिंग') || (q.includes('टोटो') && q.includes('सीट')) || q.includes('फुल टोटो') || q.includes('shared toto') || q.includes('toto seat') || q.includes('sharing toto') || q.includes('reserve toto') || q.includes('seat booking')) {
+    if (userLang === 'hi') {
+      return "🛺 **Ride Sathi GO शेयर्ड एवं फुल टोटो बुकिंग सुविधा:**\n\n• 🟢 **शेयर्ड टोटो (Shared Seat):** मात्र ₹15/सीट से शुरू! आप 1, 2 या 3 सीटें चुनकर बेहद कम खर्च में यात्रा कर सकते हैं (दैनिक बाजार, कॉलेज, स्टेशन यात्रा के लिए सर्वोत्तम)।\n• 🔵 **फुल टोटो रिजर्व (Full Reserve):** पूरा टोटो सिर्फ अपने और परिवार के लिए रिजर्व करें। सामान के साथ सीधी घर तक यात्रा करें।\n• **कैसे चुनें:** होम स्क्रीन पर 'Toto' चुनने पर दिखने वाले पीले बॉक्स में '🟢 शेयर्ड सीट' या '🔵 फुल टोटो रिजर्व' चुनें!";
+    } else if (userLang === 'en') {
+      return "🛺 **Ride Sathi GO Shared & Full Toto Booking Options:**\n\n• 🟢 **Shared Toto (Per Seat):** Starting at just ₹15/seat! Select 1, 2, or 3 seats for highly economical daily commuting to markets, colleges, or stations.\n• 🔵 **Full Toto Reserve:** Hire the entire Toto exclusively for yourself or your family with doorstep drop and luggage space.\n• **How to Select:** Choose 'Toto' on the vehicle selection list, and tap '🟢 Shared Seat' or '🔵 Full Toto Reserve' in the options box!";
+    } else {
+      return "🛺 **Ride Sathi GO শেয়ার্ড ও ফুল টোটো বুকিং সুবিধা:**\n\n• 🟢 **শেয়ার্ড টোটো (Shared Seat):** মাত্র ₹১৫/সিট থেকে শুরু! আপনি ১টি, ২টি বা ৩টি সিট বেছে নিয়ে সাশ্রয়ে যাতায়াত করতে পারেন (প্রতিদিনের বাজার, কলেজ বা অফিস যাত্রার জন্য দারুণ সাশ্রয়ী)।\n• 🔵 **ফুল টোটো রিজার্ভ (Full Reserve):** পুরো টোটো শুধুমাত্র আপনার ও আপনার পরিবারের জন্য বুক করুন। সাথে ভারী ব্যাগপত্র থাকলেও কোনো সমস্যা নেই—সরাসরি ডোর-টু-ডোর পৌঁছাবে।\n• **কীভাবে বাছবেন:** হোমস্ক্রিনে 'Toto' সিলেক্ট করার পর হলুদ বক্সে '🟢 শেয়ার্ড সিট' অথবা '🔵 ফুল টোটো রিজার্ভ' বাটন পাবেন!";
+    }
+  }
+
+  // 5B. SMART VOICE BOOKING (মুখে বলে বুকিং)
+  if (q.includes('ভয়েস') || q.includes('ভয়েস') || q.includes('মুখে বলে') || q.includes('মুখে বুক') || q.includes('মাইক') || q.includes('কথা বলে বুক') || q.includes('ভয়েস বুকিং') || q.includes('बोलकर') || q.includes('आवाज से') || q.includes('माइक') || q.includes('वॉयस') || q.includes('voice') || q.includes('mic') || q.includes('speak') || q.includes('speech')) {
+    if (userLang === 'hi') {
+      return "🎙️ **स्मार्ट वॉयस राइड बुकिंग (बोलकर बुकिंग):**\n\n• **टाइपिंग की जरूरत नहीं:** हेडर में '🎙️ वॉइस' बटन या पिकअप/ड्रॉप के पास माइक आइकन दबाएं।\n• **अपनी भाषा में बोलें:** जैसे—*\"मुझे खड़गपुर से मेदिनीपुर स्टेशन जाना है\"*।\n• **स्वतः पहचान:** सिस्टम तुरंत आपके पिकअप, ड्रॉप और वाहन को पहचान कर सटीक किराया दिखा देगा।\n• बस 'See Fares' पर क्लिक करें और राइड बुक करें!";
+    } else if (userLang === 'en') {
+      return "🎙️ **Smart Voice Ride Booking (Zero Typing):**\n\n• **Effortless Voice Input:** Tap the '🎙️ Voice' button in the header or the mic icons beside the pickup/drop inputs.\n• **Speak Naturally:** e.g., *\"Take me from Pingla market to Kharagpur station by Toto\"*.\n• **Instant Auto-Parsing:** Our voice engine identifies your pickup point, destination, and vehicle, then calculates fare automatically.\n• Simply tap 'See Fares' to confirm your ride!";
+    } else {
+      return "🎙️ **স্মার্ট ভয়েস বুকিং (মুখে বলে রাইড বুকিং):**\n\n• **টাইপ করার ঝামেলা নেই:** হেডার বারে থাকা '🎙️ ভয়েস' বাটনে বা লোকেশন বক্সের মাইক আইকনে চাপ দিন।\n• **স্বাভাবিক বাংলায় বলুন:** যেমন—*\"আমি পিংলা বাজার থেকে খড়গপুর যাব বাইক চাই\"* বা *\"দীঘা যাব টোটো\"*।\n• **অটো শনাক্তকরণ:** আমাদের স্মার্ট সিস্টেম মুহূর্তেই আপনার পিকআপ, গন্তব্য ও গাড়ি চিনে নিয়ে ভাড়া হিসাব করে দেবে।\n• শুধু 'See Fares'-এ ক্লিক করলেই রাইড কনফার্ম হবে!";
+    }
+  }
+
+  // 5C. TOURIST / DAY RENTAL PACKAGES
+  if (q.includes('রেন্টাল') || q.includes('ডে-রেন্টাল') || q.includes('ট্যুরিস্ট') || q.includes('সারাদিন') || q.includes('ঘণ্টা') || q.includes('রেণ্টাল') || q.includes('দীঘা প্যাকেজ') || q.includes('কলকাতা প্যাকেজ') || q.includes('রেন্ট') || q.includes('रेंटल') || q.includes('टूरिस्ट') || q.includes('पूरे दिन') || q.includes('घंटे') || q.includes('घूमने') || q.includes('rental') || q.includes('day rental') || q.includes('tourist') || q.includes('car hire') || q.includes('rent a car') || (q.includes('package') && (q.includes('tour') || q.includes('day') || q.includes('trip')))) {
+    if (userLang === 'hi') {
+      return "🏖️ **Ride Sathi GO टूरिस्ट एवं डे-रेंटल पैकेज:**\n\n• **घंटे या पूरे दिन के लिए गाड़ी:** दीघा, मंदारमणि, कोलकाता, शादी, खरीदारी, मंदिर दर्शन या पारिवारिक यात्राओं के लिए कार व टोटो रेंटल उपलब्ध।\n• **समर्पित चालक व प्रतीक्षा:** चालक पूरे सफर में आपके साथ रहेगा और आप जहां चाहें जितनी देर रुक सकते हैं।\n• **निश्चित किफायती दरें:** प्रति किमी की चिंता के बिना फिक्स्ड पैकेज रेट।\n• **कैसे बुक करें:** होम स्क्रीन पर '🏖️ टूरिस्ट / डे-रेंटल' (Rental) चुनें और अपना पैकेज सिलेक्ट करें!";
+    } else if (userLang === 'en') {
+      return "🏖️ **Ride Sathi GO Tourist & Day-Rental Packages:**\n\n• **Hourly & Full-Day Hires:** Dedicated cabs and Totos for sightseeing (Digha, Mandarmani, Kolkata, Jhargram), weddings, shopping, or family trips.\n• **Dedicated Driver & Waiting:** Your assigned driver stays with you throughout the trip with multiple stops and waiting included.\n• **Fixed Upfront Packages:** Transparent packaged pricing without per-km surge or meter anxiety.\n• **How to Book:** Tap the '🏖️ Tourist / Day-Rental' (Rental) card on the home screen and choose your preferred package!";
+    } else {
+      return "🏖️ **Ride Sathi GO ট্যুরিস্ট ও ডে-রেন্টাল প্যাকেজ:**\n\n• **সারাদিন বা ঘণ্টাচুক্তি গাড়ি ভাড়া:** দীঘা, মন্দারমণি, কলকাতা, ঝাড়গ্রাম ভ্রমণ, বিয়েবাড়ি, শপিং বা পারিবারিক অনুষ্ঠানে সারাদিন ঘোরার জন্য বিশেষ কার ও টোটো প্যাকেজ।\n• **স্থায়ী চালক ও ওয়েটিং:** আপনার সাথে সার্বক্ষণিক নির্দিষ্ট চালক থাকবেন, যেকোনো জায়গায় যতবার খুশি থামতে পারবেন।\n• **ফিক্সড সাশ্রয়ী প্যাকেজ:** কিলোমিটার প্রতি বাড়তি মিটারের চিন্তা নেই, প্যাকেজ অনুযায়ী নির্ধারিত সাশ্রয়ী রেট।\n• **বুকিংয়ের নিয়ম:** হোমপেজে '🏖️ ট্যুরিস্ট / ডে-রেন্টাল' (Rental) কার্ডটি সিলেক্ট করুন এবং আপনার পছন্দের প্যাকেজ বেছে নিন!";
+    }
+  }
+
+  // 5D. SCHOOL & DAILY OFFICE PASS
+  if (q.includes('স্কুল পাস') || q.includes('অফিস পাস') || q.includes('মাসিক পাস') || q.includes('ডেইলি পাস') || q.includes('স্কুল গাড়ি') || q.includes('স্কুলের গাড়ি') || q.includes('মাসিক ভাড়া') || q.includes('स्कूल पास') || q.includes('ऑफिस पास') || q.includes('मासिक पास') || q.includes('school pass') || q.includes('office pass') || q.includes('monthly pass') || q.includes('daily pass') || q.includes('student pass') || (q.includes('pass') && (q.includes('school') || q.includes('office') || q.includes('monthly') || q.includes('daily')))) {
+    if (userLang === 'hi') {
+      return "🎒 **स्कूल व ऑफिस मासिक पास (School & Daily Pass):**\n\n• **सीधे 20% की बचत:** दैनिक सफर की तुलना में मासिक पास पर भारी छूट।\n• **स्थायी एवं विश्वसनीय चालक:** पुलिस-वेरिफाइड समर्पित चालक प्रतिदिन समय पर छात्र या कर्मचारी को सुरक्षित पिकअप व ड्रॉप करेगा।\n• **माता-पिता हेतु लाइव ट्रैकिंग:** अभिभावकों को व्हाट्सएप पर लाइव जीपीएस ट्रैकिंग व आगमन सूचना मिलती है।\n• **आवेदन कैसे करें:** होम स्क्रीन पर नीले '🎒 स्कूल व ऑफिस मासिक पास' बैनर पर क्लिक करें या हेल्पलाइन **+91 8768447312** पर कॉल करें!";
+    } else if (userLang === 'en') {
+      return "🎒 **Ride Sathi GO School & Daily Office Pass:**\n\n• **Flat 20% Commuter Savings:** Significant monthly discounts compared to booking daily rides.\n• **Dedicated Verified Driver:** Background-verified permanent driver handles scheduled daily pickups and drops punctually.\n• **WhatsApp Live Tracking for Parents:** Real-time live vehicle tracking link sent automatically to parents during student commute.\n• **How to Apply:** Click the blue '🎒 School & Daily Pass' banner on the home screen or contact support at **+91 8768447312**!";
+    } else {
+      return "🎒 **স্কুল ও অফিস মাসিক পাস (School & Daily Pass):**\n\n• **ফ্ল্যাট ২০% সেভিং:** নিয়মিত যাতায়াতে প্রতিদিনের ভাড়ার চেয়ে এককালীন মাসিক প্যাকেজে বিশাল ছাড়।\n• **স্থায়ী ও বিশ্বস্ত চালক:** পুলিশ ভেরিফায়েড নির্দিষ্ট চালক প্রতিদিন সঠিক সময়ে বাড়ি থেকে ছাত্রছাত্রী বা কর্মজীবীকে পিকআপ ও ড্রপ করবেন।\n• **অভিভাবকদের জন্য লাইভ ট্র্যাকিং:** গাড়ি স্কুলের পথে রওনা দিলে বা পৌঁছালে অভিভাবকদের হোয়াটসঅ্যাপে রিয়েল-টাইম লাইভ লোকেশন লিংক পাঠানো হয়।\n• **আবেদনের নিয়ম:** হোমস্ক্রিনের নীল '🎒 স্কুল ও অফিস মাসিক পাস' ব্যানারে ক্লিক করে অথবা হেল্পলাইন **+91 8768447312** নম্বরে কল করে পাস চালু করুন!";
+    }
+  }
+
+  // 5E. ADVANCE SCHEDULED BOOKING (অগ্রিম রাইড বুকিং)
+  if (q.includes('অগ্রিম') || q.includes('শিডিউল') || q.includes('কালকে') || q.includes('কাল যাব') || q.includes('পরশু') || q.includes('আগে থেকে বুক') || q.includes('এডভান্স') || q.includes('अग्रिम') || q.includes('शेड्यूल') || q.includes('एडवांस') || q.includes('कल जाना') || q.includes('पहले से बुक') || q.includes('advance') || q.includes('schedule') || q.includes('pre book') || q.includes('pre-book') || q.includes('tomorrow')) {
+    if (userLang === 'hi') {
+      return "📅 **अग्रिम शेड्यूल राइड बुकिंग (Advance Schedule):**\n\n• **ट्रेन, फ्लाइट या डॉक्टर अपॉइंटमेंट:** सुबह की ट्रेन या महत्वपूर्ण काम के लिए आप पहले से ही गाड़ी बुक कर सकते हैं।\n• **कैसे शेड्यूल करें:** बुकिंग स्क्रीन पर '⚡ अभी (Now)' के बगल में **'📅 शेड्यूल'** बटन दबाएं और तारीख व समय चुनें।\n• **समय पर गारंटीशुदा गाड़ी:** तय समय पर ड्राइवर आपके दरवाजे पर पहुंचेगा और समय से पहले आपको सूचना मिल जाएगी!";
+    } else if (userLang === 'en') {
+      return "📅 **Advance Scheduled Ride Booking:**\n\n• **Never Miss a Train or Flight:** Pre-schedule rides hours or days in advance for early morning commutes, railway stations, flights, or medical visits.\n• **How to Schedule:** Beside the '⚡ Now' button on the booking card, tap **'📅 Schedule'**, then select your pickup date & time.\n• **Punctual Arrival Guarantee:** A verified driver is dispatched well in advance with arrival alerts sent directly to you!";
+    } else {
+      return "📅 **অগ্রিম শিডিউল রাইড বুকিং (Advance Schedule):**\n\n• **ট্রেন, ফ্লাইট বা জরুরি অ্যাপয়েন্টমেন্ট:** সকালের ট্রেন ধরা, হাসপাতালে যাওয়া বা জরুরি ইন্টারভিউ থাকলে আগে থেকেই গাড়ি বুক করে রাখতে পারেন।\n• **কীভাবে শিডিউল করবেন:** বুকিং স্ক্রিনে '⚡ এখনই (Now)'-এর পাশে **'📅 শিডিউল (Schedule)'** বাটনে চাপ দিয়ে তারিখ ও সময় বেছে নিন।\n• **নিশ্চিত গাড়ি আগমন:** নির্ধারিত সময়ে নির্দিষ্ট চালক আপনার দোরগোড়ায় উপস্থিত থাকবেন এবং যাত্রার পূর্বে এসএমএস/কল পাবেন!";
+    }
+  }
+
+  // 5F. OFFLINE SMS & STAND QR BOOKING
+  if (q.includes('অফলাইন') || q.includes('ইন্টারনেট ছাড়া') || q.includes('নেট নেই') || q.includes('এসএমএস বুক') || q.includes('স্ট্যান্ড কিউআর') || q.includes('ऑफलाइन') || q.includes('बिना इंटरनेट') || q.includes('एसएमएस बुक') || q.includes('क्यूआर स्टैंड') || q.includes('offline') || q.includes('no internet') || q.includes('sms booking') || q.includes('stand qr') || q.includes('without internet')) {
+    if (userLang === 'hi') {
+      return "📴 **बिना इंटरनेट ऑफलाइन SMS एवं स्टैंड QR बुकिंग:**\n\n• **डेटा खत्म या नेटवर्क कमजोर?** घबराएं नहीं! ऐप साइड मेनू से **'📴 ऑफलाइन SMS / कॉल बुकिंग'** पर जाएं।\n• **एसएमएस बुकिंग:** अपना पिकअप व ड्रॉप दर्ज कर 'SMS भेजें' पर क्लिक करें—बिना इंटरनेट सामान्य एसएमएस से राइड कंफर्म हो जाएगी।\n• **स्टैंड 1-स्कैन QR:** बाजार, बस स्टैंड या दुकान पर लगे Ride Sathi QR कोड को मोबाइल कैमरे से स्कैन करके भी तुरंत गाड़ी बुक कर सकते हैं!";
+    } else if (userLang === 'en') {
+      return "📴 **Offline SMS & Stand QR Booking (No Internet Needed):**\n\n• **Low Signal or Zero Data?** Open the side menu and select **'📴 Offline SMS / Call Booking'**.\n• **SMS Booking:** Enter your pickup & drop points and tap 'Send SMS'—a standard carrier SMS is dispatched to book your ride with 0 data required.\n• **Stand 1-Scan QR:** Simply point your smartphone camera at any Ride Sathi Stand QR poster at local markets or bus stops to hail a ride instantly!";
+    } else {
+      return "📴 **ইন্টারনেট ছাড়া অফলাইন SMS ও স্ট্যান্ড QR বুকিং:**\n\n• **নেটওয়ার্ক দুর্বল বা ডাটা শেষ?** কোনো চিন্তা নেই! অ্যাপের মেনু (Drawer) থেকে **'📴 অফলাইন SMS / কল বুকিং'** অপশনে যান।\n• **এসএমএস বুকিং:** আপনার পিকআপ ও গন্তব্য লিখে 'SMS পাঠান' চাপলেই একটি সাধারণ অফলাইন এসএমএস চলে যাবে এবং রাইড কনফার্ম হবে।\n• **স্ট্যান্ড ১-স্ক্যান QR:** বাসস্ট্যান্ড, বাজার বা স্থানীয় দোকানে থাকা Ride Sathi QR কোড মোবাইল ক্যামেরা দিয়ে স্ক্যান করলেই ১-ক্লিকে গাড়ি বুক করতে পারবেন!";
+    }
+  }
+
+  // 5G. WHATSAPP SAFETY TRIP SHARE (যাত্রাপথ লাইভ শেয়ার)
+  if ((q.includes('হোয়াটসঅ্যাপ') || q.includes('হোয়াটসঅ্যাপ') || q.includes('whatsapp') || q.includes('व्हाट्सएप') || q.includes('সেফটি') || q.includes('safety')) && (q.includes('share') || q.includes('শেয়ার') || q.includes('শেয়ার') || q.includes('शेयर') || q.includes('live track') || q.includes('লাইভ') || q.includes('family') || q.includes('ফ্যামিলি'))) {
+    if (userLang === 'hi') {
+      return "🛡️ **व्हाट्सएप लाइव ट्रैकिंग व सुरक्षा शेयर (Trip Share):**\n\n• **परिवार की पूरी सुरक्षा:** राइड एक्टिव होने पर स्क्रीन पर हरे **'WhatsApp Safety Share'** बटन पर क्लिक करें।\n• **लाइव जीपीएस लिंक:** आपके परिवार या दोस्तों को व्हाट्सएप पर सुरक्षित लाइव ट्रैकिंग लिंक मिल जाएगा।\n• बिना किसी ऐप के वे मैप पर चलती गाड़ी, ड्राइवर का नाम, मोबाइल नंबर और आगमन समय देख सकते हैं!";
+    } else if (userLang === 'en') {
+      return "🛡️ **WhatsApp Live Safety Trip Sharing:**\n\n• **Peace of Mind for Loved Ones:** Tap the green **'WhatsApp Safety Share'** button on your active trip screen.\n• **One-Tap GPS Link:** Instantly sends an encrypted live tracking link to family or friends via WhatsApp.\n• They can monitor your moving vehicle on a live map, driver details, and ETA in real-time without installing any app!";
+    } else {
+      return "🛡️ **হোয়াটসঅ্যাপ লাইভ ট্র্যাকিং ও সেফটি শেয়ার:**\n\n• **পরিবারের সম্পূর্ণ নিশ্চিন্ততা:** আপনার গাড়ি চলাকালীন স্ক্রিনে থাকা সবুজ **'WhatsApp Safety Share'** বাটনে একবার চাপ দিন।\n• **লাইভ জিপিএস লিংক:** আপনার মা-বাবা, পরিজন বা বন্ধুকে সরাসরি হোয়াটসঅ্যাপে একটি সুরক্ষিত ট্র্যাকিং লিংক পাঠানো হবে।\n• কোনো অ্যাপ ছাড়াই তারা ম্যাপে গাড়ির লাইভ মুভমেন্ট, চালকের নাম, ফোন নম্বর ও গাড়ির নম্বর দেখতে পাবেন!";
+    }
+  }
+
+  // 5H. HOW TO APPLY COUPON CODE (কুপন কোড ব্যবহার)
+  if (q.includes('কুপন') || q.includes('coupon') || q.includes('कूपन') || q.includes('promo code') || q.includes('প্রোমো কোড')) {
+    if (userLang === 'hi') {
+      return "🎟️ **कूपन कोड लगाने का आसान तरीका:**\n\n• **कहाँ मिलेगा इनपुट बॉक्स:** बुकिंग स्क्रीन पर कैश व ऑनलाइन पेमेंट विकल्प के ठीक नीचे **'🎟️ कूपन / प्रोमो कोड'** बॉक्स दिया गया है।\n• **कोड दर्ज करें:** जैसे **FIRST50**, **PUJA50**, या **RIDE20** लिखकर बगल में **'Apply'** बटन दबाएं।\n• **तुरंत छूट:** आपके कुल किराए में से तुरंत डिस्काउंट कम हो जाएगा और आप कम किराए में सफर कर सकेंगे!";
+    } else if (userLang === 'en') {
+      return "🎟️ **How to Apply Coupon / Promo Codes:**\n\n• **Where to Find the Box:** Directly below the Cash and Online payment buttons, you will find the **'🎟️ Coupon / Promo Code'** input field.\n• **Enter Code:** Type promo codes like **FIRST50**, **PUJA50**, or **RIDE20** and click **'Apply'**.\n• **Instant Fare Reduction:** The discount is deducted immediately from your total trip fare before you confirm your ride!";
+    } else {
+      return "🎟️ **কুপন কোড ব্যবহারের সহজ নিয়ম:**\n\n• **কোথায় পাবেন ইনপুট বক্স:** বুকিং স্ক্রিনে ক্যাশ ও অনলাইন পেমেন্ট অপশনের ঠিক নিচে **'🎟️ কুপন / প্রোমো কোড'** বক্স রয়েছে।\n• **কোড লিখুন:** যেমন **FIRST50**, **PUJA50**, বা **RIDE20** লিখে পাশের **'Apply'** বাটনে চাপ দিন।\n• **তাৎক্ষণিক ছাড়:** মুহূর্তের মধ্যেই আপনার মোট ভাড়ার ওপর নির্দিষ্ট ডিসকাউন্ট কার্যকর হয়ে যাবে এবং কম ভাড়ায় রাইড উপভোগ করবেন!";
+    }
+  }
+
+
 
   // 6. HOW TO BOOK
   if (!q.includes('cancel') && !q.includes('refund') && !q.includes('বাতিল') && !q.includes('রদ') && !q.includes('रद्द') && (q.includes('বুকিং') || q.includes('বুক করব') || q.includes('গাড়ি বুক') || q.includes('কিভাবে বুক') || q.includes('কীভাবে বুক') || q.includes('बुकिंग') || q.includes('गाड़ी बुक') || q.includes('राइड कैसे') || q.includes('book') || q.includes('booking') || q.includes('kivabe book') || q.includes('gari book') || q.includes('बुक') || q.includes('kaise book') || q.includes('book kaise') || (q.includes('ride') && (q.includes('karna') || q.includes('leni') || q.includes('chahiye'))))) {
@@ -13638,6 +13835,8 @@ window.generateAiCustomerResponse = function(query, lang) {
       return "আপনাকে অসংখ্য ধন্যবাদ! 🙏 Ride Sathi GO-র সাথে আপনার প্রতিটি যাত্রা হোক নিরাপদ, আরামদায়ক ও আনন্দময়। যেকোনো প্রয়োজনে আমরা সবসময় আপনার পাশে আছি। ভালো থাকবেন! ✨";
     }
   }
+
+
 
   // 24. INTELLIGENT CORPORATE MULTI-TOPIC FALLBACK
   if (userLang === 'hi') {
@@ -14253,8 +14452,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
           🇮🇳
         </div>
         <div>
-          <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" id="voiceModalTitle">মুখে বলে রাইড বুকিং</div>
-          <div style="font-size:11.5px;color:#bfdbfe" id="voiceModalSub">বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন</div>
+          <div style="font-weight:900;font-size:15px;letter-spacing:0.2px" id="voiceModalTitle" data-i18n="voiceModalTitle">মুখে বলে রাইড বুকিং</div>
+          <div style="font-size:11.5px;color:#bfdbfe" id="voiceModalSub" data-i18n="voiceModalSub">বাংলা, হিন্দি বা ইংরেজিতে কথা বলুন</div>
         </div>
       </div>
       <button type="button" onclick="closeVoiceRideModal()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center" title="বন্ধ করুন">✕</button>
@@ -14285,7 +14484,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
       <!-- Live Listening Status -->
       <div id="voiceStatusTxt" style="font-size:14px;font-weight:800;color:#c2410c;margin-bottom:8px">
-        🎙️ শুনছি... বলুন আপনি কোথা থেকে কোথায় যাবেন
+        <span data-i18n="voiceListeningTxt">🎙️ শুনছি... বলুন আপনি কোথা থেকে কোথায় যাবেন</span>
       </div>
 
       <!-- Spoken Transcript Box -->
