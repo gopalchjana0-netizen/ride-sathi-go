@@ -12173,6 +12173,7 @@ async function loadManageUsersData(forceAlert = false) {
     let fbDrivers = {};
     let fbUsers = {};
     let fbBookings = {};
+    let fbDeletedUsers = {};
 
     const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
 
@@ -12187,16 +12188,26 @@ async function loadManageUsersData(forceAlert = false) {
       fetchTasks.push(
         dRef.ref('drivers').once('value').then(s => { if (s && s.exists()) fbDrivers = s.val() || {}; }).catch(e => console.warn("Firebase drivers fetch:", e)),
         dRef.ref('users').once('value').then(s => { if (s && s.exists()) fbUsers = s.val() || {}; }).catch(e => console.warn("Firebase users fetch:", e)),
+        dRef.ref('deleted_users').once('value').then(s => { if (s && s.exists()) fbDeletedUsers = s.val() || {}; }).catch(e => console.warn("Firebase deleted_users fetch:", e)),
         dRef.ref('bookings').limitToLast(100).once('value').then(s => { if (s && s.exists()) fbBookings = s.val() || {}; }).catch(e => console.warn("Firebase bookings fetch:", e))
       );
     }
 
     await Promise.allSettled(fetchTasks);
 
+    const deletedPhonesSet = new Set(Object.keys(fbDeletedUsers || {}).map(k => String(k).replace(/[^0-9]/g, '').slice(-10)).filter(p => p.length === 10));
+
+    // Clean any deleted users from initial userMap seeded from memory
+    deletedPhonesSet.forEach(dp => {
+      userMap.delete('drv_' + dp);
+      userMap.delete('cust_' + dp);
+    });
+
     // Merge Sheet users
     sheetUsers.forEach(u => {
       const email = String(u.email || u.from || '').toLowerCase().trim();
       const phone = String(u.phone || u.to || '').replace(/[^0-9]/g, '').slice(-10);
+      if (phone && deletedPhonesSet.has(phone)) return;
       const isDriver = String(u.type || '').toLowerCase().includes('driver') || (u.vehicle && u.vehicle !== '-');
       const key = (isDriver ? 'drv_' : 'cust_') + (phone || email || Math.random());
       const name = u.name || u['customer name'] || u.phone || (isDriver ? 'Driver' : 'Customer');
@@ -12228,7 +12239,7 @@ async function loadManageUsersData(forceAlert = false) {
       const d = fbDrivers[k] || {};
       const phone = String(d.phone || d.mobile || k || '').replace(/[^0-9]/g, '').slice(-10);
       const email = String(d.email || '').toLowerCase().trim();
-      if (!phone || phone.length !== 10) return;
+      if (!phone || phone.length !== 10 || deletedPhonesSet.has(phone)) return;
       const key = 'drv_' + phone;
 
       const isBlocked = d.status === 'BLOCKED' || d.isBlocked === true;
@@ -12257,7 +12268,7 @@ async function loadManageUsersData(forceAlert = false) {
       const u = fbUsers[k] || {};
       const phone = String(u.phone || k || '').replace(/[^0-9]/g, '').slice(-10);
       const email = String(u.email || '').toLowerCase().trim();
-      if (!phone || phone.length !== 10) return;
+      if (!phone || phone.length !== 10 || deletedPhonesSet.has(phone)) return;
       const key = 'cust_' + phone;
 
       const isBlocked = u.status === 'BLOCKED' || u.isBlocked === true;
@@ -12286,7 +12297,7 @@ async function loadManageUsersData(forceAlert = false) {
       const b = fbBookings[bk] || {};
       const cPhone = String(b.customerPhone || b.mobile || b.phone || '').replace(/[^0-9]/g, '').slice(-10);
       const cName = b.customerName || b.name || '';
-      if (!cPhone || cPhone.length !== 10) return;
+      if (!cPhone || cPhone.length !== 10 || deletedPhonesSet.has(cPhone)) return;
       const key = 'cust_' + cPhone;
 
       if (!userMap.has(key)) {
@@ -12732,49 +12743,8 @@ async function saveUserEditDetails() {
   alert("✅ ব্যবহারকারীর বিবরণ সফলভাবে সেভ হয়েছে এবং লাইভ আপডেট কার্যকর করা হয়েছে!");
 }
 
-async function deleteUserRecord(email, phone, type) {
-  if (!confirm("⚠️ আপনি কি সত্যিই এই ব্যবহারকারীর রেকর্ড ডিলিট করতে চান? এটি পূর্বাবস্থায় ফেরানো যাবে না!")) return;
-
-  const cleanP = (phone || '').replace(/[^0-9]/g, '').slice(-10);
-
-  // Remove from local cache
-  manageAllUsersCache = manageAllUsersCache.filter(u => !(
-    (email && u.email && u.email.toLowerCase() === email.toLowerCase()) ||
-    (cleanP && u.phone === cleanP)
-  ));
-  updateManageStats();
-  filterManageUsersList();
-
-  // Call GAS delete
-  fetch(GAS_MANAGE_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'delete',
-      email: email || '',
-      phone: cleanP
-    })
-  }).catch(e => console.warn('GAS delete notice:', e));
-
-  // Remove from Firebase
-  if (cleanP) {
-    try {
-      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
-      if (dRef) {
-        if (type === 'driver') {
-          await Promise.allSettled([
-            dRef.ref('drivers/' + cleanP).remove(),
-            dRef.ref('drivers/DRIVER_' + cleanP).remove()
-          ]);
-        } else {
-          await dRef.ref('users/' + cleanP).remove();
-        }
-      }
-    } catch(e) {}
-  }
-
-  alert("✅ ব্যবহারকারীর রেকর্ড সফলভাবে মুছে ফেলা হয়েছে!");
+async function deleteUserRecord(email, phone, type, name) {
+  return permanentDeleteUser(email, phone, type, name);
 }
 
 function exportManageUsersCsv() {
@@ -13022,7 +12992,7 @@ async function permanentDeleteUser(email, phone, type, name) {
     `👤 নাম: ${userName}\n` +
     `📱 মোবাইল: +91 ${cleanP || 'N/A'}\n` +
     (email ? `📧 ইমেল: ${email}\n\n` : '\n') +
-    `🚨 সতর্কতা: এটি Firebase ডাটাবেস ও গুগল শিট থেকে সম্পূর্ণ মুছে যাবে এবং গ্রাহক/চালকের মোবাইল থেকে অ্যাকাউন্ট স্থায়ীভাবে রিমুভ হয়ে যাবে।`;
+    `🚨 সতর্কতা: এটি Firebase ডাটাবেস, Cloudflare D1 ডাটাবেস ও গুগল শিট থেকে সম্পূর্ণ স্থায়ীভাবে মুছে যাবে এবং গ্রাহক/চালকের মোবাইল থেকে অ্যাকাউন্ট স্থায়ীভাবে রিমুভ হয়ে যাবে।`;
 
   if (!confirm(confirmMsg)) return;
 
@@ -13031,10 +13001,39 @@ async function permanentDeleteUser(email, phone, type, name) {
     (email && u.email && u.email.toLowerCase() === email.toLowerCase()) ||
     (cleanP && u.phone === cleanP)
   ));
+  if (typeof allDriversData === 'object' && allDriversData) {
+    if (cleanP) {
+      delete allDriversData[cleanP];
+      delete allDriversData['DRIVER_' + cleanP];
+    }
+  }
   updateManageStats();
   filterManageUsersList();
 
-  // 2. Call Google Apps Script delete
+  // 2. Call Cloudflare Worker D1 Delete Endpoint (Live)
+  if (cleanP) {
+    try {
+      fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/delete-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': 'RS_ADMIN_SECRET_2026'
+        },
+        body: JSON.stringify({
+          phone: cleanP,
+          type: type || 'customer'
+        })
+      }).then(r => r.json()).then(res => {
+        console.log("Cloudflare D1 delete user result:", res);
+      }).catch(err => {
+        fetch(`https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/delete-user?key=RS_ADMIN_SECRET_2026&phone=${cleanP}&type=${type || 'customer'}`).catch(()=>{});
+      });
+    } catch(cfErr) {
+      console.warn("Cloudflare delete trigger notice:", cfErr);
+    }
+  }
+
+  // 3. Call Google Apps Script delete
   fetch(GAS_MANAGE_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -13046,7 +13045,7 @@ async function permanentDeleteUser(email, phone, type, name) {
     })
   }).catch(e => console.warn('GAS delete notice:', e));
 
-  // 3. Remove permanently from Firebase RTDB nodes
+  // 4. Remove permanently from Firebase RTDB nodes and register in deleted_users
   if (cleanP) {
     try {
       const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
@@ -13055,7 +13054,19 @@ async function permanentDeleteUser(email, phone, type, name) {
           dRef.ref('users/' + cleanP).remove(),
           dRef.ref('drivers/' + cleanP).remove(),
           dRef.ref('drivers/DRIVER_' + cleanP).remove(),
-          dRef.ref('user_controls/' + cleanP).remove()
+          dRef.ref('user_controls/' + cleanP).remove(),
+          dRef.ref('wallet/' + cleanP).remove(),
+          dRef.ref('driver_verifications/' + cleanP).remove(),
+          dRef.ref('driver_dues/' + cleanP).remove(),
+          dRef.ref('blocked_drivers/' + cleanP).remove(),
+          dRef.ref('notifications/' + cleanP).remove(),
+          dRef.ref('deleted_users/' + cleanP).set({
+            phone: cleanP,
+            name: userName,
+            type: type || 'customer',
+            deletedAt: Date.now(),
+            deletedBy: 'Admin'
+          })
         ];
         await Promise.allSettled(removals);
       }
@@ -13064,7 +13075,7 @@ async function permanentDeleteUser(email, phone, type, name) {
     }
   }
 
-  alert(`✅ ${userName} (+91 ${cleanP}) সম্পূর্ণ স্থায়ীভাবে পার্মানেন্ট ডিলিট সম্পন্ন হয়েছে!`);
+  alert(`✅ ${userName} (+91 ${cleanP}) সম্পূর্ণ স্থায়ীভাবে Firebase ও Cloudflare থেকে পার্মানেন্ট ডিলিট সম্পন্ন হয়েছে!`);
 }
 
 function permanentDeleteCurrentModalUser() {

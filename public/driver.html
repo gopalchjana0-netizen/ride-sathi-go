@@ -2768,6 +2768,19 @@ window.initDriverUserControlsRealtimeListener = function() {
   });
 
   // 2. Watch if driver was permanently deleted
+  dbRef.ref('deleted_users/' + cleanP).on('value', function(delSnap) {
+    if (delSnap && delSnap.exists()) {
+      try {
+        localStorage.removeItem('driverPhone');
+        localStorage.removeItem('driverOnline');
+        localStorage.removeItem('driverApproved');
+        localStorage.removeItem('driverName');
+      } catch(e) {}
+      alert("⚠️ আপনার চালক অ্যাকাউন্টটি সিস্টেম থেকে সম্পূর্ণ স্থায়ীভাবে মুছে ফেলা হয়েছে (Permanently Deleted)।");
+      window.location.reload();
+    }
+  });
+
   dbRef.ref('drivers/' + cleanP).on('value', function(snap) {
     if (!snap.exists()) {
       dbRef.ref('drivers/DRIVER_' + cleanP).once('value').then(function(s2) {

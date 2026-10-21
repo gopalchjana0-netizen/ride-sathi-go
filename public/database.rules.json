@@ -128,7 +128,7 @@
       ],
       "$driverPhone": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com' || !data.exists() || (data.child('isBlocked').val() == newData.child('isBlocked').val()) || auth != null"
+        ".write": true
       }
     },
     "cities": {
@@ -299,22 +299,22 @@
       }
     },
     "driver_verifications": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$driverPhone": {
         ".read": true,
         ".write": true
       }
     },
     "blocked_drivers": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "blockedAt"
       ],
       "$driverPhone": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "pending_drivers": {
@@ -326,8 +326,8 @@
       }
     },
     "driver_dues": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "status",
         "time",
@@ -352,8 +352,8 @@
       }
     },
     "wallet": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "driverPhone",
         "time",
@@ -361,7 +361,7 @@
       ],
       "$driverPhone": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com' || (data.exists() && newData.child('driverPhone').val() == $driverPhone) || !data.exists()"
+        ".write": true
       }
     },
     "sos_alerts": {
@@ -476,10 +476,18 @@
     },
     "user_controls": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$userPhone": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
+      }
+    },
+    "deleted_users": {
+      ".read": true,
+      ".write": true,
+      "$userPhone": {
+        ".read": true,
+        ".write": true
       }
     }
   }

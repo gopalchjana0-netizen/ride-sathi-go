@@ -380,6 +380,43 @@ export default {
       });
     }
 
+    // 2.1 MANUAL PERMANENT USER DELETE API FOR ADMIN (Customer & Driver)
+    if (path === "/api/admin/delete-user" && (request.method === "POST" || request.method === "DELETE" || request.method === "GET")) {
+      const authKey = request.headers.get("x-admin-key") || url.searchParams.get("key");
+      if (authKey !== "RS_ADMIN_SECRET_2026") {
+        return jsonResponse({ success: false, message: "Unauthorized: Invalid admin key" }, 401);
+      }
+      let phone = url.searchParams.get("phone") || "";
+      let type = url.searchParams.get("type") || "customer";
+      if (request.method === "POST") {
+        try {
+          const body: any = await request.json().catch(() => ({}));
+          if (body.phone) phone = String(body.phone);
+          if (body.type) type = String(body.type);
+        } catch(e) {}
+      }
+      const cleanPhone = phone.replace(/[^0-9]/g, "").slice(-10);
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        return jsonResponse({ success: false, message: "Valid 10-digit phone number required" }, 400);
+      }
+
+      await safeRun(env.DB, "CREATE TABLE IF NOT EXISTS deleted_users (phone TEXT PRIMARY KEY, type TEXT, deleted_at TEXT)");
+      await safeRun(
+        env.DB,
+        "INSERT OR REPLACE INTO deleted_users (phone, type, deleted_at) VALUES (?, ?, datetime('now'))",
+        [cleanPhone, type]
+      );
+      await safeRun(env.DB, "DELETE FROM rides WHERE customer_phone = ? OR driver_phone = ?", [cleanPhone, cleanPhone]);
+      await safeRun(env.DB, "DELETE FROM ride_requests WHERE customer_phone = ? OR driver_phone = ?", [cleanPhone, cleanPhone]);
+
+      return jsonResponse({
+        success: true,
+        message: `User ${cleanPhone} (${type}) permanently deleted from Cloudflare D1`,
+        phone: cleanPhone,
+        type: type
+      });
+    }
+
     try {
       // 3. GET RIDES - RESILIENT: IF D1 LIMIT EXCEEDED, RETURN 200 WITH FALLBACK
       if (path === "/api/rides" && request.method === "GET") {

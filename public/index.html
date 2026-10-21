@@ -2354,6 +2354,18 @@ window.initUserControlsRealtimeListener = function() {
   });
 
   // Watch if account was deleted by admin
+  d.ref('deleted_users/' + phone).on('value', function(delSnap) {
+    if (delSnap && delSnap.exists()) {
+      localStorage.removeItem('customerPhone');
+      localStorage.removeItem('userPhone');
+      localStorage.removeItem('current_user_mobile');
+      localStorage.removeItem('custPhone');
+      localStorage.removeItem('cust_phone');
+      alert('⚠️ আপনার কাস্টমার অ্যাকাউন্টটি অ্যাডমিন দ্বারা মুছে ফেলা হয়েছে।');
+      window.location.reload();
+    }
+  });
+
   d.ref('users/' + phone).on('value', function(snap) {
     if (!snap.exists() && localStorage.getItem('customerPhone') === phone) {
       // Check if user controls also deleted
