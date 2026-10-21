@@ -3364,8 +3364,24 @@ function parseCoords(obj){
 }
 
 function openTab(n,el){
+  if (!n) n = 'home';
+  try {
+    localStorage.setItem('rs_admin_active_tab', n);
+    if (window.location.hash !== '#' + n) {
+      history.replaceState(null, '', '#' + n);
+    }
+  } catch(e) {}
+
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  if(el) el.classList.add('active');
+  let targetTab = el || document.getElementById('tab-' + n);
+  if (!targetTab) {
+    targetTab = document.querySelector(`.tab[onclick*="'${n}'"]`);
+  }
+  if (targetTab) {
+    targetTab.classList.add('active');
+    try { targetTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } catch(e){}
+  }
+
   ['home','dash','dispatch','broadcast','slideshow','splash','appCms','promo','report','selfie','live','tripLive','sos','pending','all','blocked','payment','wallet','rides','ratings','setting','tracking','cities','sheetReport','appDownload','driverComm','supportChat','smartTools','manage','specialFeatures'].forEach(x=>{
     let d=document.getElementById(x+'Div'); 
     if(d) d.style.display=x==n?'block':'none'
@@ -3448,6 +3464,27 @@ function openTab(n,el){
   }
   if (typeof loadDriverCommissionData === 'function') loadDriverCommissionData();
 }
+
+// === 🔄 STATE PERSISTENCE ON REFRESH (Never reset to Home) ===
+function restoreAdminActiveTab() {
+  try {
+    let hashTab = window.location.hash ? window.location.hash.replace('#', '').trim() : '';
+    let savedTab = hashTab || localStorage.getItem('rs_admin_active_tab') || 'home';
+    const validTabs = ['home','dash','dispatch','broadcast','slideshow','splash','appCms','promo','report','selfie','live','tripLive','sos','pending','all','blocked','payment','wallet','rides','ratings','setting','tracking','cities','sheetReport','appDownload','driverComm','supportChat','smartTools','manage','specialFeatures'];
+    if (!validTabs.includes(savedTab)) savedTab = 'home';
+    if (typeof openTab === 'function') {
+      openTab(savedTab);
+    }
+  } catch(e) {
+    console.warn('Tab restore note:', e);
+  }
+}
+window.restoreAdminActiveTab = restoreAdminActiveTab;
+
+window.addEventListener('hashchange', () => {
+  if (typeof restoreAdminActiveTab === 'function') restoreAdminActiveTab();
+});
+
 
 // === CENTRAL PAYMENT CONFIGURATION (/app_config/payment) ===
 window.currentAdminPaymentConfig = {
@@ -8450,6 +8487,7 @@ async function doAdminLogin() {
     if (ls) ls.style.display = 'none';
     if (passInput) passInput.value = '';
     try { checkAndTriggerAutoClean(); } catch(e) {}
+    try { restoreAdminActiveTab(); } catch(e) {}
   } else {
     recordFailedLogin();
     if (err) {
@@ -8507,6 +8545,7 @@ window.sendAdminPasswordReset = sendAdminPasswordReset;
   if (isSessionValid) {
     if (ls) ls.style.display = 'none';
     checkAndTriggerAutoClean();
+    try { restoreAdminActiveTab(); } catch(e) {}
   } else {
     if (ls) ls.style.display = 'flex';
   }
@@ -8516,6 +8555,7 @@ window.sendAdminPasswordReset = sendAdminPasswordReset;
       if (user && user.email && ALLOWED_ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         if (ls) ls.style.display = 'none';
         checkAndTriggerAutoClean();
+        try { restoreAdminActiveTab(); } catch(e) {}
       }
     });
   }

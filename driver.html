@@ -4539,6 +4539,7 @@ async function acceptRide(key) {
   // No Accept/Reject buttons remain visible at the top!
   window.hasActiveOngoingRide = true;
   window.activeTripKey = key;
+  try { localStorage.setItem('rs_driver_active_trip', key); } catch(e) {}
   window._acceptedRideKeys = window._acceptedRideKeys || new Set();
   window._acceptedRideKeys.add(key);
 
@@ -4835,6 +4836,7 @@ function listenAccepted() {
       box.innerHTML = '';
       window.hasActiveOngoingRide = false;
       window.activeTripKey = null;
+      try { localStorage.removeItem('rs_driver_active_trip'); } catch(e) {}
       const reqBox = document.getElementById('requests');
       if (reqBox) reqBox.style.display = 'block';
       if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
@@ -4872,6 +4874,7 @@ function listenAccepted() {
       currentActiveKeys.add(key);
       window.hasActiveOngoingRide = true;
       window.activeTripKey = key;
+      try { localStorage.setItem('rs_driver_active_trip', key); } catch(e) {}
 
       let existingCard = document.getElementById('card_accepted_' + key);
       let prevStatus = existingCard ? existingCard.getAttribute('data-status') : null;
@@ -6020,6 +6023,7 @@ function confirmDuePaid() {
 }
 
 function closeQR() {
+  try { if (localStorage.getItem('rs_driver_active_view') === 'dues') { localStorage.setItem('rs_driver_active_view', 'home'); history.replaceState(null, '', ' '); } } catch(e) {}
   let m = document.getElementById('qrModal');
   if (m) m.classList.remove('show');
 }
@@ -6931,6 +6935,7 @@ async function initDriverApp() {
       listenAccepted();
       listenHistory();
       monitorNetworkConnection();
+      try { restoreDriverActiveView(); } catch(e) {}
       listenSocialLinks();
 
       if (isOnline) {
@@ -6972,6 +6977,7 @@ function toggleDueDetails() {
 }
 
 function openDueModal() {
+  try { localStorage.setItem('rs_driver_active_view', 'dues'); history.replaceState(null, '', '#dues'); } catch(e) {}
   get(ref(db, 'drivers/' + DRIVER_PHONE)).then(drSnap => {
     let dr = drSnap.val() || {};
     let fallbackDue = parseInt(dr.adminDue || dr.due || 0);
@@ -7022,6 +7028,7 @@ function openDueModal() {
 
 // === DRIVER NAVIGATION DRAWER & TERMS MODAL HANDLERS ===
 window.openDriverNavDrawer = function() {
+  try { localStorage.setItem('rs_driver_active_view', 'profile'); history.replaceState(null, '', '#profile'); } catch(e) {}
   const drawer = document.getElementById('driverNavDrawer');
   const overlay = document.getElementById('driverNavDrawerOverlay');
   if (drawer && overlay) {
@@ -7060,6 +7067,7 @@ window.closeDriverTermsModal = function() {
 };
 
 window.scrollToHistorySection = function() {
+  try { localStorage.setItem('rs_driver_active_view', 'history'); history.replaceState(null, '', '#history'); } catch(e) {}
   window.closeDriverNavDrawer();
   const hist = document.getElementById('historyBox');
   if (hist) {
@@ -7170,6 +7178,51 @@ window.closeDriverNavDrawer = closeDriverNavDrawer;
 window.openDriverTermsModal = openDriverTermsModal;
 window.closeDriverTermsModal = closeDriverTermsModal;
 window.scrollToHistorySection = scrollToHistorySection;
+
+// === 🔄 DRIVER REFRESH STATE PERSISTENCE (Never lose ongoing trip or active screen) ===
+window.goToDriverHome = function() {
+  try {
+    localStorage.setItem('rs_driver_active_view', 'home');
+    history.replaceState(null, '', ' ');
+  } catch(e) {}
+  if (typeof window.closeDriverNavDrawer === 'function') window.closeDriverNavDrawer();
+  let dm = document.getElementById('dueModal');
+  if (dm) { dm.classList.remove('show'); dm.style.display = 'none'; }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.restoreDriverActiveView = function() {
+  try {
+    const savedTrip = localStorage.getItem('rs_driver_active_trip');
+    if (savedTrip) {
+      window.activeTripKey = savedTrip;
+      window.hasActiveOngoingRide = true;
+      setTimeout(() => {
+        const acceptedCard = document.getElementById('card_accepted_' + savedTrip) || document.getElementById('acceptedBox');
+        if (acceptedCard) {
+          acceptedCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500);
+      return;
+    }
+    const hash = window.location.hash ? window.location.hash.replace('#', '').trim() : '';
+    const view = hash || localStorage.getItem('rs_driver_active_view') || 'home';
+    if (view === 'history') {
+      setTimeout(() => { if (typeof scrollToHistorySection === 'function') scrollToHistorySection(); }, 350);
+    } else if (view === 'dues') {
+      setTimeout(() => { if (typeof openDueModal === 'function') openDueModal(); }, 350);
+    } else if (view === 'profile') {
+      setTimeout(() => { if (typeof openDriverNavDrawer === 'function') openDriverNavDrawer(); }, 350);
+    }
+  } catch(e) {
+    console.warn('Driver restore view note:', e);
+  }
+};
+
+window.addEventListener('hashchange', () => {
+  if (typeof restoreDriverActiveView === 'function') restoreDriverActiveView();
+});
+
 window.updateDriverDrawerInfo = updateDriverDrawerInfo;
 window.deleteDriverTripHistoryItem = deleteDriverTripHistoryItem;
 window.clearTodayDriverTripHistory = clearTodayDriverTripHistory;
@@ -8020,7 +8073,7 @@ window.handleDriverPhotoUpload = function(event) {
 <!-- RAPIDO STYLE DRIVER BOTTOM DOCK (FREE, ULTRAFAST, ZERO MAP CHARGES) -->
 <!-- RAPIDO STYLE DRIVER BOTTOM DOCK (FREE, ULTRAFAST, ZERO MAP CHARGES) -->
 <div id="driverBottomDock" style="position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1.5px solid #334155;display:flex;justify-content:space-around;align-items:center;padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px));z-index:900;max-width:640px;width:100%;margin:0 auto;box-shadow:0 -4px 25px rgba(0,0,0,0.5);box-sizing:border-box">
-  <button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="background:none;border:none;color:#facc15;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:800;gap:2px;cursor:pointer">
+  <button type="button" onclick="goToDriverHome()" style="background:none;border:none;color:#facc15;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:800;gap:2px;cursor:pointer">
     <span style="font-size:20px">🏠</span> <span data-i18n="navHome">হোম</span>
   </button>
   <button type="button" onclick="scrollToHistorySection()" style="background:none;border:none;color:#94a3b8;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:700;gap:2px;cursor:pointer">

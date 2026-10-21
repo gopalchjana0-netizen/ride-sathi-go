@@ -10460,37 +10460,64 @@ try {
   if (restoredBookingKey) {
     window.currentBookingKey = restoredBookingKey;
     window.currentBookingOtp = restoredOtp;
-    setTimeout(() => {
-      const w = document.getElementById('welcomeScreen');
-      const b = document.getElementById('bookingScreen');
-      const c = document.getElementById('confirmScreen');
-      if (w) { w.classList.add('hidden'); w.style.setProperty('display', 'none', 'important'); }
-      if (b) { b.classList.add('hidden'); b.style.setProperty('display', 'none', 'important'); }
-      if (c) { 
-        c.classList.remove('hidden'); 
-        c.style.removeProperty('display'); 
-        c.style.display = 'block'; 
-      }
+    // 0ms INSTANT RIDE RESTORATION - Zero flicker or delay!
+    const w = document.getElementById('welcomeScreen');
+    const b = document.getElementById('bookingScreen');
+    const c = document.getElementById('confirmScreen');
+    if (w) { w.classList.add('hidden'); w.style.setProperty('display', 'none', 'important'); }
+    if (b) { b.classList.add('hidden'); b.style.setProperty('display', 'none', 'important'); }
+    if (c) { 
+      c.classList.remove('hidden'); 
+      c.style.removeProperty('display'); 
+      c.style.display = 'block'; 
+    }
 
-      const actionsRow = document.getElementById('confirmActionsRow');
-      if (actionsRow) actionsRow.style.display = 'none';
+    const actionsRow = document.getElementById('confirmActionsRow');
+    if (actionsRow) actionsRow.style.display = 'none';
 
-      const activeCard = document.getElementById('bookingActiveCard');
-      if (activeCard) activeCard.style.display = 'block';
+    const activeCard = document.getElementById('bookingActiveCard');
+    if (activeCard) activeCard.style.display = 'block';
 
-      const bigOtp = document.getElementById('bigOtpDisplay');
-      if (bigOtp) bigOtp.innerText = restoredOtp;
-      const otpShow = document.getElementById('otpShow');
-      if (otpShow) otpShow.innerText = restoredOtp;
+    const bigOtp = document.getElementById('bigOtpDisplay');
+    if (bigOtp) bigOtp.innerText = restoredOtp;
+    const otpShow = document.getElementById('otpShow');
+    if (otpShow) otpShow.innerText = restoredOtp;
 
-      if (typeof listenForDriver === 'function') {
-        listenForDriver(restoredBookingKey, restoredOtp);
-      }
-    }, 600);
+    if (typeof listenForDriver === 'function') {
+      listenForDriver(restoredBookingKey, restoredOtp);
+    }
   }
 } catch(e) {
   console.warn("Resume booking error:", e);
 }
+
+
+// === 🔄 CUSTOMER PICKUP & DROP CACHE (Never lose entered locations on refresh) ===
+(function initPickupDropCaching() {
+  function attachInputs() {
+    const pInput = document.getElementById('pickupInput');
+    const dInput = document.getElementById('dropInput');
+    if (pInput) {
+      const cachedP = localStorage.getItem('rs_cached_pickup');
+      if (!pInput.value && cachedP) pInput.value = cachedP;
+      pInput.addEventListener('input', function() {
+        try { localStorage.setItem('rs_cached_pickup', pInput.value); } catch(e) {}
+      });
+    }
+    if (dInput) {
+      const cachedD = localStorage.getItem('rs_cached_drop');
+      if (!dInput.value && cachedD) dInput.value = cachedD;
+      dInput.addEventListener('input', function() {
+        try { localStorage.setItem('rs_cached_drop', dInput.value); } catch(e) {}
+      });
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachInputs);
+  } else {
+    attachInputs();
+  }
+})();
 
 // Check existing user on startup
 (function checkExistingUser() {
@@ -10505,7 +10532,16 @@ try {
     custPhoneInput.value = savedPhone;
     setupReferral(savedPhone);
     recordStealthTracking('users', savedPhone, savedName, savedPhone);
-    showBookingPage(savedName, savedPhone);
+    const hasActiveBooking = !!localStorage.getItem('activeBookingKey');
+    if (hasActiveBooking) {
+      window.switchCustomerScreen('confirm');
+      const activeCard = document.getElementById('bookingActiveCard');
+      if (activeCard) activeCard.style.display = 'block';
+      const actionsRow = document.getElementById('confirmActionsRow');
+      if (actionsRow) actionsRow.style.display = 'none';
+    } else {
+      showBookingPage(savedName, savedPhone);
+    }
     setTimeout(() => {
       if (typeof window.loadBookingHistory === 'function') window.loadBookingHistory();
     }, 500);
