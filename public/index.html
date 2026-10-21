@@ -15913,5 +15913,145 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 })();
 </script>
 
+<script>
+
+// === 📱 MOBILE HARDWARE / SYSTEM BACK BUTTON STEP-BY-STEP HANDLER ===
+(function initHardwareBackNavigation() {
+  let lastBackPressTime = 0;
+
+  try {
+    if (!history.state || !history.state.rsRoot) {
+      history.replaceState({ rsRoot: true, page: 'home' }, '');
+      history.pushState({ rsMain: true, depth: 1 }, '');
+    }
+  } catch(e) {}
+
+  window.rsPushView = function(viewName, closeCallback) {
+    try {
+      history.pushState({ rsView: viewName, depth: Date.now() }, '');
+      if (!window._rsViewStack) window._rsViewStack = [];
+      window._rsViewStack.push({ name: viewName, close: closeCallback });
+    } catch(e) {}
+  };
+
+  window.rsCloseView = function(viewName) {
+    if (window._rsViewStack && window._rsViewStack.length > 0) {
+      const idx = window._rsViewStack.findIndex(v => v.name === viewName);
+      if (idx !== -1) {
+        window._rsViewStack.splice(idx, 1);
+        window._rsSuppressNextPop = true;
+        try { window.history.back(); } catch(e) {}
+      }
+    }
+  };
+
+  window.handleStepByStepBack = function() {
+    // 1. Check custom view stack
+    if (window._rsViewStack && window._rsViewStack.length > 0) {
+      let topView = window._rsViewStack.pop();
+      if (topView && typeof topView.close === 'function') {
+        try { topView.close(); return true; } catch(err) {}
+      }
+    }
+
+    // 2. Check for open modals/drawers in DOM
+    const openModals = document.querySelectorAll(
+      '.modal, .popup, .drawer, [id$="Modal"], [id$="Drawer"], [id$="Overlay"], [id$="Popup"]'
+    );
+    for (let el of openModals) {
+      if (el && el.id !== 'loginScreen' && el.style && (el.style.display === 'flex' || el.style.display === 'block' || el.classList.contains('active') || el.classList.contains('open'))) {
+        let id = el.id || '';
+        let closed = false;
+        if (id === 'adminRatingModal' && typeof adminCloseRatingManager === 'function') { adminCloseRatingManager(); closed = true; }
+        else if (id === 'adminDriverPhotoModal' && typeof adminClosePhotoManager === 'function') { adminClosePhotoManager(); closed = true; }
+        else if (id === 'editUserModal' && typeof closeEditUserModal === 'function') { closeEditUserModal(); closed = true; }
+        else if (id === 'userPermissionControlModal' && typeof closeUserPermissionControlModal === 'function') { closeUserPermissionControlModal(); closed = true; }
+        else if (id === 'schoolPassDriverModal' && typeof closeSchoolPassDriverModal === 'function') { closeSchoolPassDriverModal(); closed = true; }
+        else if (id === 'driverDrawer' && typeof closeDriverDrawer === 'function') { closeDriverDrawer(); closed = true; }
+        else if (id === 'sideDrawer' && typeof closeSideDrawer === 'function') { closeSideDrawer(); closed = true; }
+        
+        if (!closed) {
+          el.style.display = 'none';
+          el.classList.remove('active');
+          el.classList.remove('open');
+        }
+        return true;
+      }
+    }
+
+    // 3. For Admin Panel: If on a sub-tab (not 'home'), navigate back to 'home' tab
+    if (typeof openTab === 'function') {
+      const activeTab = document.querySelector('.tab.active');
+      if (activeTab && activeTab.id !== 'tab-home') {
+        const homeTab = document.getElementById('tab-home');
+        openTab('home', homeTab);
+        return true;
+      }
+    }
+
+    // 4. For Customer Panel: If side menu is open, close it
+    const sideMenu = document.getElementById('sideMenu') || document.getElementById('menuDrawer');
+    if (sideMenu && (sideMenu.classList.contains('open') || sideMenu.style.left === '0px' || sideMenu.style.display === 'block')) {
+      sideMenu.classList.remove('open');
+      sideMenu.style.left = '-100%';
+      return true;
+    }
+
+    // 5. For Driver Panel: If side drawer is open, close it
+    const dDrawer = document.getElementById('drawer') || document.getElementById('driverDrawer');
+    if (dDrawer && (dDrawer.classList.contains('open') || dDrawer.style.left === '0px')) {
+      dDrawer.classList.remove('open');
+      dDrawer.style.left = '-100%';
+      return true;
+    }
+
+    // 6. Double-tap to exit when already on home screen
+    let now = Date.now();
+    if (now - lastBackPressTime < 2000) {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.exitApp();
+      }
+      return false;
+    } else {
+      lastBackPressTime = now;
+      try { history.pushState({ rsMain: true, depth: 1 }, ''); } catch(e) {}
+      showDoubleTapExitToast();
+      return true;
+    }
+  };
+
+  window.addEventListener('popstate', function(e) {
+    if (window._rsSuppressNextPop) {
+      window._rsSuppressNextPop = false;
+      return;
+    }
+    window.handleStepByStepBack();
+  });
+
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+    window.Capacitor.Plugins.App.addListener('backButton', function() {
+      window.handleStepByStepBack();
+    });
+  }
+
+  function showDoubleTapExitToast() {
+    let t = document.getElementById('rsBackExitToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'rsBackExitToast';
+      t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);color:#fff;padding:9px 20px;border-radius:24px;font-size:12.5px;font-weight:700;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,0.3);pointer-events:none;transition:opacity 0.25s,transform 0.25s;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15);letter-spacing:0.3px;';
+      t.innerText = 'অ্যাপ থেকে বের হতে আর একবার ব্যাক চাপুন';
+      document.body.appendChild(t);
+    }
+    t.style.opacity = '1';
+    t.style.display = 'block';
+    setTimeout(() => {
+      t.style.opacity = '0';
+      setTimeout(() => { if (t) t.style.display = 'none'; }, 260);
+    }, 1800);
+  }
+})();
+
+</script>
 </body>
 </html>

@@ -4546,9 +4546,7 @@ async function sendBroadcastNotice() {
 
   // 1. Cloudflare D1 Edge Save (High Limits & Zero Quota Cost)
   try {
-    fetch(CF_WORKER_BASE + '/api/broadcasts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch(CF_WORKER_BASE + '/api/broadcasts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'RS_ADMIN_SECRET_2026' },
       body: JSON.stringify(noticeData)
     }).catch(e => console.warn('Cloudflare broadcast post background:', e));
   } catch(e) {}
@@ -5535,7 +5533,7 @@ async function run30DaysAutoClean(isManual = false){
   console.log(`[Auto-Clean] Archiving & cleaning data older than 30 days...`);
 
   // STEP 1: AUTO BACKUP BEFORE PURGING
-  if (isManual) {
+  if (isManual && typeof exportPreCleanBackup === 'function') {
     exportPreCleanBackup(cutoff);
   }
 
@@ -5543,13 +5541,14 @@ async function run30DaysAutoClean(isManual = false){
   let totalDeleted = 0;
 
   try {
-    // 1. Rides
+    // 1. Rides & Completed Rides
     const snapRides = await db.ref('rides').once('value');
     const dRides = snapRides.val() || {};
     for (let k in dRides) {
-      if (getTimestamp(dRides[k].time || dRides[k].completedAt || dRides[k].createdAt) < cutoff) {
+      if (getTimestamp(dRides[k].time || dRides[k].completedAt || dRides[k].createdAt || dRides[k].date) < cutoff) {
         updates['rides/' + k] = null;
         updates['completed_rides/' + k] = null;
+        updates['bookings/' + k] = null;
       }
     }
 
@@ -5557,12 +5556,21 @@ async function run30DaysAutoClean(isManual = false){
     const snapComp = await db.ref('completed_rides').once('value');
     const dComp = snapComp.val() || {};
     for (let k in dComp) {
-      if (getTimestamp(dComp[k].time || dComp[k].completedAt || dComp[k].createdAt) < cutoff) {
+      if (getTimestamp(dComp[k].time || dComp[k].completedAt || dComp[k].createdAt || dComp[k].date) < cutoff) {
         updates['completed_rides/' + k] = null;
       }
     }
 
-    // 3. Driver Selfie Logs
+    // 3. Bookings (Customer ride bookings)
+    const snapBookings = await db.ref('bookings').once('value');
+    const dBook = snapBookings.val() || {};
+    for (let k in dBook) {
+      if (getTimestamp(dBook[k].time || dBook[k].completedAt || dBook[k].createdAt || dBook[k].date) < cutoff) {
+        updates['bookings/' + k] = null;
+      }
+    }
+
+    // 4. Driver Selfie Logs
     const snapSelfieLogs = await db.ref('driver_selfie_logs').once('value');
     const dSelfie = snapSelfieLogs.val() || {};
     for (let k in dSelfie) {
@@ -5572,7 +5580,7 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
-    // 4. Driver Verifications
+    // 5. Driver Verifications
     const snapVer = await db.ref('driver_verifications').once('value');
     const vers = snapVer.val() || {};
     for (let phone in vers) {
@@ -5585,7 +5593,7 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
-    // 5. Driver Selfies
+    // 6. Driver Selfies
     const snapSelfies = await db.ref('driver_selfies').once('value');
     const dSelfies = snapSelfies.val() || {};
     for (let k in dSelfies) {
@@ -5595,25 +5603,25 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
-    // 6. SOS Alerts
+    // 7. SOS Alerts
     const snapSos = await db.ref('sos_alerts').once('value');
     const dSos = snapSos.val() || {};
     for (let k in dSos) {
-      if (getTimestamp(dSos[k].time) < cutoff) {
+      if (getTimestamp(dSos[k].time || dSos[k].createdAt) < cutoff) {
         updates['sos_alerts/' + k] = null;
       }
     }
 
-    // 7. Payments
+    // 8. Payments
     const snapPay = await db.ref('payments').once('value');
     const dPay = snapPay.val() || {};
     for (let k in dPay) {
-      if (getTimestamp(dPay[k].time || dPay[k].verifiedAt) < cutoff) {
+      if (getTimestamp(dPay[k].time || dPay[k].verifiedAt || dPay[k].createdAt) < cutoff) {
         updates['payments/' + k] = null;
       }
     }
 
-    // 8. Stale Live Trips & Accepted Rides (> 3 days)
+    // 9. Stale Live Trips & Accepted Rides (> 3 days)
     const staleCutoff = Date.now() - (3 * 24 * 60 * 60 * 1000);
     const snapLive = await db.ref('live_trips').once('value');
     const dLive = snapLive.val() || {};
@@ -5630,7 +5638,7 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
-    // 9. Stale Support Chats (> 14 days)
+    // 10. Stale Support Chats (> 14 days)
     const chatCutoff = Date.now() - (14 * 24 * 60 * 60 * 1000);
     const snapChat = await db.ref('support_chats').once('value');
     const dChat = snapChat.val() || {};
@@ -5642,7 +5650,7 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
-    // 10. Stale Feedbacks (> 60 days)
+    // 11. Stale Feedbacks (> 60 days)
     const fbCutoff = Date.now() - (60 * 24 * 60 * 60 * 1000);
     const snapFb = await db.ref('feedbacks').once('value');
     const dFb = snapFb.val() || {};
@@ -5652,7 +5660,7 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
-    // 11. Stale Driver Locations (> 24 hours)
+    // 12. Stale Driver Locations (> 24 hours)
     const locCutoff = Date.now() - (24 * 60 * 60 * 1000);
     const snapLoc = await db.ref('driver_locations').once('value');
     const dLoc = snapLoc.val() || {};
@@ -5662,8 +5670,32 @@ async function run30DaysAutoClean(isManual = false){
       }
     }
 
+    // 13. Medical Emergency Logs (> 30 days)
+    const snapMed = await db.ref('medical_emergency_logs').once('value');
+    const dMed = snapMed.val() || {};
+    for (let k in dMed) {
+      if (getTimestamp(dMed[k].time || dMed[k].timestamp || dMed[k].createdAt) < cutoff) {
+        updates['medical_emergency_logs/' + k] = null;
+      }
+    }
+
+    // 14. School Pass Requests (> 60 days rejected/completed)
+    const spCutoff = Date.now() - (60 * 24 * 60 * 60 * 1000);
+    const snapSp = await db.ref('school_pass_requests').once('value');
+    const dSp = snapSp.val() || {};
+    for (let k in dSp) {
+      if (getTimestamp(dSp[k].time || dSp[k].createdAt) < spCutoff) {
+        updates['school_pass_requests/' + k] = null;
+      }
+    }
+
     // Apply multi-path updates atomically
-    totalDeleted = await applyFirebaseBulkDeletes(updates);
+    if (typeof applyFirebaseBulkDeletes === 'function') {
+      totalDeleted = await applyFirebaseBulkDeletes(updates);
+    } else {
+      await db.ref().update(updates);
+      totalDeleted = Object.keys(updates).length;
+    }
 
     // Also trigger Cloudflare Worker cleanup
     fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup', { 
@@ -5676,7 +5708,7 @@ async function run30DaysAutoClean(isManual = false){
     if(lastInfo) lastInfo.innerText = 'Last auto-cleaned: ' + new Date().toLocaleString() + ' (' + totalDeleted + ' items removed)';
     
     if(isManual){
-      alert('✅ ব্যাকআপ ডাউনলোড সম্পন্ন হয়েছে এবং ৩০ দিনের পুরনো সমস্ত ডাটা ফায়ারবেস ও ক্লাউডফ্লেয়ার থেকে মুছে ডাটাবেজ ১০০% ফ্রি করা হয়েছে!\n\nমোট ডিলিট হয়েছে: ' + totalDeleted + ' টি রেকর্ড।');
+      alert('✅ ব্যাকআপ ডাউনলোড সম্পন্ন হয়েছে এবং ৩০ দিনের পুরনো সমস্ত ডাটা (Rides, Bookings, Selfies, Logs) ফায়ারবেস ও ক্লাউডফ্লেয়ার থেকে মুছে ডাটাবেজ ১০০% ফ্রি করা হয়েছে!\n\nমোট ডিলিট হয়েছে: ' + totalDeleted + ' টি রেকর্ড।');
     }
   } catch(err) {
     console.error('run30DaysAutoClean error:', err);
@@ -7638,9 +7670,7 @@ function saveRate(){
   Promise.all([
     db.ref('settings/rates').set(r),
     db.ref('settings/social').set(social),
-    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'RS_ADMIN_SECRET_2026' },
       body: JSON.stringify(r)
     }).catch(()=>{})
   ]).then(()=>{
@@ -13687,4 +13717,144 @@ setTimeout(function() {
   } catch(e) {}
 }, 2000);
 
-</script></body></html>
+</script><script>
+
+// === 📱 MOBILE HARDWARE / SYSTEM BACK BUTTON STEP-BY-STEP HANDLER ===
+(function initHardwareBackNavigation() {
+  let lastBackPressTime = 0;
+
+  try {
+    if (!history.state || !history.state.rsRoot) {
+      history.replaceState({ rsRoot: true, page: 'home' }, '');
+      history.pushState({ rsMain: true, depth: 1 }, '');
+    }
+  } catch(e) {}
+
+  window.rsPushView = function(viewName, closeCallback) {
+    try {
+      history.pushState({ rsView: viewName, depth: Date.now() }, '');
+      if (!window._rsViewStack) window._rsViewStack = [];
+      window._rsViewStack.push({ name: viewName, close: closeCallback });
+    } catch(e) {}
+  };
+
+  window.rsCloseView = function(viewName) {
+    if (window._rsViewStack && window._rsViewStack.length > 0) {
+      const idx = window._rsViewStack.findIndex(v => v.name === viewName);
+      if (idx !== -1) {
+        window._rsViewStack.splice(idx, 1);
+        window._rsSuppressNextPop = true;
+        try { window.history.back(); } catch(e) {}
+      }
+    }
+  };
+
+  window.handleStepByStepBack = function() {
+    // 1. Check custom view stack
+    if (window._rsViewStack && window._rsViewStack.length > 0) {
+      let topView = window._rsViewStack.pop();
+      if (topView && typeof topView.close === 'function') {
+        try { topView.close(); return true; } catch(err) {}
+      }
+    }
+
+    // 2. Check for open modals/drawers in DOM
+    const openModals = document.querySelectorAll(
+      '.modal, .popup, .drawer, [id$="Modal"], [id$="Drawer"], [id$="Overlay"], [id$="Popup"]'
+    );
+    for (let el of openModals) {
+      if (el && el.id !== 'loginScreen' && el.style && (el.style.display === 'flex' || el.style.display === 'block' || el.classList.contains('active') || el.classList.contains('open'))) {
+        let id = el.id || '';
+        let closed = false;
+        if (id === 'adminRatingModal' && typeof adminCloseRatingManager === 'function') { adminCloseRatingManager(); closed = true; }
+        else if (id === 'adminDriverPhotoModal' && typeof adminClosePhotoManager === 'function') { adminClosePhotoManager(); closed = true; }
+        else if (id === 'editUserModal' && typeof closeEditUserModal === 'function') { closeEditUserModal(); closed = true; }
+        else if (id === 'userPermissionControlModal' && typeof closeUserPermissionControlModal === 'function') { closeUserPermissionControlModal(); closed = true; }
+        else if (id === 'schoolPassDriverModal' && typeof closeSchoolPassDriverModal === 'function') { closeSchoolPassDriverModal(); closed = true; }
+        else if (id === 'driverDrawer' && typeof closeDriverDrawer === 'function') { closeDriverDrawer(); closed = true; }
+        else if (id === 'sideDrawer' && typeof closeSideDrawer === 'function') { closeSideDrawer(); closed = true; }
+        
+        if (!closed) {
+          el.style.display = 'none';
+          el.classList.remove('active');
+          el.classList.remove('open');
+        }
+        return true;
+      }
+    }
+
+    // 3. For Admin Panel: If on a sub-tab (not 'home'), navigate back to 'home' tab
+    if (typeof openTab === 'function') {
+      const activeTab = document.querySelector('.tab.active');
+      if (activeTab && activeTab.id !== 'tab-home') {
+        const homeTab = document.getElementById('tab-home');
+        openTab('home', homeTab);
+        return true;
+      }
+    }
+
+    // 4. For Customer Panel: If side menu is open, close it
+    const sideMenu = document.getElementById('sideMenu') || document.getElementById('menuDrawer');
+    if (sideMenu && (sideMenu.classList.contains('open') || sideMenu.style.left === '0px' || sideMenu.style.display === 'block')) {
+      sideMenu.classList.remove('open');
+      sideMenu.style.left = '-100%';
+      return true;
+    }
+
+    // 5. For Driver Panel: If side drawer is open, close it
+    const dDrawer = document.getElementById('drawer') || document.getElementById('driverDrawer');
+    if (dDrawer && (dDrawer.classList.contains('open') || dDrawer.style.left === '0px')) {
+      dDrawer.classList.remove('open');
+      dDrawer.style.left = '-100%';
+      return true;
+    }
+
+    // 6. Double-tap to exit when already on home screen
+    let now = Date.now();
+    if (now - lastBackPressTime < 2000) {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.exitApp();
+      }
+      return false;
+    } else {
+      lastBackPressTime = now;
+      try { history.pushState({ rsMain: true, depth: 1 }, ''); } catch(e) {}
+      showDoubleTapExitToast();
+      return true;
+    }
+  };
+
+  window.addEventListener('popstate', function(e) {
+    if (window._rsSuppressNextPop) {
+      window._rsSuppressNextPop = false;
+      return;
+    }
+    window.handleStepByStepBack();
+  });
+
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+    window.Capacitor.Plugins.App.addListener('backButton', function() {
+      window.handleStepByStepBack();
+    });
+  }
+
+  function showDoubleTapExitToast() {
+    let t = document.getElementById('rsBackExitToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'rsBackExitToast';
+      t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);color:#fff;padding:9px 20px;border-radius:24px;font-size:12.5px;font-weight:700;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,0.3);pointer-events:none;transition:opacity 0.25s,transform 0.25s;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15);letter-spacing:0.3px;';
+      t.innerText = 'অ্যাপ থেকে বের হতে আর একবার ব্যাক চাপুন';
+      document.body.appendChild(t);
+    }
+    t.style.opacity = '1';
+    t.style.display = 'block';
+    setTimeout(() => {
+      t.style.opacity = '0';
+      setTimeout(() => { if (t) t.style.display = 'none'; }, 260);
+    }, 1800);
+  }
+})();
+
+</script>
+</body></html>
