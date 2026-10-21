@@ -473,6 +473,14 @@
         ".read": true,
         ".write": true
       }
+    },
+    "user_controls": {
+      ".read": true,
+      ".write": true,
+      "$userPhone": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }

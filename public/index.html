@@ -2286,8 +2286,199 @@ window.initTouristRentalMasterListener = function() {
 try {
   if (typeof firebase !== 'undefined' && firebase.database) {
     window.initTouristRentalMasterListener();
+    window.initUserControlsRealtimeListener();
   }
 } catch(e) {}
+
+// ==============================================================
+// ⚙️ REALTIME USER-LEVEL ACCESS & FEATURE CONTROL LISTENER (CUSTOMER)
+// ==============================================================
+window.customerUserFeatures = {};
+window.isCustomerBookingAllowed = true;
+
+window.getCustomerActivePhone = function() {
+  var p = localStorage.getItem('customerPhone') || 
+          localStorage.getItem('userPhone') || 
+          localStorage.getItem('current_user_mobile') || 
+          localStorage.getItem('cust_phone') || 
+          localStorage.getItem('custPhone') || 
+          (document.getElementById('custPhone') ? document.getElementById('custPhone').value : '') || '';
+  return String(p).replace(/[^0-9]/g, '').slice(-10);
+};
+
+window.initUserControlsRealtimeListener = function() {
+  var d = (typeof getClientDb === 'function') ? getClientDb() : ((typeof db !== 'undefined') ? db : (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null));
+  if (!d) return;
+
+  var phone = window.getCustomerActivePhone();
+  if (!phone || phone.length !== 10) return;
+
+  // Targeted micro-node read (~120 bytes only)
+  d.ref('user_controls/' + phone).on('value', function(snap) {
+    var cfg = snap.val();
+    window.applyCustomerUserControls(cfg);
+  });
+
+  // Watch if account was deleted by admin
+  d.ref('users/' + phone).on('value', function(snap) {
+    if (!snap.exists() && localStorage.getItem('customerPhone') === phone) {
+      // Check if user controls also deleted
+      d.ref('user_controls/' + phone).once('value').then(function(ucSnap) {
+        if (!ucSnap.exists()) {
+          // Account was permanently deleted
+          localStorage.removeItem('customerPhone');
+          localStorage.removeItem('userPhone');
+          localStorage.removeItem('current_user_mobile');
+          localStorage.removeItem('custPhone');
+          console.warn('Account was permanently deleted by admin.');
+        }
+      });
+    }
+  });
+};
+
+window.applyCustomerUserControls = function(cfg) {
+  var isSuspended = Boolean(cfg && (cfg.status === 'SUSPENDED' || cfg.status === 'BLOCKED'));
+  var reason = (cfg && cfg.suspendReason) ? cfg.suspendReason : 'অ্যাডমিন কর্তৃক আপনার অ্যাকাউন্টটি সাময়িকভাবে স্থগিত রাখা হয়েছে।';
+
+  // 1. Account Suspended Full-Screen Overlay
+  var overlay = document.getElementById('rsgAccountSuspendedOverlay');
+  if (isSuspended) {
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'rsgAccountSuspendedOverlay';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.95);backdrop-filter:blur(8px);z-index:99999999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;font-family:sans-serif';
+      overlay.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:28px 22px;max-width:390px;width:100%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:2px solid #ef4444;box-sizing:border-box">' +
+        '<div style="width:72px;height:72px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;box-shadow:0 4px 12px rgba(220,38,38,0.2)">🚫</div>' +
+        '<h3 style="margin:0 0 8px;color:#991b1b;font-size:18px;font-weight:900">অ্যাকাউন্ট সাময়িক স্থগিত (Suspended)</h3>' +
+        '<p id="txtCustSuspendReason" style="font-size:13px;color:#475569;margin:0 0 16px;line-height:1.5">' + reason + '</p>' +
+        '<div style="background:#f8fafc;border-radius:14px;padding:12px;margin-bottom:18px;border:1px solid #e2e8f0;font-size:12.5px;color:#334155">' +
+        '📞 যেকোনো সহায়তার জন্য হেল্পলাইনে যোগাযোগ করুন:<br>' +
+        '<a href="tel:8768447312" style="color:#0284c7;font-weight:900;font-size:15px;text-decoration:none;display:inline-block;margin-top:6px">📞 8768447312</a>' +
+        '</div>' +
+        '<button type="button" onclick="window.location.reload()" style="background:#0f172a;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:13px;font-weight:800;width:100%;cursor:pointer">🔄 স্ট্যাটাস পুনরায় যাচাই করুন</button>' +
+        '</div>';
+      document.body.appendChild(overlay);
+    } else {
+      overlay.style.display = 'flex';
+      var rEl = document.getElementById('txtCustSuspendReason');
+      if (rEl) rEl.innerText = reason;
+    }
+  } else {
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  // 2. Individual Feature Controls
+  var feats = (cfg && cfg.features) ? cfg.features : {};
+  window.customerUserFeatures = feats;
+
+  // Booking permission
+  var isBookingAllowed = (feats.booking !== false) && !isSuspended;
+  window.isCustomerBookingAllowed = isBookingAllowed;
+  var contBtn = document.getElementById('continueBtn');
+  if (contBtn) {
+    if (!isBookingAllowed) {
+      contBtn.dataset.originalText = contBtn.dataset.originalText || contBtn.innerText;
+      contBtn.innerText = '⚠️ রাইড বুকিং সুবিধা সাময়িক স্থগিত';
+      contBtn.style.opacity = '0.6';
+    } else if (contBtn.dataset.originalText) {
+      contBtn.innerText = contBtn.dataset.originalText;
+      contBtn.style.opacity = '1';
+    }
+  }
+
+  // Vehicles: Bike, Toto, Car, Parcel, Rental
+  var bikeBox = document.getElementById('bikeBox');
+  var totoBox = document.getElementById('totoBox');
+  var carBox = document.getElementById('carBox');
+  var parcelBox = document.getElementById('parcelBox');
+  var parcelDetails = document.getElementById('parcelDetailsBox');
+  var rentalBox = document.getElementById('rentalBox');
+  var rentalDetails = document.getElementById('rentalDetailsBox');
+
+  if (bikeBox) {
+    if (feats.bike === false) bikeBox.style.setProperty('display', 'none', 'important');
+    else bikeBox.style.removeProperty('display');
+  }
+  if (totoBox) {
+    if (feats.toto === false) totoBox.style.setProperty('display', 'none', 'important');
+    else totoBox.style.removeProperty('display');
+  }
+  if (carBox) {
+    if (feats.car === false) carBox.style.setProperty('display', 'none', 'important');
+    else carBox.style.removeProperty('display');
+  }
+  if (parcelBox) {
+    if (feats.parcel === false) {
+      parcelBox.style.setProperty('display', 'none', 'important');
+      if (parcelDetails) parcelDetails.style.setProperty('display', 'none', 'important');
+    } else {
+      parcelBox.style.removeProperty('display');
+    }
+  }
+  if (rentalBox) {
+    if (feats.rental === false || window.isTouristRentalEnabled === false) {
+      rentalBox.style.setProperty('display', 'none', 'important');
+      if (rentalDetails) rentalDetails.style.setProperty('display', 'none', 'important');
+    } else {
+      rentalBox.style.removeProperty('display');
+      rentalBox.style.display = 'flex';
+    }
+  }
+
+  // School Pass
+  var spBanner = document.getElementById('schoolPassBanner');
+  if (spBanner) {
+    if (feats.schoolPass === false) spBanner.style.setProperty('display', 'none', 'important');
+    else if (window.nextGenConfig && window.nextGenConfig.schoolPass && window.nextGenConfig.schoolPass.enabled !== false) {
+      spBanner.style.removeProperty('display');
+      spBanner.style.display = 'block';
+    }
+  }
+
+  // Emergency SOS
+  var emSec = document.getElementById('drawerMedEmergencySection');
+  if (emSec) {
+    if (feats.emergency === false) emSec.style.setProperty('display', 'none', 'important');
+    else if (window.nextGenConfig && window.nextGenConfig.medEmergency && window.nextGenConfig.medEmergency.enabled !== false) {
+      emSec.style.removeProperty('display');
+      emSec.style.display = 'block';
+    }
+  }
+
+  // Smart Voice
+  var vWrap = document.getElementById('oneShotVoiceWrap');
+  if (vWrap) {
+    if (feats.smartVoice === false) vWrap.style.setProperty('display', 'none', 'important');
+    else if (window.nextGenConfig && window.nextGenConfig.smartVoice && window.nextGenConfig.smartVoice.enabled !== false) {
+      vWrap.style.removeProperty('display');
+      vWrap.style.display = 'block';
+    }
+  }
+
+  // Advance Scheduled Booking
+  var schedBtn = document.getElementById('timingSchedBtn');
+  var schedBox = document.getElementById('scheduleTimeBox');
+  if (schedBtn) {
+    if (feats.scheduled === false) {
+      schedBtn.style.setProperty('display', 'none', 'important');
+      if (schedBox) schedBox.style.setProperty('display', 'none', 'important');
+      if (typeof window.setRideTiming === 'function') window.setRideTiming('NOW');
+    } else {
+      schedBtn.style.removeProperty('display');
+    }
+  }
+
+  // Auto-switch vehicle if the currently selected vehicle is disabled
+  var curVeh = (window.selectedVehicle || 'Toto').toLowerCase();
+  if (feats[curVeh] === false) {
+    var candidates = ['toto', 'bike', 'car', 'parcel', 'rental'];
+    var nextVeh = candidates.find(function(c) { return feats[c] !== false; });
+    if (nextVeh && typeof window.selectVehicle === 'function') {
+      window.selectVehicle(nextVeh.charAt(0).toUpperCase() + nextVeh.slice(1));
+    }
+  }
+};
 
 // POINT 1: WhatsApp Live Ride Share with Family for Safety
 window.shareLiveTripSafety = function() {
@@ -2835,6 +3026,7 @@ window.continueToBooking = function() {
   try { if (typeof window.loadBookingHistory === 'function') window.loadBookingHistory(); } catch(e) {}
   try { if (typeof window.autoFetchCurrentLocationOnStartup === 'function') window.autoFetchCurrentLocationOnStartup(); } catch(e) {}
   try { window.initRealtimeUserProfileSync(phone); } catch(e) {}
+  try { if (typeof window.initUserControlsRealtimeListener === 'function') window.initUserControlsRealtimeListener(); } catch(e) {}
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -3047,6 +3239,9 @@ window.selectPay = function(mode) {
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof window.initTouristRentalMasterListener === 'function') {
     window.initTouristRentalMasterListener();
+  }
+  if (typeof window.initUserControlsRealtimeListener === 'function') {
+    window.initUserControlsRealtimeListener();
   }
   window.restoreCustomerState();
   if (typeof window.autoFetchCurrentLocationOnStartup === 'function') {

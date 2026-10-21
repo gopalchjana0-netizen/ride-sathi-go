@@ -2583,6 +2583,27 @@ function doPost(e) {
     </div>
   </div>
 
+  <!-- Direct Phone Quick Permission & Control Bar -->
+  <div class="card" style="margin-bottom:12px;padding:14px 18px;background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%);border:2px solid #c4b5fd;box-shadow:0 3px 10px rgba(124,58,237,0.06)">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:12px;background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 3px 6px rgba(124,58,237,0.3)">
+          ⚡
+        </div>
+        <div>
+          <b style="font-size:15px;color:#5b21b6">ইনস্ট্যান্ট ইউজার ফিচার ও পারমিশন কন্ট্রোল (Instant Permission Control)</b>
+          <p class="small" style="margin:2px 0 0;color:#6d28d9;font-weight:600">যেকোনো কাস্টমার বা ড্রাইভারের মোবাইল নম্বর দিয়ে তাৎক্ষণিক সব ফিচার অন/অফ ও অ্যাকাউন্ট অ্যাক্সেস কন্ট্রোল করুন</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="tel" id="instantPhoneInput" placeholder="১০ সংখ্যার মোবাইল নম্বর..." maxlength="10" onkeypress="if(event.key==='Enter')openDirectPermissionByPhone()" style="margin:0;padding:9px 12px;border:1.5px solid #a78bfa;border-radius:10px;font-size:13.5px;font-weight:800;width:190px;background:#fff">
+        <button type="button" class="btn purple" onclick="openDirectPermissionByPhone()" style="padding:9px 18px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px;background:#7c3aed;color:#fff;box-shadow:0 2px 6px rgba(124,58,237,0.3)">
+          ⚙️ পারমিশন খুলুন
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Filter & Search Bar Card -->
   <div class="card" style="margin-bottom:12px;padding:12px">
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;align-items:center">
@@ -2993,6 +3014,207 @@ function doPost(e) {
         বাতিল
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- ⚙️ ADVANCED USER PERMISSION & FEATURE CONTROL MODAL -->
+<!-- ============================================== -->
+<div id="userPermissionControlModal" onclick="if(event.target===this)closeUserPermissionControlModal()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.7);z-index:999999;backdrop-filter:blur(6px);justify-content:center;align-items:center;padding:14px;box-sizing:border-box;overflow-y:auto">
+  <div style="background:#ffffff;width:100%;max-width:580px;border-radius:24px;padding:22px;box-shadow:0 25px 60px rgba(0,0,0,0.35);position:relative;max-height:92vh;display:flex;flex-direction:column;border:2px solid #7c3aed">
+    
+    <!-- Modal Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #f1f5f9;padding-bottom:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="permModalAvatar" style="width:48px;height:48px;border-radius:50%;background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900">
+          👤
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <h3 id="permModalUserName" style="margin:0;font-size:16.5px;color:#0f172a">User Name</h3>
+            <span id="permModalUserTypeBadge" style="background:#f3e8ff;color:#7c3aed;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:800">CUSTOMER</span>
+          </div>
+          <div style="font-size:12.5px;color:#64748b;margin-top:2px">
+            📱 ফোন: <b id="permModalUserPhone" style="color:#0f172a">8768447312</b>
+          </div>
+        </div>
+      </div>
+      <button type="button" onclick="closeUserPermissionControlModal()" style="background:#f1f5f9;border:none;width:34px;height:34px;border-radius:50%;font-size:17px;font-weight:bold;cursor:pointer;color:#475569">✕</button>
+    </div>
+
+    <!-- Hidden state inputs -->
+    <input type="hidden" id="permTargetPhone">
+    <input type="hidden" id="permTargetType">
+    <input type="hidden" id="permTargetName">
+    <input type="hidden" id="permTargetEmail">
+
+    <!-- Scrollable Body -->
+    <div style="overflow-y:auto;padding-right:6px;flex:1">
+      
+      <!-- 1. Master Account Access Status -->
+      <div style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1.5px solid #cbd5e1;border-radius:16px;padding:12px 14px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <b style="font-size:13.5px;color:#0f172a">🔒 মাস্টার অ্যাকাউন্ট স্ট্যাটাস (Master Access):</b>
+            <p class="small" style="margin:2px 0 0;color:#64748b">বন্ধ করলে ব্যবহারকারী অ্যাপে ঢুকতে পারবে না, স্ক্রিন লক থাকবে।</p>
+          </div>
+          <div style="display:flex;gap:6px">
+            <label style="display:inline-flex;align-items:center;gap:6px;background:#fff;padding:6px 12px;border-radius:10px;border:1.5px solid #22c55e;cursor:pointer;font-size:12px;font-weight:800;color:#166534">
+              <input type="radio" name="permMasterStatus" id="permStatusActive" value="ACTIVE" checked onchange="onPermStatusRadioChange()"> 🟢 সচল (Active)
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:6px;background:#fff;padding:6px 12px;border-radius:10px;border:1.5px solid #ef4444;cursor:pointer;font-size:12px;font-weight:800;color:#991b1b">
+              <input type="radio" name="permMasterStatus" id="permStatusSuspended" value="SUSPENDED" onchange="onPermStatusRadioChange()"> 🔴 স্থগিত (Suspended)
+            </label>
+          </div>
+        </div>
+
+        <!-- Optional Suspend Notice Input -->
+        <div id="permSuspendReasonWrap" style="display:none;margin-top:10px;border-top:1px dashed #fca5a5;padding-top:8px">
+          <label class="small" style="font-weight:700;color:#991b1b">স্থগিতের কারণ (গ্রাহক বা চালকের স্ক্রিনে প্রদর্শিত হবে):</label>
+          <input type="text" id="permSuspendReasonInput" placeholder="যেমন: অ্যাডমিন কর্তৃক অ্যাকাউন্ট সাময়িকভাবে স্থগিত রাখা হয়েছে..." value="অ্যাডমিন কর্তৃক আপনার অ্যাকাউন্টটি সাময়িকভাবে স্থগিত রাখা হয়েছে। বিস্তারিত জানতে হেল্পলাইনে যোগাযোগ করুন।" style="margin-top:4px;padding:8px 12px;border:1.5px solid #f87171;border-radius:8px;font-size:12px;width:100%;box-sizing:border-box">
+        </div>
+      </div>
+
+      <!-- 2. Customer Specific Feature Flags -->
+      <div id="permCustomerFeaturesSection" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <b style="font-size:13.5px;color:#1e40af">👤 কাস্টমার ফিচার পারমিশন (Customer Feature Flags):</b>
+          <button type="button" onclick="setAllPermCheckboxes('customer', true)" style="border:none;background:none;color:#2563eb;font-size:11.5px;font-weight:800;cursor:pointer">✓ সব চালু করুন</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🚖 রাইড বুকিং সুবিধা</span>
+            <input type="checkbox" id="chkCust_booking" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🏍️ বাইক রাইড</span>
+            <input type="checkbox" id="chkCust_bike" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🛺 টোটো / অটো বুকিং</span>
+            <input type="checkbox" id="chkCust_toto" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🚗 চারচাকা / ক্যাব</span>
+            <input type="checkbox" id="chkCust_car" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">📦 পার্সেল ডেলিভারি</span>
+            <input type="checkbox" id="chkCust_parcel" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🏖️ ট্যুরিস্ট ডে-রেন্টাল</span>
+            <input type="checkbox" id="chkCust_rental" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🎒 স্কুল ও অফিস পাস</span>
+            <input type="checkbox" id="chkCust_schoolPass" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">📅 অগ্রিম শিডিউল বুকিং</span>
+            <input type="checkbox" id="chkCust_scheduled" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🚑 মেডিকেল এমার্জেন্সি</span>
+            <input type="checkbox" id="chkCust_emergency" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🎙️ স্মার্ট ভয়েস বুকিং</span>
+            <input type="checkbox" id="chkCust_smartVoice" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">💳 অনলাইন ইউপিআই / কিউআর</span>
+            <input type="checkbox" id="chkCust_onlinePayment" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;padding:9px 12px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#334155">🎁 অফার ও কুপন সুবিধা</span>
+            <input type="checkbox" id="chkCust_coupon" checked style="width:17px;height:17px;accent-color:#7c3aed;cursor:pointer">
+          </label>
+
+        </div>
+      </div>
+
+      <!-- 3. Driver Specific Feature Flags -->
+      <div id="permDriverFeaturesSection" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <b style="font-size:13.5px;color:#c2410c">🏍️ চালক ফিচার পারমিশন (Driver Feature Flags):</b>
+          <button type="button" onclick="setAllPermCheckboxes('driver', true)" style="border:none;background:none;color:#ea580c;font-size:11.5px;font-weight:800;cursor:pointer">✓ সব চালু করুন</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">📡 নতুন রাইড অ্যালার্ট ও গ্রহণ</span>
+            <input type="checkbox" id="chkDrv_receiveRides" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">🛺 শেয়ার টোটো / পুলিং ট্রিপ</span>
+            <input type="checkbox" id="chkDrv_sharedToto" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">🎒 স্কুল ও অফিস পাস ডিউটি</span>
+            <input type="checkbox" id="chkDrv_schoolPassDuty" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">🏖️ ট্যুরিস্ট ডে-রেন্টাল ট্রিপ</span>
+            <input type="checkbox" id="chkDrv_rentalDuty" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">📅 অগ্রিম শিডিউল ট্রিপ</span>
+            <input type="checkbox" id="chkDrv_scheduledDuty" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">💰 ক্যাশ কালেকশন ও ওয়ালেট</span>
+            <input type="checkbox" id="chkDrv_cashCollection" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+          <label style="display:flex;align-items:center;justify-content:space-between;background:#fff7ed;padding:9px 12px;border-radius:10px;border:1px solid #fed7aa;cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:#7c2d12">📞 কাস্টমারকে সরাসরি কলিং</span>
+            <input type="checkbox" id="chkDrv_directCall" checked style="width:17px;height:17px;accent-color:#ea580c;cursor:pointer">
+          </label>
+
+        </div>
+      </div>
+
+      <!-- Realtime Sync Notification -->
+      <div style="background:#f5f3ff;border:1px dashed #c4b5fd;padding:9px 12px;border-radius:12px;font-size:12px;color:#5b21b6;display:flex;align-items:center;gap:8px">
+        <span>⚡</span>
+        <span><b>ইনস্ট্যান্ট লাইভ সিঙ্ক:</b> সেভ করার সাথে সাথে ১ সেকেন্ডের মধ্যে ব্যবহারকারীর মোবাইল স্ক্রিনে পরিবর্তন কার্যকর হবে।</span>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div style="display:flex;gap:8px;margin-top:14px;border-top:1.5px solid #f1f5f9;padding-top:12px;flex-wrap:wrap">
+      <button type="button" class="btn purple" onclick="saveUserPermissionControl()" id="btnSaveUserPerm" style="flex:1;padding:11px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;background:#7c3aed;color:#fff;border-radius:10px">
+        💾 পারমিশন সেভ করুন
+      </button>
+      <button type="button" class="btn" onclick="permanentDeleteCurrentModalUser()" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:11px 16px;font-size:12.5px;font-weight:800;border-radius:10px">
+        🗑️ পার্মানেন্ট ডিলিট
+      </button>
+      <button type="button" class="btn" onclick="closeUserPermissionControlModal()" style="background:#e2e8f0;color:#1e293b;padding:11px 18px;font-size:12.5px;font-weight:700;border-radius:10px">
+        বাতিল
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -11641,12 +11863,17 @@ function renderManageUsers(users) {
 
         <!-- Action Buttons -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn purple" onclick="openUserPermissionControlModal('${u.phone}', '${u.type}', '${encodeURIComponent(u.name || '')}', '${u.email || ''}')" style="background:#7c3aed;color:#fff;padding:6px 12px;font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:4px">
+            ⚙️ পারমিশন ও ফিচার
+          </button>
           ${isBlocked 
             ? `<button type="button" class="btn approve" onclick="toggleBlockUser('${u.email}', 'active', '${u.phone}', '${u.type}')" style="padding:6px 12px;font-size:11px">🟢 আনব্লক</button>` 
             : `<button type="button" class="btn reject" onclick="toggleBlockUser('${u.email}', 'blocked', '${u.phone}', '${u.type}')" style="padding:6px 12px;font-size:11px">🚫 ব্লক</button>`
           }
           <button type="button" class="btn orange" onclick="openEditUserModal('${u.key}')" style="padding:6px 12px;font-size:11px">✏️ এডিট</button>
-          <button type="button" class="btn" onclick="deleteUserRecord('${u.email}', '${u.phone}', '${u.type}')" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;padding:6px 12px;font-size:11px">🗑️ মুছুন</button>
+          <button type="button" class="btn" onclick="permanentDeleteUser('${u.email}', '${u.phone}', '${u.type}', '${encodeURIComponent(u.name || '')}')" style="background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;padding:6px 12px;font-size:11px;font-weight:800">
+            🗑️ পার্মানেন্ট ডিলিট
+          </button>
         </div>
       </div>
     `;
@@ -11920,6 +12147,285 @@ function exportManageUsersCsv() {
   document.body.removeChild(a);
 }
 
+// ==============================================
+// ⚙️ ADVANCED USER-LEVEL PERMISSION & FEATURE CONTROL (MANAGE TAB)
+// ==============================================
+
+function onPermStatusRadioChange() {
+  const isSuspended = document.getElementById('permStatusSuspended')?.checked;
+  const wrap = document.getElementById('permSuspendReasonWrap');
+  if (wrap) wrap.style.display = isSuspended ? 'block' : 'none';
+}
+
+function setAllPermCheckboxes(type, val) {
+  if (type === 'customer') {
+    ['booking', 'bike', 'toto', 'car', 'parcel', 'rental', 'schoolPass', 'scheduled', 'emergency', 'smartVoice', 'onlinePayment', 'coupon'].forEach(k => {
+      const el = document.getElementById('chkCust_' + k);
+      if (el) el.checked = Boolean(val);
+    });
+  } else if (type === 'driver') {
+    ['receiveRides', 'sharedToto', 'schoolPassDuty', 'rentalDuty', 'scheduledDuty', 'cashCollection', 'directCall'].forEach(k => {
+      const el = document.getElementById('chkDrv_' + k);
+      if (el) el.checked = Boolean(val);
+    });
+  }
+}
+
+function openDirectPermissionByPhone() {
+  const input = document.getElementById('instantPhoneInput');
+  const rawP = (input ? input.value : '').trim();
+  const cleanP = rawP.replace(/[^0-9]/g, '').slice(-10);
+
+  if (!cleanP || cleanP.length !== 10) {
+    alert("⚠️ অনুগ্রহ করে সঠিক ১০ সংখ্যার মোবাইল নম্বর লিখুন!");
+    if (input) input.focus();
+    return;
+  }
+
+  // Find if user already exists in cache
+  const match = manageAllUsersCache.find(u => (u.phone && u.phone.includes(cleanP)));
+  const type = match ? (match.type || 'customer') : 'customer';
+  const name = match ? (match.name || 'User (' + cleanP + ')') : 'User (' + cleanP + ')';
+  const email = match ? (match.email || '') : '';
+
+  openUserPermissionControlModal(cleanP, type, name, email);
+}
+
+function openUserPermissionControlModal(phone, type, name, email) {
+  const cleanP = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  if (!cleanP) {
+    alert("⚠️ মোবাইল নম্বর পাওয়া যায়নি!");
+    return;
+  }
+
+  const decodedName = decodeURIComponent(name || 'User');
+  const userType = String(type || 'customer').toLowerCase();
+
+  document.getElementById('permTargetPhone').value = cleanP;
+  document.getElementById('permTargetType').value = userType;
+  document.getElementById('permTargetName').value = decodedName;
+  document.getElementById('permTargetEmail').value = email || '';
+
+  const nameEl = document.getElementById('permModalUserName');
+  const phoneEl = document.getElementById('permModalUserPhone');
+  const badgeEl = document.getElementById('permModalUserTypeBadge');
+  const avatarEl = document.getElementById('permModalAvatar');
+
+  if (nameEl) nameEl.innerText = decodedName;
+  if (phoneEl) phoneEl.innerText = '+91 ' + cleanP;
+  if (badgeEl) {
+    const isDriver = userType === 'driver';
+    badgeEl.innerText = isDriver ? '🏍️ DRIVER' : '👤 CUSTOMER';
+    badgeEl.style.background = isDriver ? '#ffedd5' : '#f3e8ff';
+    badgeEl.style.color = isDriver ? '#c2410c' : '#7c3aed';
+  }
+  if (avatarEl) {
+    avatarEl.innerText = decodedName.charAt(0).toUpperCase() || 'U';
+    avatarEl.style.background = (userType === 'driver') ? '#ea580c' : '#7c3aed';
+  }
+
+  const custSec = document.getElementById('permCustomerFeaturesSection');
+  const drvSec = document.getElementById('permDriverFeaturesSection');
+  if (custSec) custSec.style.display = (userType === 'driver') ? 'none' : 'block';
+  if (drvSec) drvSec.style.display = (userType === 'driver') ? 'block' : 'none';
+
+  // Default all to true
+  setAllPermCheckboxes('customer', true);
+  setAllPermCheckboxes('driver', true);
+  if (document.getElementById('permStatusActive')) document.getElementById('permStatusActive').checked = true;
+  if (document.getElementById('permSuspendReasonWrap')) document.getElementById('permSuspendReasonWrap').style.display = 'none';
+
+  // Fetch current live settings from Firebase RTDB (Targeted single node)
+  const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+  if (dRef) {
+    dRef.ref('user_controls/' + cleanP).once('value').then(function(snap) {
+      const val = snap.val();
+      if (val) {
+        // Status
+        const isSusp = (val.status === 'SUSPENDED' || val.status === 'BLOCKED');
+        if (isSusp) {
+          if (document.getElementById('permStatusSuspended')) document.getElementById('permStatusSuspended').checked = true;
+          if (document.getElementById('permSuspendReasonWrap')) document.getElementById('permSuspendReasonWrap').style.display = 'block';
+          if (document.getElementById('permSuspendReasonInput')) {
+            document.getElementById('permSuspendReasonInput').value = val.suspendReason || 'অ্যাডমিন কর্তৃক আপনার অ্যাকাউন্টটি সাময়িকভাবে স্থগিত রাখা হয়েছে।';
+          }
+        } else {
+          if (document.getElementById('permStatusActive')) document.getElementById('permStatusActive').checked = true;
+          if (document.getElementById('permSuspendReasonWrap')) document.getElementById('permSuspendReasonWrap').style.display = 'none';
+        }
+
+        // Features
+        if (val.features) {
+          Object.keys(val.features).forEach(k => {
+            const v = val.features[k];
+            const cEl = document.getElementById('chkCust_' + k);
+            if (cEl) cEl.checked = (v !== false);
+            const dEl = document.getElementById('chkDrv_' + k);
+            if (dEl) dEl.checked = (v !== false);
+          });
+        }
+      }
+    }).catch(function(e) {
+      console.warn("User perm fetch notice:", e);
+    });
+  }
+
+  const modal = document.getElementById('userPermissionControlModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeUserPermissionControlModal() {
+  const modal = document.getElementById('userPermissionControlModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function saveUserPermissionControl() {
+  const cleanP = (document.getElementById('permTargetPhone')?.value || '').replace(/[^0-9]/g, '').slice(-10);
+  const type = document.getElementById('permTargetType')?.value || 'customer';
+  const name = document.getElementById('permTargetName')?.value || 'User';
+  const email = document.getElementById('permTargetEmail')?.value || '';
+
+  if (!cleanP || cleanP.length !== 10) {
+    alert("⚠️ সঠিক ১০ সংখ্যার মোবাইল নম্বর পাওয়া যায়নি!");
+    return;
+  }
+
+  const isSuspended = Boolean(document.getElementById('permStatusSuspended')?.checked);
+  const suspendReason = (document.getElementById('permSuspendReasonInput')?.value || '').trim() || 'অ্যাডমিন কর্তৃক অ্যাকাউন্ট সাময়িকভাবে স্থগিত রাখা হয়েছে। বিস্তারিত জানতে হেল্পলাইনে যোগাযোগ করুন।';
+
+  const features = {};
+  if (type === 'driver') {
+    ['receiveRides', 'sharedToto', 'schoolPassDuty', 'rentalDuty', 'scheduledDuty', 'cashCollection', 'directCall'].forEach(k => {
+      const el = document.getElementById('chkDrv_' + k);
+      features[k] = el ? el.checked : true;
+    });
+  } else {
+    ['booking', 'bike', 'toto', 'car', 'parcel', 'rental', 'schoolPass', 'scheduled', 'emergency', 'smartVoice', 'onlinePayment', 'coupon'].forEach(k => {
+      const el = document.getElementById('chkCust_' + k);
+      features[k] = el ? el.checked : true;
+    });
+  }
+
+  const payload = {
+    phone: cleanP,
+    name: name,
+    email: email,
+    type: type,
+    status: isSuspended ? 'SUSPENDED' : 'ACTIVE',
+    suspendReason: suspendReason,
+    features: features,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP,
+    updatedBy: 'Admin'
+  };
+
+  const btn = document.getElementById('btnSaveUserPerm');
+  if (btn) { btn.disabled = true; btn.innerText = '⏳ সেভ হচ্ছে...'; }
+
+  const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+  if (!dRef) {
+    alert("❌ ডাটাবেস কানেকশন পাওয়া যায়নি!");
+    if (btn) { btn.disabled = false; btn.innerText = '💾 পারমিশন সেভ করুন'; }
+    return;
+  }
+
+  try {
+    const promises = [
+      dRef.ref('user_controls/' + cleanP).set(payload)
+    ];
+
+    // Keep legacy status field synced in users or drivers
+    if (type === 'driver') {
+      promises.push(dRef.ref('drivers/' + cleanP + '/status').set(isSuspended ? 'BLOCKED' : 'APPROVED'));
+      promises.push(dRef.ref('drivers/' + cleanP + '/isBlocked').set(isSuspended));
+      promises.push(dRef.ref('drivers/DRIVER_' + cleanP + '/status').set(isSuspended ? 'BLOCKED' : 'APPROVED'));
+    } else {
+      promises.push(dRef.ref('users/' + cleanP + '/status').set(isSuspended ? 'BLOCKED' : 'ACTIVE'));
+      promises.push(dRef.ref('users/' + cleanP + '/isBlocked').set(isSuspended));
+    }
+
+    await Promise.allSettled(promises);
+
+    // Update local cache & UI
+    const cached = manageAllUsersCache.find(u => u.phone === cleanP);
+    if (cached) {
+      cached.status = isSuspended ? 'blocked' : 'active';
+    }
+    updateManageStats();
+    filterManageUsersList();
+
+    closeUserPermissionControlModal();
+    alert(`✅ +91 ${cleanP} (${name})-এর ফিচার ও পারমিশন সফলভাবে সেভ হয়েছে! ব্যবহারকারীর ডিভাইসে তাৎক্ষণিক লাইভ কার্যকর হয়েছে।`);
+  } catch(err) {
+    alert("❌ সেভ করতে ত্রুটি: " + (err.message || err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerText = '💾 পারমিশন সেভ করুন'; }
+  }
+}
+
+async function permanentDeleteUser(email, phone, type, name) {
+  const cleanP = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  const userName = decodeURIComponent(name || 'User');
+  const userRole = (type === 'driver') ? 'চালকের (Driver)' : 'গ্রাহকের (Customer)';
+
+  const confirmMsg = `⚠️ আপনি কি নিশ্চিত যে আপনি এই ${userRole} অ্যাকাউন্টটি পার্মানেন্টলি ডিলিট করতে চান?\n\n` +
+    `👤 নাম: ${userName}\n` +
+    `📱 মোবাইল: +91 ${cleanP || 'N/A'}\n` +
+    (email ? `📧 ইমেল: ${email}\n\n` : '\n') +
+    `🚨 সতর্কতা: এটি Firebase ডাটাবেস ও গুগল শিট থেকে সম্পূর্ণ মুছে যাবে এবং গ্রাহক/চালকের মোবাইল থেকে অ্যাকাউন্ট স্থায়ীভাবে রিমুভ হয়ে যাবে।`;
+
+  if (!confirm(confirmMsg)) return;
+
+  // 1. Remove from local cache & UI immediately
+  manageAllUsersCache = manageAllUsersCache.filter(u => !(
+    (email && u.email && u.email.toLowerCase() === email.toLowerCase()) ||
+    (cleanP && u.phone === cleanP)
+  ));
+  updateManageStats();
+  filterManageUsersList();
+
+  // 2. Call Google Apps Script delete
+  fetch(GAS_MANAGE_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'delete',
+      email: email || '',
+      phone: cleanP
+    })
+  }).catch(e => console.warn('GAS delete notice:', e));
+
+  // 3. Remove permanently from Firebase RTDB nodes
+  if (cleanP) {
+    try {
+      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+      if (dRef) {
+        const removals = [
+          dRef.ref('users/' + cleanP).remove(),
+          dRef.ref('drivers/' + cleanP).remove(),
+          dRef.ref('drivers/DRIVER_' + cleanP).remove(),
+          dRef.ref('user_controls/' + cleanP).remove()
+        ];
+        await Promise.allSettled(removals);
+      }
+    } catch(e) {
+      console.warn("Permanent delete Firebase notice:", e);
+    }
+  }
+
+  alert(`✅ ${userName} (+91 ${cleanP}) সম্পূর্ণ স্থায়ীভাবে পার্মানেন্ট ডিলিট সম্পন্ন হয়েছে!`);
+}
+
+function permanentDeleteCurrentModalUser() {
+  const phone = document.getElementById('permTargetPhone')?.value || '';
+  const type = document.getElementById('permTargetType')?.value || 'customer';
+  const name = document.getElementById('permTargetName')?.value || 'User';
+  const email = document.getElementById('permTargetEmail')?.value || '';
+
+  closeUserPermissionControlModal();
+  permanentDeleteUser(email, phone, type, encodeURIComponent(name));
+}
+
 // Expose Manage functions to window
 window.loadManageUsersData = loadManageUsersData;
 window.updateManageStats = updateManageStats;
@@ -11928,6 +12434,15 @@ window.renderManageUsers = renderManageUsers;
 window.toggleBlockUser = toggleBlockUser;
 window.openEditUserModal = openEditUserModal;
 window.closeEditUserModal = closeEditUserModal;
+window.deleteUserRecord = permanentDeleteUser;
+window.permanentDeleteUser = permanentDeleteUser;
+window.permanentDeleteCurrentModalUser = permanentDeleteCurrentModalUser;
+window.openUserPermissionControlModal = openUserPermissionControlModal;
+window.closeUserPermissionControlModal = closeUserPermissionControlModal;
+window.openDirectPermissionByPhone = openDirectPermissionByPhone;
+window.saveUserPermissionControl = saveUserPermissionControl;
+window.onPermStatusRadioChange = onPermStatusRadioChange;
+window.setAllPermCheckboxes = setAllPermCheckboxes;
 // EarnKaro Profit Links Management Functions
 function saveEarnkaroLinks() {
   var links = {

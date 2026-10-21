@@ -2524,6 +2524,107 @@ let DRIVER_DB_KEY = localStorage.getItem('driverDbKey') || "";
 let isOnline = localStorage.getItem('driverOnline') === 'true';
 let isSoundMuted = localStorage.getItem('driverSoundMuted') === 'true';
 
+// ==============================================================
+// ⚙️ REALTIME USER-LEVEL ACCESS & FEATURE CONTROL (DRIVER)
+// ==============================================================
+window.driverUserControlConfig = null;
+
+window.getDriverCleanPhone = function() {
+  const p = DRIVER_PHONE || localStorage.getItem('driverPhone') || '';
+  return String(p).replace(/[^0-9]/g, '').slice(-10);
+};
+
+window.applyDriverUserControls = function(cfg) {
+  window.driverUserControlConfig = cfg || null;
+  const isSuspended = Boolean(cfg && (cfg.status === 'SUSPENDED' || cfg.status === 'BLOCKED'));
+  const reason = (cfg && cfg.suspendReason) ? cfg.suspendReason : 'অ্যাডমিন কর্তৃক আপনার চালক অ্যাকাউন্টটি সাময়িকভাবে স্থগিত রাখা হয়েছে।';
+
+  // 1. Account Suspended Full-Screen Overlay
+  let overlay = document.getElementById('rsgDriverSuspendedOverlay');
+  if (isSuspended) {
+    if (isOnline && typeof setStatusOfflineUI === 'function') {
+      try {
+        isOnline = false;
+        localStorage.setItem('driverOnline', 'false');
+        setStatusOfflineUI();
+      } catch(e) {}
+    }
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'rsgDriverSuspendedOverlay';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.96);backdrop-filter:blur(10px);z-index:99999999;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;font-family:sans-serif';
+      overlay.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:28px 22px;max-width:400px;width:100%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.5);border:2.5px solid #ef4444;box-sizing:border-box">' +
+        '<div style="width:76px;height:76px;border-radius:50%;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 16px;box-shadow:0 4px 14px rgba(220,38,38,0.25)">🚫</div>' +
+        '<h3 style="margin:0 0 8px;color:#991b1b;font-size:18.5px;font-weight:900">চালক অ্যাকাউন্ট সাময়িক স্থগিত (Suspended)</h3>' +
+        '<p id="txtDriverSuspendReason" style="font-size:13px;color:#475569;margin:0 0 16px;line-height:1.5">' + reason + '</p>' +
+        '<div style="background:#fff7ed;border-radius:14px;padding:12px;margin-bottom:18px;border:1.5px solid #fed7aa;font-size:12.5px;color:#9a3412">' +
+        '📞 অ্যাকাউন্ট সক্রিয় করতে বা সহায়তার জন্য হেল্পলাইনে যোগাযোগ করুন:<br>' +
+        '<a href="tel:8768447312" style="color:#ea580c;font-weight:900;font-size:15px;text-decoration:none;display:inline-block;margin-top:6px">📞 8768447312</a>' +
+        '</div>' +
+        '<button type="button" onclick="window.location.reload()" style="background:#0f172a;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:13px;font-weight:800;width:100%;cursor:pointer">🔄 স্ট্যাটাস পুনরায় যাচাই করুন</button>' +
+        '</div>';
+      document.body.appendChild(overlay);
+    } else {
+      overlay.style.display = 'flex';
+      const rEl = document.getElementById('txtDriverSuspendReason');
+      if (rEl) rEl.innerText = reason;
+    }
+  } else {
+    if (overlay) overlay.style.display = 'none';
+  }
+};
+
+window.initDriverUserControlsRealtimeListener = function() {
+  const cleanP = window.getDriverCleanPhone();
+  if (!cleanP || cleanP.length !== 10) return;
+
+  if (typeof firebase === 'undefined' || !firebase.database) return;
+  const dbRef = firebase.database();
+
+  // 1. Listen to micro-node user_controls/<cleanP>
+  dbRef.ref('user_controls/' + cleanP).on('value', function(snap) {
+    const cfg = snap.val();
+    window.applyDriverUserControls(cfg);
+  });
+
+  // 2. Watch if driver was permanently deleted
+  dbRef.ref('drivers/' + cleanP).on('value', function(snap) {
+    if (!snap.exists()) {
+      dbRef.ref('drivers/DRIVER_' + cleanP).once('value').then(function(s2) {
+        if (!s2.exists()) {
+          dbRef.ref('user_controls/' + cleanP).once('value').then(function(ucSnap) {
+            if (!ucSnap.exists()) {
+              console.warn("Driver record permanently removed by admin.");
+              try {
+                localStorage.removeItem('driverPhone');
+                localStorage.removeItem('driverOnline');
+                localStorage.removeItem('driverApproved');
+                localStorage.removeItem('driverName');
+              } catch(e) {}
+              alert("⚠️ আপনার চালক অ্যাকাউন্টটি সিস্টেম থেকে সম্পূর্ণ স্থায়ীভাবে মুছে ফেলা হয়েছে (Permanently Deleted)।");
+              window.location.reload();
+            }
+          });
+        }
+      });
+    } else {
+      const val = snap.val();
+      if (val && (val.status === 'BLOCKED' || val.isBlocked === true)) {
+        if (!window.driverUserControlConfig || window.driverUserControlConfig.status !== 'SUSPENDED') {
+          window.applyDriverUserControls({ status: 'SUSPENDED', suspendReason: 'অ্যাডমিন কর্তৃক অ্যাকাউন্ট স্থগিত করা হয়েছে।' });
+        }
+      }
+    }
+  });
+};
+
+// Auto-run if phone exists
+try {
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    window.initDriverUserControlsRealtimeListener();
+  }
+} catch(e) {}
+
 // Strict Vehicle Categorization (Bike to Bike, Car to Car, Toto/Auto to Toto/Auto, Parcel to All)
 function normalizeVehicleCategory(v) {
   if (!v) return '';
@@ -2537,6 +2638,20 @@ function normalizeVehicleCategory(v) {
 }
 
 function matchesVehicleCategory(driverVeh, reqVeh) {
+  // Check Admin Realtime Controls
+  if (window.driverUserControlConfig) {
+    const cfg = window.driverUserControlConfig;
+    if (cfg.status === 'SUSPENDED' || cfg.status === 'BLOCKED') return false;
+    if (cfg.features) {
+      if (cfg.features.receiveRides === false) return false;
+      const rLow = String(reqVeh || '').toLowerCase();
+      if (cfg.features.rentalDuty === false && (rLow === 'rental' || rLow.includes('rental'))) return false;
+      if (cfg.features.schoolPassDuty === false && (rLow.includes('school') || rLow.includes('pass'))) return false;
+      if (cfg.features.sharedToto === false && (rLow.includes('shared') || rLow.includes('pool'))) return false;
+      if (cfg.features.scheduledDuty === false && (rLow.includes('sched') || rLow.includes('advance'))) return false;
+    }
+  }
+
   let d = normalizeVehicleCategory(driverVeh).toLowerCase();
   let r = normalizeVehicleCategory(reqVeh).toLowerCase();
   if (!d || !r) return false;
@@ -3536,6 +3651,9 @@ async function loginDriver() {
   monitorNetworkConnection();
   listenSocialLinks();
     fetchDriverCities();
+  if (typeof window.initDriverUserControlsRealtimeListener === 'function') {
+    window.initDriverUserControlsRealtimeListener();
+  }
 
   if (isOnline) {
     setStatusOnlineUI();
@@ -3554,6 +3672,16 @@ window._fullDriverLogin = loginDriver;
 
 // === ONLINE / OFFLINE TOGGLE ===
 async function toggleStatus() {
+  if (window.driverUserControlConfig) {
+    if (window.driverUserControlConfig.status === 'SUSPENDED' || window.driverUserControlConfig.status === 'BLOCKED') {
+      alert("❌ আপনার অ্যাকাউন্টটি অ্যাডমিন কর্তৃক সাময়িকভাবে স্থগিত রাখা হয়েছে। অনলাইন হতে পারবেন না।");
+      return;
+    }
+    if (window.driverUserControlConfig.features && window.driverUserControlConfig.features.receiveRides === false) {
+      alert("⚠️ অ্যাডমিন আপনার জন্য নতুন রাইড অ্যালার্ট সাময়িকভাবে বন্ধ রেখেছেন।");
+      return;
+    }
+  }
   if (document.getElementById('lockScreen') && document.getElementById('lockScreen').classList.contains('show')) {
     alert(currentLang === 'hi' ? '❌ आपका अकाउंट कमीशन बकाया होने के कारण लॉक है। कृपया भुगतान करें।' : (currentLang === 'en' ? '❌ Account locked due to commission due. Please pay.' : '❌ আপনার আইডি DUE বকেয়া থাকার কারণে লক আছে। পেমেন্ট করুন।'));
     return;
