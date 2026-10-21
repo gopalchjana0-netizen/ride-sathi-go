@@ -1,8 +1,10 @@
 {
   "rules": {
+    ".read": false,
+    ".write": false,
     "bookings": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "mobile",
@@ -13,12 +15,13 @@
         "city"
       ],
       "$bookingId": {
+        ".read": true,
         ".write": true
       }
     },
     "rides": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "driverPhone",
@@ -28,12 +31,13 @@
         "city"
       ],
       "$rideId": {
+        ".read": true,
         ".write": true
       }
     },
     "completed_rides": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "driverPhone",
@@ -42,22 +46,25 @@
         "city"
       ],
       "$rideId": {
+        ".read": true,
         ".write": true
       }
     },
     "completed_rides_by_driver": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$driverPhone": {
-        ".write": true,
+        ".read": true,
+        ".write": false,
         "$rideId": {
+          ".read": true,
           ".write": true
         }
       }
     },
     "ride_requests": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "vehicle",
@@ -66,12 +73,13 @@
         "city"
       ],
       "$reqId": {
+        ".read": true,
         ".write": true
       }
     },
     "rideRequests": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "vehicle",
@@ -80,12 +88,13 @@
         "city"
       ],
       "$reqId": {
+        ".read": true,
         ".write": true
       }
     },
     "accepted_rides": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "driverPhone",
@@ -93,19 +102,21 @@
         "city"
       ],
       "$rideId": {
+        ".read": true,
         ".write": true
       }
     },
     "live_trips": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$tripId": {
+        ".read": true,
         ".write": true
       }
     },
     "drivers": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "isOnline",
         "isBlocked",
@@ -116,35 +127,38 @@
         "status"
       ],
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "cities": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "isActive",
         "name",
         "active"
       ],
       "$cityId": {
+        ".read": true,
         ".write": true
       }
     },
     "operational_cities": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "active",
         "name"
       ],
       "$cityId": {
+        ".read": true,
         ".write": true
       }
     },
     "feedback": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "customerPhone",
         "bookingId",
@@ -152,70 +166,81 @@
         "rating"
       ],
       "$feedbackId": {
+        ".read": true,
         ".write": true
       }
     },
     "feedbacks": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$feedbackId": {
+        ".read": true,
         ".write": true
       }
     },
     "ratings": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "bookingId",
         "time"
       ],
       "$ratingId": {
+        ".read": true,
         ".write": true
       }
     },
     "coupons": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "code",
         "active"
       ],
       "$code": {
+        ".read": true,
         ".write": true
       }
     },
     "promo_codes": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "code",
         "active"
       ],
       "$code": {
+        ".read": true,
         ".write": true
       }
     },
     "promoCodes": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$code": {
+        ".read": true,
         ".write": true
       }
     },
     "notifications": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "timestamp",
         "time"
       ],
-      "$notifId": {
-        ".write": true
+      "$target": {
+        ".read": true,
+        ".write": true,
+        "$notifId": {
+          ".read": true,
+          ".write": true
+        }
       }
     },
     "login_history": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "loginAt",
         "expiresAt",
@@ -223,26 +248,45 @@
         "uid"
       ],
       "$historyId": {
+        ".read": true,
         ".write": true
       }
     },
     "users": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$userId": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_requests": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$reqId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "school_pass_requests": {
+      ".read": true,
+      ".write": false,
+      "$reqId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "medical_emergency_logs": {
+      ".read": true,
+      ".write": false,
+      "$logId": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_registrations": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "phone",
@@ -250,125 +294,141 @@
         "vehicle"
       ],
       "$regId": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_verifications": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "blocked_drivers": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "blockedAt"
       ],
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "pending_drivers": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_dues": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "time",
         "deadline"
       ],
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "payments": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "time",
         "driverId"
       ],
       "$paymentId": {
+        ".read": true,
         ".write": true
       }
     },
     "wallet": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "driverPhone",
         "time",
         "status"
       ],
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "sos_alerts": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "time"
       ],
       "$alertId": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_selfie_logs": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "date",
         "phone",
         "time"
       ],
       "$logId": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_selfies": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$selfieId": {
+        ".read": true,
         ".write": true
       }
     },
     "driver_locations": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$driverPhone": {
+        ".read": true,
         ".write": true
       }
     },
     "commission_records": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$recId": {
+        ".read": true,
         ".write": true
       }
     },
     "support_chats": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       ".indexOn": [
         "status",
         "lastTimestamp",
         "unreadByAdmin"
-      ]
+      ],
+      "$chatId": {
+        ".read": true,
+        ".write": true
+      }
     },
     "app_config": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$configKey": {
         ".read": true,
         ".write": true
@@ -376,26 +436,43 @@
     },
     "settings": {
       ".read": true,
-      ".write": true
+      ".write": false,
+      "$settingKey": {
+        ".read": true,
+        ".write": true
+      }
     },
     "slides": {
       ".read": true,
-      ".write": true
+      ".write": false,
+      "$slideId": {
+        ".read": true,
+        ".write": true
+      }
     },
     "app_content": {
       ".read": true,
-      ".write": true
+      ".write": false,
+      "$contentKey": {
+        ".read": true,
+        ".write": true
+      }
     },
     "broadcast_history": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$historyId": {
+        ".read": true,
         ".write": true
       }
     },
     "notices": {
       ".read": true,
-      ".write": true
+      ".write": false,
+      "$noticeId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }

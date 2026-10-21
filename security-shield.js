@@ -53,4 +53,12 @@
     );
   } catch (err) {}
 
+  // 4. Clickjacking Frame-Busting Protection
+  try {
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  } catch (err) {}
+
 })();
+

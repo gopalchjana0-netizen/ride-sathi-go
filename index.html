@@ -1607,6 +1607,172 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
+// === MODERN IN-APP HEADS-UP DROP-DOWN NOTIFICATION BANNER (UBER / OLA / ZOMATO STYLE) ===
+(function() {
+  let bannerTimer = null;
+  let startY = 0;
+  let currentY = 0;
+
+  function createOrGetBanner() {
+    let el = document.getElementById('rsgHeadsUpBanner');
+    if (el) return el;
+
+    el = document.createElement('div');
+    el.id = 'rsgHeadsUpBanner';
+    el.style.cssText = [
+      'position: fixed',
+      'top: 14px',
+      'left: 50%',
+      'transform: translate(-50%, -180%)',
+      'width: calc(100% - 24px)',
+      'max-width: 440px',
+      'box-sizing: border-box',
+      'z-index: 2147483647',
+      'background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)',
+      'border: 1px solid rgba(255, 255, 255, 0.18)',
+      'border-radius: 20px',
+      'box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 4px 14px rgba(0, 0, 0, 0.3)',
+      'backdrop-filter: blur(16px)',
+      '-webkit-backdrop-filter: blur(16px)',
+      'padding: 12px 14px 14px 14px',
+      'color: #ffffff',
+      'opacity: 0',
+      'pointer-events: none',
+      'transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
+      'cursor: pointer',
+      'user-select: none',
+      '-webkit-user-select: none'
+    ].join(';') + ';';
+
+    el.innerHTML = [
+      '<div style="position:absolute;top:5px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:rgba(255,255,255,0.25);border-radius:10px"></div>',
+      '<div style="display:flex;align-items:center;gap:12px;margin-top:2px">',
+      '  <div id="rsgHeadsUpIconWrap" style="width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 8px rgba(0,0,0,0.25)">',
+      '    <span id="rsgHeadsUpIcon">🚗</span>',
+      '  </div>',
+      '  <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">',
+      '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">',
+      '      <span style="font-size:10.5px;font-weight:900;color:#38bdf8;text-transform:uppercase;letter-spacing:0.6px">Ride Sathi Go</span>',
+      '      <span style="font-size:10px;color:#94a3b8;font-weight:700">এখনই • Just now</span>',
+      '    </div>',
+      '    <div id="rsgHeadsUpTitle" style="font-size:14px;font-weight:900;color:#ffffff;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>',
+      '    <div id="rsgHeadsUpBody" style="font-size:12px;color:#cbd5e1;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>',
+      '  </div>',
+      '  <button id="rsgHeadsUpClose" type="button" aria-label="Close" style="background:none;border:none;color:#94a3b8;font-size:20px;font-weight:900;cursor:pointer;padding:4px 6px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>',
+      '</div>'
+    ].join('');
+
+    if (document.body) {
+      document.body.appendChild(el);
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('rsgHeadsUpBanner') && document.body) {
+          document.body.appendChild(el);
+        }
+      });
+    }
+
+    const closeBtn = el.querySelector('#rsgHeadsUpClose');
+    if (closeBtn) {
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        hideHeadsUpBanner();
+      };
+    }
+
+    el.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      currentY = startY;
+    }, { passive: true });
+
+    el.addEventListener('touchmove', (e) => {
+      currentY = e.touches[0].clientY;
+      let diff = currentY - startY;
+      if (diff < 0) {
+        el.style.transform = `translate(-50%, ${diff}px)`;
+      }
+    }, { passive: true });
+
+    el.addEventListener('touchend', () => {
+      let diff = currentY - startY;
+      if (diff < -28) {
+        hideHeadsUpBanner();
+      } else {
+        el.style.transform = 'translate(-50%, 0)';
+      }
+    });
+
+    return el;
+  }
+
+  function hideHeadsUpBanner() {
+    if (bannerTimer) {
+      clearTimeout(bannerTimer);
+      bannerTimer = null;
+    }
+    const el = document.getElementById('rsgHeadsUpBanner');
+    if (el) {
+      el.style.transform = 'translate(-50%, -180%)';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    }
+  }
+
+  function showHeadsUpNotification(title, body, options = {}) {
+    try {
+      const banner = createOrGetBanner();
+      const t = String(title || 'Ride Sathi Go');
+      const b = String(body || '');
+
+      let icon = options.icon || '🔔';
+      const low = (t + ' ' + b + ' ' + (options.tag || '')).toLowerCase();
+      if (low.includes('স্বাগতম') || low.includes('welcome') || low.includes('स्वागत')) icon = '👋';
+      else if (low.includes('otp') || low.includes('ওটিপি') || low.includes('গোপন')) icon = '🔐';
+      else if (low.includes('সম্পন্ন') || low.includes('completed')) icon = '🎉';
+      else if (low.includes('বাতিল') || low.includes('cancel') || low.includes('রদ')) icon = '❌';
+      else if (low.includes('রাইড') || low.includes('ride') || low.includes('booking')) icon = '🚖';
+      else if (low.includes('টাকা') || low.includes('payment') || low.includes('ভাড়া') || low.includes('fare')) icon = '💰';
+
+      const iconEl = banner.querySelector('#rsgHeadsUpIcon');
+      const titleEl = banner.querySelector('#rsgHeadsUpTitle');
+      const bodyEl = banner.querySelector('#rsgHeadsUpBody');
+
+      if (iconEl) iconEl.innerText = icon;
+      if (titleEl) titleEl.innerText = t;
+      if (bodyEl) bodyEl.innerText = b;
+
+      try {
+        if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+          navigator.vibrate([40, 30, 40]);
+        }
+      } catch(e) {}
+
+      banner.onclick = (e) => {
+        if (e.target && e.target.id === 'rsgHeadsUpClose') return;
+        if (typeof options.onClick === 'function') options.onClick();
+        hideHeadsUpBanner();
+      };
+
+      banner.style.display = 'block';
+      void banner.offsetWidth;
+      banner.style.transform = 'translate(-50%, 0)';
+      banner.style.opacity = '1';
+      banner.style.pointerEvents = 'auto';
+
+      if (bannerTimer) clearTimeout(bannerTimer);
+      const duration = Number(options.duration || 4500);
+      bannerTimer = setTimeout(() => {
+        hideHeadsUpBanner();
+      }, duration);
+    } catch(err) {
+      console.warn('showHeadsUpNotification error:', err);
+    }
+  }
+
+  window.showHeadsUpNotification = showHeadsUpNotification;
+  window.hideHeadsUpNotification = hideHeadsUpBanner;
+})();
+
 // Native Web Notification Helper for Customer System Alerts (Background & Foreground)
 // STRICTLY LIMITED TO 4 CUSTOMER NOTIFICATION EVENTS ONLY (NO SPAM / NO REDUNDANT ALERTS):
 // 1. Welcome notification on Login (cust-welcome) - One-time only with customer name
@@ -1627,6 +1793,12 @@ window.sendNativeNotification = function(title, body, tag = 'ride-status-custome
       return;
     }
 
+    // 1. FOREGROUND: Immediately show modern Heads-Up Drop-Down Banner on screen (Auto-dismisses in 4.5s)
+    if (typeof window.showHeadsUpNotification === 'function') {
+      window.showHeadsUpNotification(title, body, { tag: tag, url: url });
+    }
+
+    // 2. BACKGROUND: Send browser/system notification if supported
     if ('Notification' in window && Notification.permission === 'granted') {
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
@@ -2955,6 +3127,24 @@ document.addEventListener('DOMContentLoaded', function() {
   <!-- Drawer Scrollable Content -->
   <div class="drawer-content">
 
+    <!-- 🚨 EMERGENCY MEDICAL LIFELINE (IN DRAWER MENU) -->
+    <div id="drawerMedEmergencySection" style="margin-bottom:14px">
+      <div class="drawer-card" style="background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;border:none;box-shadow:0 4px 15px rgba(220,38,38,0.35);cursor:pointer;padding:14px" onclick="openMedicalEmergencyModal(event);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:900;color:#fff;font-size:14px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:22px">🚨</span> <span>জরুরি মেডিকেল / হাসপাতাল রাইড</span>
+          </span>
+          <span style="background:#fee2e2;color:#dc2626;font-size:10px;font-weight:900;padding:2px 8px;border-radius:12px">24x7 SOS</span>
+        </div>
+        <div style="font-size:11.5px;color:#fecaca;line-height:1.4;margin-bottom:10px">
+          জরুরি অবস্থায় রোগীকে হাসপাতালে পৌঁছানোর জন্য সর্বোচ্চ অগ্রাধিকার (High-Priority Ambulance Speed Service)।
+        </div>
+        <button type="button" onclick="openMedicalEmergencyModal(event);" style="width:100%;background:#ffffff;color:#dc2626;border:none;border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+          <span>🚨 এখনই মেডিকেল রাইড বুক করুন ➔</span>
+        </button>
+      </div>
+    </div>
+
     <!-- SECTION 1: RIDE HISTORY & TAX INVOICES -->
     <div>
       <div class="drawer-section-title" data-i18n="drawerTitleHistory">📜 রাইড হিস্ট্রি ও ট্যাক্স ইনভয়েস</div>
@@ -3528,6 +3718,27 @@ window.closeLiveChatModal = function() {
         </div>
       </div>
 
+      <!-- 🛺 SHARED TOTO SELECTION PILL (NextGen Point 1) -->
+      <div id="sharedTotoOptionWrap" style="display:none;margin:8px 0;background:#fef9c3;border:1.5px solid #facc15;border-radius:12px;padding:10px;text-align:center">
+        <div style="font-size:12px;font-weight:800;color:#854d0e;margin-bottom:6px">🛺 টোটো বুকিংয়ের ধরণ বাছুন:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button type="button" id="btnTotoSharedSeat" onclick="setTotoBookingType('shared')" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:8px 6px;font-size:12px;font-weight:800;cursor:pointer">
+            🟢 শেয়ার্ড সিট (<span id="txtSharedTotoFare">₹15</span>/সিট)
+          </button>
+          <button type="button" id="btnTotoFullReserve" onclick="setTotoBookingType('full')" style="background:#e2e8f0;color:#334155;border:none;border-radius:8px;padding:8px 6px;font-size:12px;font-weight:800;cursor:pointer">
+            🔵 ফুল টোটো রিজার্ভ
+          </button>
+        </div>
+        <div id="sharedTotoSeatsRow" style="display:none;margin-top:8px;align-items:center;justify-content:center;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:#854d0e">সিট সংখ্যা:</span>
+          <select id="selSharedTotoSeats" onchange="updateSharedTotoFare()" style="padding:4px 8px;border-radius:6px;border:1px solid #cbd5e1;font-weight:bold">
+            <option value="1">১টি সিট</option>
+            <option value="2">২টি সিট</option>
+            <option value="3">৩টি সিট</option>
+          </select>
+        </div>
+      </div>
+
       <!-- 3. CAR -->
       <div class="rapido-veh-card" id="carBox" onclick="selectVehicle('Car')">
         <div class="rapido-veh-icon-wrap">🚗</div>
@@ -3581,6 +3792,20 @@ window.closeLiveChatModal = function() {
           <span class="rapido-veh-eta" style="background:#ffedd5;color:#c2410c" data-i18n="etaHourDay">ঘণ্টা/দিন</span>
           <div class="rapido-radio-circle"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- 🎒 SCHOOL & DAILY PASS BANNER (NextGen Point 4) -->
+    <div id="schoolPassBanner" style="display:none;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #93c5fd;border-radius:14px;padding:12px 14px;margin:12px 0;cursor:pointer" onclick="openSchoolPassModal()">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">🎒</span>
+          <div>
+            <div style="font-size:13.5px;font-weight:900;color:#1e40af">স্কুল ও অফিস মাসিক পাস (School & Daily Pass)</div>
+            <div style="font-size:11px;color:#3b82f6" id="txtSchoolPassSub">মাসিক সাশ্রয়ী প্যাকেজ • বিশ্বস্ত স্থায়ী চালক</div>
+          </div>
+        </div>
+        <span style="background:#2563eb;color:#fff;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:bold">আবেদন করুন ➔</span>
       </div>
     </div>
 
@@ -5137,6 +5362,141 @@ window.submitElectricBillRequest = function() {
     </div>
   </div>
 </div>
+
+<!-- 🚨 24x7 MEDICAL EMERGENCY LIFELINE MODAL -->
+<div id="medicalEmergencyModal" class="modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:rgba(15,23,42,0.88);backdrop-filter:blur(8px);z-index:999999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;-webkit-tap-highlight-color:transparent;pointer-events:auto" onclick="if(event.target === this) closeMedicalEmergencyModal()">
+  <div class="modal-box" onclick="event.stopPropagation()" style="max-width:440px;width:94%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(220,38,38,0.4);border:2px solid #ef4444;position:relative;z-index:1000000000;pointer-events:auto;max-height:92vh;overflow-y:auto;text-align:left">
+    
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #fee2e2;padding-bottom:10px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:28px">🚨</span>
+        <div>
+          <h3 style="margin:0;color:#b91c1c;font-size:17px;font-weight:900">জরুরি মেডিকেল ও হাসপাতাল সেবা</h3>
+          <p style="font-size:11px;color:#64748b;margin:2px 0 0">২৪x৭ হাই-প্রায়োরিটি অ্যাম্বুলেন্স স্পিড সার্ভিস</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeMedicalEmergencyModal()" style="border:none;background:#fee2e2;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;color:#dc2626;line-height:1">&times;</button>
+    </div>
+
+    <!-- 1. Direct Emergency Helpline Call Button -->
+    <div style="margin-bottom:14px">
+      <a id="btnMedEmergencyCall" href="tel:8768447312" style="display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;text-decoration:none;padding:12px;border-radius:14px;font-size:13.5px;font-weight:900;box-shadow:0 4px 12px rgba(220,38,38,0.4);text-align:center">
+        <span>📞 জরুরি হেল্পলাইনে সরাসরি কল করুন</span>
+      </a>
+      <div style="font-size:11px;color:#78716c;text-align:center;margin-top:4px">অ্যাম্বুলেন্স বা তাৎক্ষণিক সহায়তার জন্য সরাসরি হেল্পলাইনে কথা বলুন</div>
+    </div>
+
+    <div style="background:#fef2f2;border:1.5px dashed #f87171;border-radius:14px;padding:12px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:900;color:#991b1b;margin-bottom:8px">🏥 নিকটবর্তী হাসপাতাল বা ক্লিনিক বাছুন:</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button type="button" onclick="selectEmergencyHospital('কাঁথি মহকুমা হাসপাতাল (Contai Sub-Divisional Hospital)')" style="background:#fff;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 10px;text-align:left;font-size:12px;font-weight:800;color:#991b1b;cursor:pointer">
+          🏥 মহকুমা / জেলা হাসপাতাল (Govt Hospital)
+        </button>
+        <button type="button" onclick="selectEmergencyHospital('নিকটবর্তী গ্রামীণ হাসপাতাল / BPHC')" style="background:#fff;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 10px;text-align:left;font-size:12px;font-weight:800;color:#991b1b;cursor:pointer">
+          🏥 নিকটবর্তী গ্রামীণ হাসপাতাল (Rural Hospital)
+        </button>
+        <button type="button" onclick="selectEmergencyHospital('নিকটবর্তী প্রাইভেট নার্সিং হোম / ক্লিনিক')" style="background:#fff;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 10px;text-align:left;font-size:12px;font-weight:800;color:#991b1b;cursor:pointer">
+          🏥 প্রাইভেট নার্সিং হোম / ক্লিনিক (Nursing Home)
+        </button>
+      </div>
+    </div>
+
+    <!-- Hospital Name Input -->
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;font-weight:800;color:#334155">হাসপাতাল / গন্তব্য ঠিকানা *</label>
+      <input type="text" id="medDropInput" placeholder="হাসপাতাল বা ডাক্তারের চেম্বারের নাম..." style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+    </div>
+
+    <!-- Pickup Location Input -->
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;font-weight:800;color:#334155">রোগীর পিকআপের স্থান *</label>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input type="text" id="medPickupInput" placeholder="রোগীর বর্তমান ঠিকানা..." style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box">
+        <button type="button" onclick="useCurrentLocationForEmergency()" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0 12px;font-size:12px;font-weight:bold;cursor:pointer" title="GPS">🎯 GPS</button>
+      </div>
+    </div>
+
+    <!-- Vehicle Selection -->
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:800;color:#334155">পছন্দের জরুরি গাড়ি:</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+        <button type="button" id="btnMedVehCar" onclick="selectEmergencyVehicle('Car')" style="background:#dc2626;color:#fff;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:900;cursor:pointer;text-align:center">
+          🚗 কার / ক্যাব (রোগীর জন্য)
+        </button>
+        <button type="button" id="btnMedVehToto" onclick="selectEmergencyVehicle('Toto')" style="background:#e2e8f0;color:#334155;border:none;border-radius:10px;padding:10px;font-size:12px;font-weight:900;cursor:pointer;text-align:center">
+          🛺 টোটো / অটো (লোকাল)
+        </button>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <button type="button" class="btn" onclick="submitMedicalEmergencyBooking()" style="width:100%;background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;padding:14px;border-radius:14px;font-size:15px;font-weight:900;box-shadow:0 4px 15px rgba(220,38,38,0.4);border:none;cursor:pointer">
+      🚨 জরুরি মেডিকেল রাইড বুক করুন
+    </button>
+    <div style="text-align:center;font-size:11px;color:#64748b;margin-top:8px">
+      নিকটবর্তী সমস্ত সক্রিয় চালকের কাছে সাইরেন অ্যালার্ট পাঠানো হবে
+    </div>
+  </div>
+</div>
+
+<!-- 🎒 SCHOOL & DAILY PASS REGISTRATION MODAL (NextGen Point 4) -->
+<div id="schoolPassModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;pointer-events:auto">
+  <div class="modal-box" style="max-width:440px;width:92%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1.5px solid #e2e8f0;position:relative;z-index:99999999;pointer-events:auto;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #f1f5f9;padding-bottom:10px;margin-bottom:12px">
+      <div style="text-align:left">
+        <h3 style="margin:0;color:#1e40af;font-size:17px;font-weight:900">🎒 স্কুল ও অফিস মাসিক পাস আবেদন</h3>
+        <p style="font-size:11.5px;color:#64748b;margin:2px 0 0">সাশ্রয়ী মাসিক চুক্তি • বিশ্বস্ত স্থায়ী লোকাল চালক</p>
+      </div>
+      <button type="button" onclick="closeSchoolPassModal()" style="border:none;background:#f1f5f9;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;color:#475569;line-height:1">&times;</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;text-align:left">
+      <div>
+        <label style="font-size:12px;font-weight:800;color:#334155">শিক্ষার্থী / যাত্রীর নাম *</label>
+        <input type="text" id="spChildName" placeholder="যেমন: রাহুল জানা" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:800;color:#334155">স্কুল / অফিস / গন্তব্যের নাম *</label>
+        <input type="text" id="spSchoolName" placeholder="যেমন: কাঁথি হাই স্কুল / কলেজ" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:800;color:#334155">পিকআপের স্থান (বাড়ি) *</label>
+        <input type="text" id="spPickup" placeholder="আপনার বাড়ির ঠিকানা লিখুন..." style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:12px;font-weight:800;color:#334155">যাওয়ার সময় *</label>
+          <input type="time" id="spPickupTime" value="08:30" style="width:100%;padding:9px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:800;color:#334155">পছন্দের গাড়ি</label>
+          <select id="spVehicle" style="width:100%;padding:9px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+            <option value="TOTO">🛺 টোটো (সাশ্রয়ী)</option>
+            <option value="AUTO">🛺 অটো</option>
+            <option value="CAR">🚗 কার / পুল</option>
+            <option value="BIKE">🏍️ বাইক</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:800;color:#334155">অভিভাবক / যাত্রীর ফোন নম্বর *</label>
+        <input type="tel" id="spPhone" maxlength="10" placeholder="10 Digit Mobile Number" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;box-sizing:border-box;margin-top:4px">
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px;font-size:11.5px;color:#166534">
+        🎉 <b>বিশেষ সুবিধা:</b> এলাকার সবচেয়ে রেটিংপ্রাপ্ত চালক নির্দিষ্ট থাকবে। অভিভাবক প্রতিদিন লাইভ ট্র্যাকিং দেখতে পাবেন।
+      </div>
+
+      <button type="button" class="btn" onclick="submitSchoolPassApplication()" style="background:#2563eb;color:#fff;padding:12px;border-radius:12px;font-size:14px;font-weight:900;margin-top:4px">
+        ✅ আবেদন সাবমিট করুন (Submit)
+      </button>
+      <div style="text-align:center;font-size:11px;color:#64748b">
+        হেল্পলাইন: 8768447312 | কোনো অগ্রিম ফি লাগবে না
+      </div>
+    </div>
+  </div>
+</div>
 <!-- 4.9 OLA / RAPIDO STYLE PAYMENT SETTLEMENT MODAL (ZERO-BILL DYNAMIC UPI & CASH FLOW) -->
 <div id="ridePaymentModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.88);backdrop-filter:blur(8px);z-index:99999998;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;pointer-events:auto">
   <div class="modal-box" style="text-align:center;max-width:440px;width:92%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1.5px solid #e2e8f0;position:relative;z-index:99999999;pointer-events:auto;max-height:92vh;overflow-y:auto">
@@ -5639,12 +5999,14 @@ function getCityFromLocation(lat, lng) {
         const dist = calcDistanceKm({ lat: Number(lat), lon: Number(lng) }, { lat: cLat, lon: cLng });
         if (dist <= rad && dist < minDistance) {
           minDistance = dist;
-          const isAct = (city.isActive !== false && city.active !== false);
+          const isAct = (city.isActive !== false && city.active !== false && city.isServiceActive !== false && city.status !== 'OFF');
           matched = {
             ...city,
             distanceToCenter: dist,
-            baseFare: city.baseFare || 30,
-            perKmFare: city.perKmFare || city.perKm || 15,
+            baseFare: Number(city.baseFare || 30),
+            perKmFare: Number(city.perKmFare || city.perKm || 15),
+            perMinFare: Number(city.perMinFare || city.perMin || 0),
+            minFare: Number(city.minFare || city.minimumFare || city.baseFare || 30),
             isServiceActive: isAct
           };
         }
@@ -5654,12 +6016,12 @@ function getCityFromLocation(lat, lng) {
 
   // Fallback only if no specific location matched, but strictly respect active cities
   if (!matched && window.activeCitiesList.length > 0) {
-    const activeCity = window.activeCitiesList.find(c => c.isActive !== false && c.active !== false);
+    const activeCity = window.activeCitiesList.find(c => c.isActive !== false && c.active !== false && c.status !== 'OFF' && c.isServiceActive !== false);
     if (activeCity) {
-      matched = { ...activeCity, baseFare: activeCity.baseFare || 30, perKmFare: activeCity.perKmFare || activeCity.perKm || 15, isServiceActive: true };
+      matched = { ...activeCity, baseFare: Number(activeCity.baseFare || 30), perKmFare: Number(activeCity.perKmFare || activeCity.perKm || 15), minFare: Number(activeCity.minFare || 30), isServiceActive: true };
     } else {
       const firstCity = window.activeCitiesList[0];
-      matched = { ...firstCity, baseFare: firstCity.baseFare || 30, perKmFare: firstCity.perKmFare || firstCity.perKm || 15, isServiceActive: false };
+      matched = { ...firstCity, baseFare: Number(firstCity.baseFare || 30), perKmFare: Number(firstCity.perKmFare || firstCity.perKm || 15), minFare: Number(firstCity.minFare || 30), isServiceActive: false };
     }
   }
 
@@ -5677,7 +6039,7 @@ function applyCityMatch(lat, lng) {
     localStorage.setItem('currentCity', matched.name);
     localStorage.setItem('currentCityData', JSON.stringify(matched));
     
-    if (matched.isServiceActive === false || matched.isActive === false || matched.active === false) {
+    if (matched.isServiceActive === false || matched.isActive === false || matched.active === false || matched.status === 'OFF') {
       if (cityText) {
         cityText.innerHTML = `🏙️ শহর: <b>${matched.name}</b> <span style="color:#ef4444;font-weight:bold">(🔴 এই শহরে সেবা সাময়িকভাবে বন্ধ আছে)</span>`;
       }
@@ -5748,31 +6110,49 @@ async function fetchActiveCities() {
   } catch(e) {}
 
   let fetchedFromRemote = false;
+
+  // 1. Fetch from Cloudflare Worker Edge (0ms CDN, 100% Free Tier, 0 Firebase download bytes)
   try {
-    if (firestore) {
-      const snap = await getDocs(collection(firestore, 'cities'));
-      if (!snap.empty) {
-        const fetched = [];
-        snap.forEach(d => {
-          const data = d.data();
-          if (data.isActive !== false) fetched.push({ id: d.id, ...data });
-        });
-        if (fetched.length > 0) {
-          window.activeCitiesList = fetched;
-          fetchedFromRemote = true;
-        }
+    const cfRes = await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities');
+    if (cfRes.ok) {
+      const cfJson = await cfRes.json();
+      if (cfJson && Array.isArray(cfJson.cities) && cfJson.cities.length > 0) {
+        window.activeCitiesList = cfJson.cities.filter(c => (c && c.isActive !== false && c.active !== false && c.status !== 'OFF'));
+        fetchedFromRemote = true;
       }
     }
   } catch(e) {}
 
+  // 2. Fallback to Firestore
+  if (!fetchedFromRemote) {
+    try {
+      if (firestore) {
+        const snap = await getDocs(collection(firestore, 'cities'));
+        if (!snap.empty) {
+          const fetched = [];
+          snap.forEach(d => {
+            const data = d.data();
+            if (data.isActive !== false && data.active !== false && data.status !== 'OFF') fetched.push({ id: d.id, ...data });
+          });
+          if (fetched.length > 0) {
+            window.activeCitiesList = fetched;
+            fetchedFromRemote = true;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 3. Fallback to RTDB
   if (!fetchedFromRemote && db) {
     try {
-      const rSnap = await get(ref(db, 'cities'));
-      if (rSnap.exists()) {
-        const v = rSnap.val();
+      const rSnap = await get(ref(db, 'operational_cities'));
+      const cSnap = !rSnap.exists() ? await get(ref(db, 'cities')) : null;
+      const v = rSnap.exists() ? rSnap.val() : (cSnap && cSnap.exists() ? cSnap.val() : null);
+      if (v) {
         const fetched = [];
         Object.keys(v).forEach(k => {
-          if (v[k].isActive !== false) fetched.push({ id: k, ...v[k] });
+          if (v[k].isActive !== false && v[k].active !== false && v[k].status !== 'OFF') fetched.push({ id: k, ...v[k] });
         });
         if (fetched.length > 0) {
           window.activeCitiesList = fetched;
@@ -6907,10 +7287,11 @@ function listenAdminNotices() {
   const txt = document.getElementById('adminNoticeTxt');
   const dot = document.getElementById('headerNotifDot');
 
-  // 1. Live Push Broadcast from Admin (settings/broadcast) - Single Source of Truth
+  // 1. Live Push Broadcast from Admin (settings/broadcast) - Dual Sync (Cloudflare D1 + Firebase)
   onValue(ref(db, 'settings/broadcast'), snap => {
     let b = snap.val();
-    if (b && b.active !== false && (Date.now() - (b.time || 0) < 7 * 24 * 60 * 60 * 1000)) {
+    let isActive = b && (b.active === true || b.active === 1 || b.active === '1');
+    if (isActive && (Date.now() - (b.time || 0) < 7 * 24 * 60 * 60 * 1000)) {
       let target = b.target || 'ALL';
       if (target === 'ALL' || target === 'CUSTOMER') {
         if (banner) {
@@ -6919,11 +7300,15 @@ function listenAdminNotices() {
         }
         if (dot) dot.classList.remove('hidden');
 
-        // Fresh broadcast toast notification
-        let lastSeenNotice = localStorage.getItem('cust_last_notice_' + (b.time || ''));
+        // Fresh broadcast heads-up notification
+        let noticeId = b.id || b.time || '';
+        let lastSeenNotice = localStorage.getItem('cust_last_notice_' + noticeId);
         if (!lastSeenNotice) {
-          localStorage.setItem('cust_last_notice_' + (b.time || ''), 'true');
-          if (typeof showToast === 'function') {
+          localStorage.setItem('cust_last_notice_' + noticeId, 'true');
+          let icon = b.type === 'ALERT' ? '🚨' : (b.type === 'BONUS' ? '🎁' : '📢');
+          if (typeof window.showHeadsUpNotification === 'function') {
+            window.showHeadsUpNotification(b.title || 'Ride Sathi Notice', b.message || '', { icon, tag: 'broadcast_' + noticeId });
+          } else if (typeof showToast === 'function') {
             showToast(`📢 ${b.title || 'নতুন নোটিশ'}: ${b.message || ''}`);
           }
         }
@@ -6931,12 +7316,44 @@ function listenAdminNotices() {
       }
     }
 
-    // IMMEDIATE REMOVAL: When notice is cleared or deleted by Admin, hide banner instantly!
+    // IMMEDIATE REMOVAL: When notice is stopped, turned off, or deleted by Admin, hide banner instantly!
     if (banner) {
       banner.style.display = 'none';
       if (txt) txt.innerHTML = '';
     }
   });
+
+  // Cloudflare D1 Edge Broadcast Sync (High limit, fast edge response, zero quota burn)
+  async function syncCloudflareCustomerBroadcasts() {
+    try {
+      const res = await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/broadcasts?target=CUSTOMER', { cache: 'no-cache' });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.broadcasts) && json.broadcasts.length > 0) {
+        const latest = json.broadcasts[0];
+        const isActive = latest && (latest.active === 1 || latest.active === true || latest.active === '1');
+        if (isActive) {
+          if (banner) {
+            banner.style.display = 'block';
+            if (txt) txt.innerHTML = `<b>${latest.title || 'নোটিশ'}:</b> ${latest.message || ''}`;
+          }
+          if (dot) dot.classList.remove('hidden');
+
+          let noticeId = latest.id || latest.created_at || '';
+          let lastSeenNotice = localStorage.getItem('cust_last_notice_' + noticeId);
+          if (!lastSeenNotice) {
+            localStorage.setItem('cust_last_notice_' + noticeId, 'true');
+            let icon = latest.type === 'ALERT' ? '🚨' : (latest.type === 'BONUS' ? '🎁' : '📢');
+            if (typeof window.showHeadsUpNotification === 'function') {
+              window.showHeadsUpNotification(latest.title || 'Ride Sathi Notice', latest.message || '', { icon, tag: 'broadcast_' + noticeId });
+            }
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('CF edge broadcast sync fallback:', e);
+    }
+  }
+  syncCloudflareCustomerBroadcasts();
 
   // 2. Broadcast History (Real-time synchronization with Admin History)
   onValue(ref(db, 'broadcast_history'), snap => {
@@ -6964,8 +7381,12 @@ function listenAdminNotices() {
 }
 listenAdminNotices();
 
-// Toast popup notification helper
+// Toast popup notification helper (Enhanced with Top Drop-Down Banner)
 function showToast(msg) {
+  if (typeof window.showHeadsUpNotification === 'function') {
+    window.showHeadsUpNotification('Ride Sathi Go', msg);
+    return;
+  }
   let toast = document.getElementById('liveAppToast');
   if (!toast) {
     toast = document.createElement('div');
@@ -9051,7 +9472,7 @@ window.loadBookingHistory = function() {
   }
   listEl.innerHTML = '<div style="text-align:center;padding:10px;color:#64748b">⏳ লোড হচ্ছে...</div>';
 
-  onValue(ref(db, 'bookings'), snap => {
+  get(query(ref(db, 'bookings'), limitToLast(60))).then(snap => {
     let h = '';
     if (snap.exists()) {
       snap.forEach(c => {
@@ -9070,6 +9491,8 @@ window.loadBookingHistory = function() {
       });
     }
     listEl.innerHTML = h || '<div style="text-align:center;padding:10px;color:#64748b">No rides</div>';
+  }).catch(() => {
+    listEl.innerHTML = '<div style="text-align:center;padding:10px;color:#64748b">No rides</div>';
   });
 };
 
@@ -10882,6 +11305,9 @@ window.confirmAndPlaceBooking = async function(e) {
     paymentMethod: (window.selectedPayType || localStorage.getItem('selectedPayType') || 'CASH').toUpperCase() === 'ONLINE' ? 'Online' : 'Cash',
     payMethod: (window.selectedPayType || localStorage.getItem('selectedPayType') || 'CASH').toUpperCase(),
     couponApplied: window.appliedCoupon || null,
+    isSharedToto: (window.selectedVehicle === 'Toto' && window.selectedTotoBookingType === 'shared'),
+    sharedSeats: (window.selectedVehicle === 'Toto' && window.selectedTotoBookingType === 'shared') ? (window.selectedSharedSeats || 1) : 0,
+    isMedicalEmergency: Boolean(window.isMedicalEmergencyActive),
     otp: String(otp)
   };
   window.lastBookingRecord = bookingRecord;
@@ -13542,8 +13968,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 <!-- ============================================== -->
 <!-- 🎙️ MULTI-LANGUAGE VOICE RIDE BOOKING MODAL (TIRANGA THEME 🇮🇳) -->
 <!-- ============================================== -->
-<div id="voiceRideModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.72);z-index:999999;backdrop-filter:blur(6px);justify-content:center;align-items:flex-end;">
-  <div style="background:#ffffff;width:100%;max-width:480px;border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -12px 40px rgba(0,0,0,0.35);overflow:hidden;border:1px solid #cbd5e1;display:flex;flex-direction:column;animation:slideUpSheet 0.3s cubic-bezier(0.16,1,0.3,1);">
+<div id="voiceRideModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.72);z-index:999999;backdrop-filter:blur(6px);justify-content:center;align-items:flex-end;" onclick="if(event.target === this) closeVoiceRideModal()">
+  <div onclick="event.stopPropagation()" style="background:#ffffff;width:100%;max-width:480px;border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -12px 40px rgba(0,0,0,0.35);overflow:hidden;border:1px solid #cbd5e1;display:flex;flex-direction:column;animation:slideUpSheet 0.3s cubic-bezier(0.16,1,0.3,1);">
     
     <!-- Top Indian Flag Ribbon (Saffron - White - Green) -->
     <div style="height:5px;background:linear-gradient(90deg, #FF671F 0%, #FF671F 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #046A38 66.6%, #046A38 100%)"></div>
@@ -14515,6 +14941,407 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     } catch(e) {}
   }
 
+})();
+</script>
+
+<!-- ============================================================== -->
+<!-- 🚀 NEXTGEN SPECIAL FEATURES CLIENT CONTROLLER (CUSTOMER) -->
+<!-- ============================================================== -->
+<script>
+(function() {
+  window.nextGenConfig = {
+    sharedToto: { enabled: true, seatFare: 15, maxSeats: 4 },
+    medEmergency: { enabled: true, hotline: '8768447312', fee: 0, siren: true },
+    schoolPass: { enabled: true, baseRate: 999, discount: 10, contact: '8768447312' },
+    smartVoice: { enabled: true, lang: 'bn-IN' }
+  };
+  window.selectedTotoBookingType = 'full';
+  window.selectedSharedSeats = 1;
+  window.isMedicalEmergencyActive = false;
+
+  function getClientDb() {
+    return window.firebaseDb || (typeof db !== 'undefined' ? db : (firebase && firebase.database ? firebase.database() : null));
+  }
+
+  function initNextGenFeaturesListener() {
+    const d = getClientDb();
+    if (!d) return;
+
+    d.ref('app_config/special_features').on('value', function(snap) {
+      if (snap.exists()) {
+        window.nextGenConfig = Object.assign({}, window.nextGenConfig, snap.val());
+      }
+      applyNextGenUI();
+    });
+  }
+
+  function applyNextGenUI() {
+    const cfg = window.nextGenConfig || {};
+
+    // 1. Medical Emergency (In Drawer Menu)
+    const medEl = document.getElementById('drawerMedEmergencySection');
+    if (medEl) {
+      medEl.style.display = (cfg.medEmergency && cfg.medEmergency.enabled !== false) ? 'block' : 'none';
+    }
+
+    // 2. School Pass Banner
+    const spEl = document.getElementById('schoolPassBanner');
+    if (spEl) {
+      spEl.style.display = (cfg.schoolPass && cfg.schoolPass.enabled !== false) ? 'block' : 'none';
+    }
+    const spSub = document.getElementById('txtSchoolPassSub');
+    if (spSub && cfg.schoolPass && cfg.schoolPass.baseRate) {
+      spSub.innerText = `মাসিক মাত্র ₹${cfg.schoolPass.baseRate} থেকে শুরু • স্থায়ী বিশ্বস্ত চালক`;
+    }
+
+    // 3. One-Shot Voice
+    const voiceEl = document.getElementById('oneShotVoiceWrap');
+    if (voiceEl) {
+      voiceEl.style.display = (cfg.smartVoice && cfg.smartVoice.enabled !== false) ? 'block' : 'none';
+    }
+
+    // 4. Shared Toto Option
+    const wrap = document.getElementById('sharedTotoOptionWrap');
+    const fareTxt = document.getElementById('txtSharedTotoFare');
+    if (fareTxt && cfg.sharedToto && cfg.sharedToto.seatFare) {
+      fareTxt.innerText = `₹${cfg.sharedToto.seatFare}`;
+    }
+    if (wrap) {
+      const isTotoSelected = (window.selectedVehicle || '').toUpperCase() === 'TOTO';
+      const isSharedEnabled = cfg.sharedToto && cfg.sharedToto.enabled !== false;
+      wrap.style.display = (isTotoSelected && isSharedEnabled) ? 'block' : 'none';
+    }
+  }
+
+  window.setTotoBookingType = function(type) {
+    window.selectedTotoBookingType = type;
+    const btnShared = document.getElementById('btnTotoSharedSeat');
+    const btnFull = document.getElementById('btnTotoFullReserve');
+    const seatsRow = document.getElementById('sharedTotoSeatsRow');
+
+    if (type === 'shared') {
+      if (btnShared) { btnShared.style.background = '#16a34a'; btnShared.style.color = '#fff'; }
+      if (btnFull) { btnFull.style.background = '#e2e8f0'; btnFull.style.color = '#334155'; }
+      if (seatsRow) seatsRow.style.display = 'flex';
+      window.updateSharedTotoFare();
+    } else {
+      if (btnShared) { btnShared.style.background = '#e2e8f0'; btnShared.style.color = '#334155'; }
+      if (btnFull) { btnFull.style.background = '#1d4ed8'; btnFull.style.color = '#fff'; }
+      if (seatsRow) seatsRow.style.display = 'none';
+      if (typeof autoResolveAndCalcKM === 'function') autoResolveAndCalcKM();
+    }
+  };
+
+  window.updateSharedTotoFare = function() {
+    if (window.selectedTotoBookingType !== 'shared') return;
+    const sel = document.getElementById('selSharedTotoSeats');
+    const seats = sel ? Number(sel.value) : 1;
+    window.selectedSharedSeats = seats;
+    const seatFare = (window.nextGenConfig?.sharedToto?.seatFare) || 15;
+    const totalSharedFare = seatFare * seats;
+    window.calculatedFare = totalSharedFare;
+
+    const totoFareEl = document.getElementById('totoTotalFareTxt');
+    if (totoFareEl) totoFareEl.innerText = `₹${totalSharedFare} (${seats} সিট)`;
+
+    const confFare = document.getElementById('confFare');
+    if (confFare) confFare.innerText = `₹${totalSharedFare}`;
+  };
+
+  // Re-check when vehicle is selected
+  const origSelectVehicle = window.selectVehicle;
+  window.selectVehicle = function(veh) {
+    if (typeof origSelectVehicle === 'function') origSelectVehicle(veh);
+    applyNextGenUI();
+    if (veh === 'Toto' && window.selectedTotoBookingType === 'shared') {
+      window.updateSharedTotoFare();
+    }
+  };
+
+  // ==============================================================
+  // 🚨 MEDICAL EMERGENCY ACTION CONTROLLER
+  // ==============================================================
+  window.selectedEmergencyVehicle = 'Car';
+
+  window.openMedicalEmergencyModal = function(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    if (typeof window.closeNavDrawer === 'function') {
+      window.closeNavDrawer();
+    }
+    const m = document.getElementById('medicalEmergencyModal');
+    if (!m) return;
+    m.classList.add('show');
+    m.style.display = 'flex';
+
+    // Update helpline button with latest admin hotline
+    const hotline = window.nextGenConfig?.medEmergency?.hotline || '8768447312';
+    const callBtn = document.getElementById('btnMedEmergencyCall');
+    if (callBtn) {
+      callBtn.href = 'tel:' + hotline;
+      callBtn.innerHTML = '<span>📞 জরুরি হেল্পলাইনে সরাসরি কল করুন (' + hotline + ')</span>';
+    }
+
+    // Pre-fill pickup if available, else auto-fill GPS text
+    const pIn = document.getElementById('pickupInput');
+    const medPIn = document.getElementById('medPickupInput');
+    if (medPIn) {
+      if (pIn && pIn.value && pIn.value.trim().length > 2 && !pIn.value.includes('...')) {
+        medPIn.value = pIn.value.trim();
+      } else {
+        medPIn.value = '📍 বর্তমান লাইভ লোকেশন (GPS)';
+      }
+    }
+  };
+
+  window.closeMedicalEmergencyModal = function() {
+    const m = document.getElementById('medicalEmergencyModal');
+    if (m) {
+      m.classList.remove('show');
+      m.style.display = 'none';
+    }
+  };
+
+  window.triggerMedicalEmergencyRide = function(e) {
+    window.openMedicalEmergencyModal(e);
+  };
+
+  window.selectEmergencyHospital = function(hospitalName) {
+    const dropIn = document.getElementById('medDropInput');
+    if (dropIn) dropIn.value = hospitalName;
+  };
+
+  window.selectEmergencyVehicle = function(veh) {
+    window.selectedEmergencyVehicle = veh;
+    const btnCar = document.getElementById('btnMedVehCar');
+    const btnToto = document.getElementById('btnMedVehToto');
+    if (veh === 'Car') {
+      if (btnCar) { btnCar.style.background = '#dc2626'; btnCar.style.color = '#fff'; }
+      if (btnToto) { btnToto.style.background = '#e2e8f0'; btnToto.style.color = '#334155'; }
+    } else {
+      if (btnCar) { btnCar.style.background = '#e2e8f0'; btnCar.style.color = '#334155'; }
+      if (btnToto) { btnToto.style.background = '#16a34a'; btnToto.style.color = '#fff'; }
+    }
+  };
+
+  window.useCurrentLocationForEmergency = function() {
+    const medPIn = document.getElementById('medPickupInput');
+    if (medPIn) medPIn.value = '📍 বর্তমান লাইভ লোকেশন (GPS)';
+    if (typeof window.useCurrentLocation === 'function') {
+      window.useCurrentLocation();
+    }
+  };
+
+  window.submitMedicalEmergencyBooking = function() {
+    const pickupVal = (document.getElementById('medPickupInput')?.value || '').trim();
+    const dropVal = (document.getElementById('medDropInput')?.value || '').trim();
+
+    if (!dropVal || dropVal.length < 2) {
+      alert('হাসপাতাল বা গন্তব্য নির্বাচন করুন বা লিখুন');
+      return;
+    }
+    if (!pickupVal || pickupVal.length < 2) {
+      alert('রোগীর পিকআপের স্থান লিখুন বা GPS সিলেক্ট করুন');
+      return;
+    }
+
+    // Set values into main booking inputs
+    const pIn = document.getElementById('pickupInput');
+    const dIn = document.getElementById('dropInput');
+    if (pIn) {
+      pIn.value = pickupVal;
+      pIn.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (dIn) {
+      dIn.value = dropVal;
+      dIn.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    // Select chosen vehicle
+    const chosenVeh = window.selectedEmergencyVehicle || 'Car';
+    if (typeof window.selectVehicle === 'function') {
+      window.selectVehicle(chosenVeh);
+    }
+
+    window.isMedicalEmergencyActive = true;
+    window.closeMedicalEmergencyModal();
+
+    // Trigger fare & distance calculation
+    if (typeof window.autoResolveAndCalcKM === 'function') {
+      window.autoResolveAndCalcKM();
+    }
+
+    // Log emergency dispatch in Firebase RTDB for Admin Live Corridor Monitor
+    const d = getClientDb();
+    if (d) {
+      const custPhone = localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || 'Guest';
+      const custName = localStorage.getItem('customerName') || 'জরুরি রোগী';
+      const logId = 'med_' + Date.now();
+      d.ref('medical_emergency_logs/' + logId).set({
+        id: logId,
+        customerName: custName,
+        phone: custPhone,
+        pickup: pickupVal,
+        hospital: dropVal,
+        vehicle: chosenVeh,
+        status: 'DISPATCHING',
+        timestamp: Date.now()
+      }).catch(function() {});
+    }
+
+    alert('🚨 জরুরি মেডিকেল রাইড প্রস্তুত!\nনিকটবর্তী সমস্ত সক্রিয় চালকের কাছে সর্বোচ্চ প্রায়োরিটিতে সাইরেন অ্যালার্ট যাচ্ছে...');
+
+    // Smoothly scroll to confirm booking button
+    const confBtn = document.getElementById('confirmBookBtn') || document.querySelector('.rapido-veh-list');
+    if (confBtn) {
+      setTimeout(function() {
+        confBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  };
+
+  // School Pass Modal Handlers
+  window.openSchoolPassModal = function() {
+    const m = document.getElementById('schoolPassModal');
+    if (m) m.style.display = 'flex';
+  };
+
+  window.closeSchoolPassModal = function() {
+    const m = document.getElementById('schoolPassModal');
+    if (m) m.style.display = 'none';
+  };
+
+  window.submitSchoolPassApplication = function() {
+    const cName = (document.getElementById('spChildName')?.value || '').trim();
+    const sName = (document.getElementById('spSchoolName')?.value || '').trim();
+    const pickup = (document.getElementById('spPickup')?.value || '').trim();
+    const pTime = document.getElementById('spPickupTime')?.value || '08:30';
+    const veh = document.getElementById('spVehicle')?.value || 'TOTO';
+    const phone = (document.getElementById('spPhone')?.value || '').trim();
+
+    if (!cName) { alert('শিক্ষার্থী বা যাত্রীর নাম লিখুন'); return; }
+    if (!sName) { alert('স্কুল বা গন্তব্যের নাম লিখুন'); return; }
+    if (!pickup) { alert('পিকআপ স্থান লিখুন'); return; }
+    if (phone.length !== 10) { alert('১০ সংখ্যার মোবাইল নম্বর দিন'); return; }
+
+    const d = getClientDb();
+    if (!d) { alert('Firebase কানেকশন পাওয়া যায়নি'); return; }
+
+    const reqId = phone + '_' + Date.now();
+    const payload = {
+      childName: cName,
+      schoolName: sName,
+      pickup: pickup,
+      drop: sName,
+      pickupTime: pTime,
+      vehicle: veh,
+      phone: phone,
+      parentName: localStorage.getItem('customerName') || 'অভিভাবক',
+      status: 'PENDING',
+      createdAt: Date.now()
+    };
+
+    d.ref('school_pass_requests/' + reqId).set(payload).then(function() {
+      alert('🎉 আপনার স্কুল পাস আবেদন সফলভাবে জমা হয়েছে!\nঅ্যাডমিন যাচাই করে দ্রুত বিশ্বস্ত চালক নিযুক্ত করে আপনার সাথে ফোনে যোগাযোগ করবে।');
+      closeSchoolPassModal();
+    }).catch(function(e) {
+      alert('Error: ' + e.message);
+    });
+  };
+
+  // One-Shot Smart Voice
+  window.startOneShotSmartVoice = function() {
+    if (typeof window.triggerVoiceRideBooking === 'function') {
+      window.triggerVoiceRideBooking();
+      return;
+    }
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) {
+      alert('আপনার ব্রাউজারে ভয়েস সাপোর্ট নেই। গুগল ক্রোম বা আপডেট ব্রাউজার ব্যবহার করুন।');
+      return;
+    }
+    const btn = document.getElementById('btnOneShotVoice');
+    try {
+      const rec = new SpeechRec();
+      rec.lang = window.nextGenConfig?.smartVoice?.lang || 'bn-IN';
+      rec.continuous = false;
+      rec.interimResults = false;
+
+      if (btn) {
+        btn.innerHTML = '<span>🎙️ শুনছি... বলুন: "কোথা থেকে কোথায় যাবেন"</span>';
+        btn.style.background = '#fee2e2';
+        btn.style.borderColor = '#ef4444';
+        btn.style.color = '#b91c1c';
+      }
+
+      rec.onresult = function(e) {
+        if (btn) {
+          btn.innerHTML = '<span style="font-size:18px">🎙️</span> <span>একবারে মুখে বলে রাইড বুক করুন (One-Shot Voice)</span>';
+          btn.style.background = 'linear-gradient(135deg,#fef3c7,#fde68a)';
+          btn.style.borderColor = '#f59e0b';
+          btn.style.color = '#92400e';
+        }
+        if (e.results && e.results[0] && e.results[0][0]) {
+          const text = (e.results[0][0].transcript || '').trim();
+          parseAndFillRoute(text);
+        }
+      };
+
+      rec.onerror = function() {
+        if (btn) {
+          btn.innerHTML = '<span style="font-size:18px">🎙️</span> <span>একবারে মুখে বলে রাইড বুক করুন (One-Shot Voice)</span>';
+          btn.style.background = 'linear-gradient(135deg,#fef3c7,#fde68a)';
+          btn.style.borderColor = '#f59e0b';
+          btn.style.color = '#92400e';
+        }
+      };
+
+      rec.start();
+    } catch(err) {
+      console.warn('Voice error:', err);
+    }
+  };
+
+  function parseAndFillRoute(text) {
+    if (!text) return;
+    let from = '', to = '';
+    
+    if (text.includes('থেকে') || text.includes('হতে')) {
+      const parts = text.split(/থেকে|হতে/);
+      from = parts[0].trim();
+      to = (parts[1] || '').replace(/যাব|যাবো|যেতে চাই|পৌঁছাব/g, '').trim();
+    } else if (text.toLowerCase().includes('to')) {
+      const parts = text.toLowerCase().split('to');
+      from = parts[0].replace(/from/g, '').trim();
+      to = parts[1].trim();
+    } else if (text.includes('से')) {
+      const parts = text.split('से');
+      from = parts[0].trim();
+      to = (parts[1] || '').replace(/जाना है|जाऊंगा/g, '').trim();
+    } else {
+      to = text;
+    }
+
+    const pIn = document.getElementById('pickupInput');
+    const dIn = document.getElementById('dropInput');
+
+    if (from && pIn) {
+      pIn.value = from;
+      pIn.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (to && dIn) {
+      dIn.value = to;
+      dIn.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    if (typeof autoResolveAndCalcKM === 'function') {
+      setTimeout(autoResolveAndCalcKM, 500);
+    }
+  }
+
+  setTimeout(initNextGenFeaturesListener, 1500);
 })();
 </script>
 

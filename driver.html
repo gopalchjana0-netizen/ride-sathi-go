@@ -1992,9 +1992,181 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
+// === MODERN IN-APP HEADS-UP DROP-DOWN NOTIFICATION BANNER (UBER / OLA / ZOMATO STYLE) ===
+(function() {
+  let bannerTimer = null;
+  let startY = 0;
+  let currentY = 0;
+
+  function createOrGetBanner() {
+    let el = document.getElementById('rsgHeadsUpBanner');
+    if (el) return el;
+
+    el = document.createElement('div');
+    el.id = 'rsgHeadsUpBanner';
+    el.style.cssText = [
+      'position: fixed',
+      'top: 14px',
+      'left: 50%',
+      'transform: translate(-50%, -180%)',
+      'width: calc(100% - 24px)',
+      'max-width: 440px',
+      'box-sizing: border-box',
+      'z-index: 2147483647',
+      'background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)',
+      'border: 1px solid rgba(255, 255, 255, 0.18)',
+      'border-radius: 20px',
+      'box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 4px 14px rgba(0, 0, 0, 0.3)',
+      'backdrop-filter: blur(16px)',
+      '-webkit-backdrop-filter: blur(16px)',
+      'padding: 12px 14px 14px 14px',
+      'color: #ffffff',
+      'opacity: 0',
+      'pointer-events: none',
+      'transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
+      'cursor: pointer',
+      'user-select: none',
+      '-webkit-user-select: none'
+    ].join(';') + ';';
+
+    el.innerHTML = [
+      '<div style="position:absolute;top:5px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:rgba(255,255,255,0.25);border-radius:10px"></div>',
+      '<div style="display:flex;align-items:center;gap:12px;margin-top:2px">',
+      '  <div id="rsgHeadsUpIconWrap" style="width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);box-shadow:0 2px 8px rgba(0,0,0,0.25)">',
+      '    <span id="rsgHeadsUpIcon">🚗</span>',
+      '  </div>',
+      '  <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">',
+      '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">',
+      '      <span style="font-size:10.5px;font-weight:900;color:#38bdf8;text-transform:uppercase;letter-spacing:0.6px">Ride Sathi Go</span>',
+      '      <span style="font-size:10px;color:#94a3b8;font-weight:700">এখনই • Just now</span>',
+      '    </div>',
+      '    <div id="rsgHeadsUpTitle" style="font-size:14px;font-weight:900;color:#ffffff;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>',
+      '    <div id="rsgHeadsUpBody" style="font-size:12px;color:#cbd5e1;line-height:1.35;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>',
+      '  </div>',
+      '  <button id="rsgHeadsUpClose" type="button" aria-label="Close" style="background:none;border:none;color:#94a3b8;font-size:20px;font-weight:900;cursor:pointer;padding:4px 6px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>',
+      '</div>'
+    ].join('');
+
+    if (document.body) {
+      document.body.appendChild(el);
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('rsgHeadsUpBanner') && document.body) {
+          document.body.appendChild(el);
+        }
+      });
+    }
+
+    const closeBtn = el.querySelector('#rsgHeadsUpClose');
+    if (closeBtn) {
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        hideHeadsUpBanner();
+      };
+    }
+
+    el.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      currentY = startY;
+    }, { passive: true });
+
+    el.addEventListener('touchmove', (e) => {
+      currentY = e.touches[0].clientY;
+      let diff = currentY - startY;
+      if (diff < 0) {
+        el.style.transform = `translate(-50%, ${diff}px)`;
+      }
+    }, { passive: true });
+
+    el.addEventListener('touchend', () => {
+      let diff = currentY - startY;
+      if (diff < -28) {
+        hideHeadsUpBanner();
+      } else {
+        el.style.transform = 'translate(-50%, 0)';
+      }
+    });
+
+    return el;
+  }
+
+  function hideHeadsUpBanner() {
+    if (bannerTimer) {
+      clearTimeout(bannerTimer);
+      bannerTimer = null;
+    }
+    const el = document.getElementById('rsgHeadsUpBanner');
+    if (el) {
+      el.style.transform = 'translate(-50%, -180%)';
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    }
+  }
+
+  function showHeadsUpNotification(title, body, options = {}) {
+    try {
+      const banner = createOrGetBanner();
+      const t = String(title || 'Ride Sathi Go');
+      const b = String(body || '');
+
+      let icon = options.icon || '🔔';
+      const low = (t + ' ' + b + ' ' + (options.tag || '')).toLowerCase();
+      if (low.includes('স্বাগতম') || low.includes('welcome') || low.includes('स्वागत')) icon = '👋';
+      else if (low.includes('otp') || low.includes('ওটিপি') || low.includes('গোপন')) icon = '🔐';
+      else if (low.includes('সম্পন্ন') || low.includes('completed')) icon = '🎉';
+      else if (low.includes('বাতিল') || low.includes('cancel') || low.includes('রদ')) icon = '❌';
+      else if (low.includes('রাইড') || low.includes('ride') || low.includes('booking')) icon = '🚖';
+      else if (low.includes('টাকা') || low.includes('payment') || low.includes('ভাড়া') || low.includes('fare')) icon = '💰';
+
+      const iconEl = banner.querySelector('#rsgHeadsUpIcon');
+      const titleEl = banner.querySelector('#rsgHeadsUpTitle');
+      const bodyEl = banner.querySelector('#rsgHeadsUpBody');
+
+      if (iconEl) iconEl.innerText = icon;
+      if (titleEl) titleEl.innerText = t;
+      if (bodyEl) bodyEl.innerText = b;
+
+      try {
+        if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+          navigator.vibrate([40, 30, 40]);
+        }
+      } catch(e) {}
+
+      banner.onclick = (e) => {
+        if (e.target && e.target.id === 'rsgHeadsUpClose') return;
+        if (typeof options.onClick === 'function') options.onClick();
+        hideHeadsUpBanner();
+      };
+
+      banner.style.display = 'block';
+      void banner.offsetWidth;
+      banner.style.transform = 'translate(-50%, 0)';
+      banner.style.opacity = '1';
+      banner.style.pointerEvents = 'auto';
+
+      if (bannerTimer) clearTimeout(bannerTimer);
+      const duration = Number(options.duration || 4500);
+      bannerTimer = setTimeout(() => {
+        hideHeadsUpBanner();
+      }, duration);
+    } catch(err) {
+      console.warn('showHeadsUpNotification error:', err);
+    }
+  }
+
+  window.showHeadsUpNotification = showHeadsUpNotification;
+  window.hideHeadsUpNotification = hideHeadsUpBanner;
+})();
+
 // Native Web Notification Helper for System Alerts (Background & Foreground)
 function sendNativeNotification(title, body, tag = 'driver-alert', url = '/driver.html') {
   try {
+    // 1. FOREGROUND: Immediately show modern Heads-Up Drop-Down Banner on screen (Auto-dismisses in 4.5s)
+    if (typeof window.showHeadsUpNotification === 'function') {
+      window.showHeadsUpNotification(title, body, { tag: tag, url: url });
+    }
+
+    // 2. BACKGROUND: Send browser/system notification if supported
     if ('Notification' in window && Notification.permission === 'granted') {
       if (navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
@@ -2017,6 +2189,12 @@ function sendNativeNotification(title, body, tag = 'driver-alert', url = '/drive
     }
   } catch(e) {}
 }
+
+window.showDriverToast = function(msg) {
+  if (typeof window.showHeadsUpNotification === 'function') {
+    window.showHeadsUpNotification('Ride Sathi Partner', msg);
+  }
+};
 
 function ensureNotificationPermission() {
   try {
@@ -2160,12 +2338,17 @@ function getCityFromLocation(lat, lng) {
   let minDistance = Infinity;
 
   window.driverActiveCities.forEach(city => {
-    if (city.isActive !== false) {
-      const dist = calculateDistanceKm(lat, lng, Number(city.centerLat), Number(city.centerLng));
-      const rad = Number(city.radiusKm || 25);
-      if (dist !== null && dist <= rad && dist < minDistance) {
-        minDistance = dist;
-        matched = { ...city, distanceToCenter: dist };
+    const isAct = (city.isActive !== false && city.active !== false && city.isServiceActive !== false && city.status !== 'OFF');
+    if (isAct) {
+      const cLat = Number(city.centerLat ?? city.lat ?? 0);
+      const cLng = Number(city.centerLng ?? city.lng ?? 0);
+      if (cLat && cLng) {
+        const dist = calculateDistanceKm(lat, lng, cLat, cLng);
+        const rad = Number(city.radiusKm || city.radius || 25);
+        if (dist !== null && !isNaN(dist) && dist <= rad && dist < minDistance) {
+          minDistance = dist;
+          matched = { ...city, distanceToCenter: dist };
+        }
       }
     }
   });
@@ -2210,31 +2393,49 @@ async function fetchDriverCities() {
   } catch(e) {}
 
   let fetchedFromRemote = false;
+
+  // 1. Fetch from Cloudflare Edge (0ms CDN, 100% Free Tier, 0 Firebase RTDB reads)
   try {
-    if (firestore) {
-      const snap = await getDocs(collection(firestore, 'cities'));
-      if (!snap.empty) {
-        const fetched = [];
-        snap.forEach(d => {
-          const data = d.data();
-          if (data.isActive !== false) fetched.push({ id: d.id, ...data });
-        });
-        if (fetched.length > 0) {
-          window.driverActiveCities = fetched;
-          fetchedFromRemote = true;
-        }
+    const cfRes = await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities');
+    if (cfRes.ok) {
+      const cfJson = await cfRes.json();
+      if (cfJson && Array.isArray(cfJson.cities) && cfJson.cities.length > 0) {
+        window.driverActiveCities = cfJson.cities.filter(c => (c && c.isActive !== false && c.active !== false && c.status !== 'OFF'));
+        fetchedFromRemote = true;
       }
     }
   } catch(e) {}
 
+  // 2. Fallback to Firestore if needed
+  if (!fetchedFromRemote) {
+    try {
+      if (firestore) {
+        const snap = await getDocs(collection(firestore, 'cities'));
+        if (!snap.empty) {
+          const fetched = [];
+          snap.forEach(d => {
+            const data = d.data();
+            if (data.isActive !== false && data.active !== false && data.status !== 'OFF') fetched.push({ id: d.id, ...data });
+          });
+          if (fetched.length > 0) {
+            window.driverActiveCities = fetched;
+            fetchedFromRemote = true;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 3. Fallback to RTDB
   if (!fetchedFromRemote && db) {
     try {
-      const rSnap = await get(ref(db, 'cities'));
-      if (rSnap.exists()) {
-        const v = rSnap.val();
+      const rSnap = await get(ref(db, 'operational_cities'));
+      const cSnap = !rSnap.exists() ? await get(ref(db, 'cities')) : null;
+      const v = rSnap.exists() ? rSnap.val() : (cSnap && cSnap.exists() ? cSnap.val() : null);
+      if (v) {
         const fetched = [];
         Object.keys(v).forEach(k => {
-          if (v[k].isActive !== false) fetched.push({ id: k, ...v[k] });
+          if (v[k].isActive !== false && v[k].active !== false && v[k].status !== 'OFF') fetched.push({ id: k, ...v[k] });
         });
         if (fetched.length > 0) {
           window.driverActiveCities = fetched;
@@ -2340,8 +2541,13 @@ function matchesVehicleCategory(driverVeh, reqVeh) {
   let r = normalizeVehicleCategory(reqVeh).toLowerCase();
   if (!d || !r) return false;
 
-  // 1. PARCEL BROADCAST RULE: Any parcel request goes to ALL online drivers (Bike, Toto, Auto, Car)
-  if (r === 'parcel' || r.includes('parcel')) return true;
+  // 0. BROADCAST TO ALL / ANY VEHICLE:
+  if (r === 'all' || r === 'any' || r.includes('all')) return true;
+
+  // 1. PARCEL: Deliveries go to Bike, Parcel, or Toto/Auto drivers (NOT Car)
+  if (r === 'parcel' || r.includes('parcel')) {
+    return d === 'bike' || d === 'parcel' || d === 'toto' || d === 'auto';
+  }
 
   // 2. BIKE STRICT MATCHING: Bike bookings go ONLY to Bike drivers
   if (r === 'bike') return d === 'bike';
@@ -2529,7 +2735,7 @@ async function requestWakeLock() {
       if (badge) { badge.style.background = '#16a34a'; badge.innerText = '🔆 Screen Awake: ON'; }
       wakeLockSentinel.addEventListener('release', () => {
         wakeLockSentinel = null;
-        if (isOnline) {
+        if (isOnline && !document.hidden) {
           setTimeout(requestWakeLock, 2000);
         }
       });
@@ -2583,6 +2789,11 @@ const MAX_DISPATCH_RADIUS_KM = 20;
 function isRideWithinDriverRadius(ride) {
   if (!ride) return { withinRadius: false, distanceKm: null };
 
+  // Manual helpline/call dispatch from admin, or direct assignment to this driver:
+  if (ride.isCallDispatch || ride.bookingType === 'ADMIN_CALL_DISPATCH' || (ride.assignedTo && cleanPhone(ride.assignedTo) === DRIVER_PHONE)) {
+    return { withinRadius: true, distanceKm: null };
+  }
+
   const pLat = Number(ride.fromLat || (ride.pickupCoords && ride.pickupCoords.lat) || ride.pickup_lat || ride.from_lat || 0);
   const pLng = Number(ride.fromLng || ride.fromLon || (ride.pickupCoords && (ride.pickupCoords.lon || ride.pickupCoords.lng)) || ride.pickup_lng || ride.from_lng || 0);
 
@@ -2593,8 +2804,13 @@ function isRideWithinDriverRadius(ride) {
   if (drvLat && drvLng && pLat && pLng) {
     const dist = calculateDistanceKm(drvLat, drvLng, pLat, pLng);
     if (dist !== null) {
+      let maxDist = MAX_DISPATCH_RADIUS_KM;
+      if (window.driverCurrentCity && Array.isArray(window.driverActiveCities)) {
+        const myC = window.driverActiveCities.find(c => c && (c.name || c.cityName) && (c.name || c.cityName).toLowerCase() === window.driverCurrentCity.toLowerCase());
+        if (myC && (myC.radiusKm || myC.radius)) maxDist = Number(myC.radiusKm || myC.radius);
+      }
       return {
-        withinRadius: (dist <= MAX_DISPATCH_RADIUS_KM),
+        withinRadius: (dist <= maxDist),
         distanceKm: dist
       };
     }
@@ -2602,12 +2818,15 @@ function isRideWithinDriverRadius(ride) {
 
   // 2. Fallback: If driver GPS is warming up, check against Driver's Active City Center
   if (pLat && pLng && window.driverCurrentCity && Array.isArray(window.driverActiveCities)) {
-    const myCity = window.driverActiveCities.find(c => c && c.name && c.name.toLowerCase() === window.driverCurrentCity.toLowerCase());
-    if (myCity && myCity.centerLat && myCity.centerLng) {
-      const cityDist = calculateDistanceKm(Number(myCity.centerLat), Number(myCity.centerLng), pLat, pLng);
+    const myCity = window.driverActiveCities.find(c => c && (c.name || c.cityName) && (c.name || c.cityName).toLowerCase() === window.driverCurrentCity.toLowerCase());
+    const cLat = Number(myCity?.centerLat ?? myCity?.lat ?? 0);
+    const cLng = Number(myCity?.centerLng ?? myCity?.lng ?? 0);
+    const cRadius = Number(myCity?.radiusKm || myCity?.radius || MAX_DISPATCH_RADIUS_KM);
+    if (cLat && cLng) {
+      const cityDist = calculateDistanceKm(cLat, cLng, pLat, pLng);
       if (cityDist !== null) {
         return {
-          withinRadius: (cityDist <= MAX_DISPATCH_RADIUS_KM),
+          withinRadius: (cityDist <= cRadius),
           distanceKm: cityDist
         };
       }
@@ -2981,7 +3200,7 @@ function isRealRide(d) {
   if (!d.from && !d.pickup) return false;
   if (!d.to && !d.drop) return false;
   if (!d.fare) return false;
-  if (!d.otp) return false;
+  if (!d.otp && !d.isCallDispatch && d.bookingType !== 'ADMIN_CALL_DISPATCH') return false;
   const rawSt = String(d.status || 'PENDING').toUpperCase();
   const isPending = rawSt === 'PENDING' || rawSt === 'SEARCHING';
   if (!isPending) return false;
@@ -3048,10 +3267,14 @@ async function checkApproved(phone) {
       return { approved: true, data: val3, dbKey: 'drivers/' + p };
     }
 
-    // 3. Not approved or Pending
+    // 3. Not approved or Pending / Rejected
     const st1 = String(val1?.status || '').toUpperCase();
     const st2 = String(val2?.status || '').toUpperCase();
     const st3 = String(val3?.status || '').toUpperCase();
+
+    if (st1 === 'REJECTED' || st2 === 'REJECTED' || st3 === 'REJECTED') {
+      return { approved: false, isRejected: true, msg: 'আপনার রেজিস্ট্রেশন আবেদনটি বাতিল (Rejected) করা হয়েছে। বিস্তারিত তথ্যের জন্য হেল্পলাইনে (8768447312) যোগাযোগ করুন।' };
+    }
 
     if (st1 === 'PENDING' || st2 === 'PENDING' || st3 === 'PENDING') {
       return { approved: false, isPending: true, data: val1 || val2 || val3, msg: 'Admin এখনো আপনার অ্যাকাউন্ট Approve করেনি। ভেরিফিকেশন সম্পন্ন হলে স্বয়ংক্রিয়ভাবে চালু হবে।' };
@@ -3244,7 +3467,9 @@ async function loginDriver() {
   const dVal = dVal2 || dVal1;
   const isAppr = isDriverRecordApproved(dVal) || p === '8768447312';
   if (!isAppr) {
-    alert('Pending approval / অনুমোদনের অপেক্ষায়\nAdmin approval er por login korte parben');
+    let chk = await checkApproved(p);
+    let alertMsg = chk.msg || 'Pending approval / অনুমোদনের অপেক্ষায়\nAdmin approval er por login korte parben';
+    alert(alertMsg);
     if (btn) {
       btn.innerText = I18N[currentLang]?.loginBtn || '✅ Driver Login';
       btn.disabled = false;
@@ -3457,8 +3682,8 @@ function startLiveTracking() {
     updateDriverCity(lat, lng);
 
     const hasActiveTrip = !!window.activeTripKey;
-    // Dynamic adaptive throttle: 10s when on active trip, 25s when idle/waiting
-    const minInterval = hasActiveTrip ? 10000 : 25000;
+    // Dynamic adaptive throttle: 10s when on active trip, 30s when idle/waiting
+    const minInterval = hasActiveTrip ? 10000 : 30000;
     const timeSinceLast = now - lastGpsPushTime;
 
     // Check if moved more than 40 meters
@@ -3469,8 +3694,8 @@ function startLiveTracking() {
       } catch(e) {}
     }
 
-    // Skip push if within interval and hasn't moved significantly
-    if (timeSinceLast < minInterval && distMovedMeters < 40) return;
+    // Skip push if within interval and hasn't moved significantly (saves battery & writes)
+    if (timeSinceLast < minInterval && distMovedMeters < (hasActiveTrip ? 25 : 50)) return;
 
     lastGpsPushTime = now;
     lastPushedLat = lat;
@@ -3484,7 +3709,7 @@ function startLiveTracking() {
     } catch(e) {}
 
     // 2. Profile heartbeat (lat/lng/lastUpdate) only every 60s or on significant move (>500m)
-    // This stops downloading the full driver fleet 17 times/min in admin and saves 95% profile writes!
+    // This stops downloading the full driver fleet in admin and saves 95% profile writes!
     if (now - lastProfileHeartbeatTime >= 60000 || distMovedMeters > 500) {
       lastProfileHeartbeatTime = now;
       let updates = {
@@ -3499,11 +3724,8 @@ function startLiveTracking() {
         vehicle: DRIVER_VEHICLE
       };
       try {
-        const cleanP = cleanPhone(DRIVER_PHONE);
-        if (cleanP) {
-          update(ref(db, 'drivers/DRIVER_' + cleanP), updates).catch(()=>{});
-          update(ref(db, 'drivers/' + cleanP), updates).catch(()=>{});
-        }
+        const targetDriverKey = DRIVER_DB_KEY || ('drivers/DRIVER_' + cleanPhone(DRIVER_PHONE));
+        update(ref(db, targetDriverKey), updates).catch(()=>{});
       } catch(e) {}
     }
 
@@ -3529,11 +3751,17 @@ function startLiveTracking() {
     }
   }
 
-  navigator.geolocation.getCurrentPosition(pushCoords, () => {}, { enableHighAccuracy: true });
+  // Thermal & Battery friendly GPS: Use high accuracy only during active trips
+  const hasActiveTrip = !!window.activeTripKey;
+  const geoOpts = hasActiveTrip
+    ? { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    : { enableHighAccuracy: false, maximumAge: 20000, timeout: 25000 };
+
+  navigator.geolocation.getCurrentPosition(pushCoords, () => {}, geoOpts);
 
   liveLocationWatchId = navigator.geolocation.watchPosition(pushCoords, (err) => {
     console.warn("GPS Warning:", err.message);
-  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
+  }, geoOpts);
 }
 
 function stopLiveTracking() {
@@ -3575,10 +3803,26 @@ function renderAllIncoming() {
     // Strict Offline Guard: If driver is offline, completely clear requests, stop sound, and exit!
     if (!isOnline) {
       box.innerHTML = '';
+      box.style.display = 'none';
       if (document.getElementById('liveCount')) document.getElementById('liveCount').innerText = 0;
       stopSound();
       return;
     }
+
+    // Strict Active Trip Guard: Once driver accepts a ride (or has an ongoing trip),
+    // NEVER show incoming requests with Accept/Reject buttons!
+    // The top #requests box is hidden (display:none) so ONLY the accepted trip card in #acceptedBox
+    // (Customer Pickup Location, Google Maps Navigation, Call/WhatsApp, and OTP input) remains in front!
+    if (window.hasActiveOngoingRide || window.activeTripKey) {
+      box.innerHTML = '';
+      box.style.display = 'none';
+      if (document.getElementById('liveCount')) document.getElementById('liveCount').innerText = 0;
+      stopSound();
+      return;
+    }
+
+    // Driver is available for incoming rides:
+    box.style.display = 'block';
 
     box.innerHTML = '';
     let count = 0;
@@ -3586,6 +3830,7 @@ function renderAllIncoming() {
     let dict = I18N[currentLang] || I18N.bn;
 
     activeRequestMap.forEach((d, key) => {
+      if (key === window.activeTripKey || (window._acceptedRideKeys && window._acceptedRideKeys.has(key))) return;
       if (!isRealRide(d)) return;
       if (rejectedRideKeys.has(key)) return;
 
@@ -3644,6 +3889,16 @@ function renderAllIncoming() {
         rentalBadgeHtml = `<span style="background:#ea580c;color:#ffffff;padding:4px 9px;border-radius:12px;font-size:11px;font-weight:bold;box-shadow:0 1px 3px rgba(234,88,12,0.3)">🏖️ ${pkgTitle}</span>`;
       }
 
+      let medEmergencyBadgeHtml = '';
+      if (d.isMedicalEmergency) {
+        medEmergencyBadgeHtml = `<span style="background:#dc2626;color:#ffffff;padding:4px 9px;border-radius:12px;font-size:11px;font-weight:900;animation:pulse .8s infinite;box-shadow:0 2px 6px rgba(220,38,38,0.4)">🚨 জরুরি মেডিকেল রাইড</span>`;
+      }
+
+      let sharedTotoBadgeHtml = '';
+      if (d.isSharedToto) {
+        sharedTotoBadgeHtml = `<span style="background:#16a34a;color:#ffffff;padding:4px 9px;border-radius:12px;font-size:11px;font-weight:bold;box-shadow:0 1px 3px rgba(22,163,74,0.3)">🛺 শেয়ার্ড টোটো (${d.sharedSeats || 1} সিট)</span>`;
+      }
+
       let cityBadgeHtml = d.city 
         ? `<span style="background:#e0f2fe;color:#0369a1;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:bold">🏙️ ${d.city}</span>` 
         : '';
@@ -3666,6 +3921,8 @@ function renderAllIncoming() {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
           <b style="color:#0284c7;font-size:15px">🚖 ${d.vehicle || 'RIDE'} • ${orderTypeLabel}</b>
           <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+            ${medEmergencyBadgeHtml}
+            ${sharedTotoBadgeHtml}
             ${rentalBadgeHtml}
             ${timingBadgeHtml}
             ${parcelBadgeHtml}
@@ -3779,19 +4036,21 @@ function renderAllIncoming() {
   // 1. ride_requests bounded to last 20 with city filter
   const qRideRequests = query(ref(db, 'ride_requests'), limitToLast(20));
   onValue(qRideRequests, snap => {
-    if (!isOnline) {
-      activeRequestMap.clear(); triggerRenderAllIncoming();
+    if (!isOnline || window.hasActiveOngoingRide || window.activeTripKey) {
+      if (!isOnline) activeRequestMap.clear();
+      triggerRenderAllIncoming();
       return;
     }
     activeRequestMap.forEach((v, k) => {
       if (v._source === 'broadcast_snake') activeRequestMap.delete(k);
     });
 
-    if (snap.exists() && isOnline) {
+    if (snap.exists() && isOnline && !window.hasActiveOngoingRide) {
       const driverCity = (window.driverCurrentCity || localStorage.getItem('driverCity') || '').trim().toLowerCase();
       snap.forEach(ch => {
         let d = ch.val();
         let key = ch.key;
+        if (key === window.activeTripKey || (window._acceptedRideKeys && window._acceptedRideKeys.has(key))) return;
         if (!isRealRide(d)) return;
         if (rejectedRideKeys.has(key)) return;
         if (d.rejectedBy && d.rejectedBy[DRIVER_PHONE]) {
@@ -3814,18 +4073,20 @@ function renderAllIncoming() {
   // 2. rideRequests camelCase bounded to last 20
   const qRideRequestsCamel = query(ref(db, 'rideRequests'), limitToLast(20));
   onValue(qRideRequestsCamel, snap => {
-    if (!isOnline) {
-      activeRequestMap.clear(); triggerRenderAllIncoming();
+    if (!isOnline || window.hasActiveOngoingRide || window.activeTripKey) {
+      if (!isOnline) activeRequestMap.clear();
+      triggerRenderAllIncoming();
       return;
     }
     activeRequestMap.forEach((v, k) => {
       if (v._source === 'broadcast_camel') activeRequestMap.delete(k);
     });
 
-    if (snap.exists() && isOnline) {
+    if (snap.exists() && isOnline && !window.hasActiveOngoingRide) {
       snap.forEach(ch => {
         let d = ch.val();
         let key = ch.key;
+        if (key === window.activeTripKey || (window._acceptedRideKeys && window._acceptedRideKeys.has(key))) return;
         if (!isRealRide(d)) return;
         if (rejectedRideKeys.has(key)) return;
         if (d.rejectedBy && d.rejectedBy[DRIVER_PHONE]) {
@@ -3963,6 +4224,22 @@ async function acceptRide(key) {
     orderTimers.delete(key);
   }
 
+  // INSTANT 0ms DISMISSAL: The very instant driver clicks Accept, hide the top requests container!
+  // No Accept/Reject buttons remain visible at the top!
+  window.hasActiveOngoingRide = true;
+  window.activeTripKey = key;
+  window._acceptedRideKeys = window._acceptedRideKeys || new Set();
+  window._acceptedRideKeys.add(key);
+
+  const reqBox = document.getElementById('requests');
+  if (reqBox) {
+    reqBox.innerHTML = '';
+    reqBox.style.display = 'none';
+  }
+  activeRequestMap.clear();
+  if (document.getElementById('liveCount')) document.getElementById('liveCount').innerText = 0;
+  if (typeof dismissTakenRide === 'function') dismissTakenRide(key);
+
   let btn = document.querySelector(`[data-accept="${key}"]`);
   if (btn) {
     btn.innerText = '⏳ Accepting...';
@@ -3975,10 +4252,15 @@ async function acceptRide(key) {
       let r = rideSnap.val();
       if (r.status === 'ACCEPTED' && cleanPhone(r.driverPhone) !== DRIVER_PHONE) {
         alert(currentLang === 'bn' ? '❌ অন্য ড্রাইভার এই রাইডটি একসেপ্ট করে নিয়েছেন!' : '❌ Ride already taken by another driver!');
+        window.hasActiveOngoingRide = false;
+        window.activeTripKey = null;
+        if (window._acceptedRideKeys) window._acceptedRideKeys.delete(key);
+        if (reqBox) reqBox.style.display = 'block';
         dismissTakenRide(key);
         remove(ref(db, 'driver_requests/' + DRIVER_PHONE + '/' + key));
         stopSound();
         if (btn) { btn.innerText = '✅ ACCEPT'; btn.disabled = false; }
+        renderAllIncoming();
         return;
       }
     }
@@ -3986,9 +4268,14 @@ async function acceptRide(key) {
     let checkAccept = await get(ref(db, 'accepted_rides/' + key));
     if (checkAccept.exists() && cleanPhone(checkAccept.val().driverPhone) !== DRIVER_PHONE) {
       alert(currentLang === 'bn' ? '❌ অন্য ড্রাইভার এই রাইডটি নিয়ে নিয়েছেন!' : '❌ Ride already taken by another driver!');
+      window.hasActiveOngoingRide = false;
+      window.activeTripKey = null;
+      if (window._acceptedRideKeys) window._acceptedRideKeys.delete(key);
+      if (reqBox) reqBox.style.display = 'block';
       dismissTakenRide(key);
       remove(ref(db, 'driver_requests/' + DRIVER_PHONE + '/' + key));
       stopSound();
+      renderAllIncoming();
       return;
     }
 
@@ -4004,8 +4291,14 @@ async function acceptRide(key) {
 
     if (!d) {
       alert(currentLang === 'bn' ? '⏰ বুকিংটির সময় শেষ বা কাস্টমার বাতিল করেছে।' : '⏰ Ride expired or cancelled by customer.');
+      window.hasActiveOngoingRide = false;
+      window.activeTripKey = null;
+      if (window._acceptedRideKeys) window._acceptedRideKeys.delete(key);
+      if (reqBox) reqBox.style.display = 'block';
       activeRequestMap.delete(key);
+      if (typeof dismissTakenRide === 'function') dismissTakenRide(key);
       stopSound();
+      renderAllIncoming();
       return;
     }
 
@@ -4096,10 +4389,15 @@ async function acceptRide(key) {
         : (currentLang === 'en' 
           ? '❌ Another driver has already accepted this ride!' 
           : '❌ অন্য চালক রাইডটি নিয়ে নিয়েছেন!'));
+      window.hasActiveOngoingRide = false;
+      window.activeTripKey = null;
+      if (window._acceptedRideKeys) window._acceptedRideKeys.delete(key);
+      if (reqBox) reqBox.style.display = 'block';
       dismissTakenRide(key);
       remove(ref(db, 'driver_requests/' + DRIVER_PHONE + '/' + key)).catch(()=>{});
       stopSound();
       if (btn) { btn.innerText = '✅ ACCEPT'; btn.disabled = false; }
+      renderAllIncoming();
       return;
     }
 
@@ -4156,6 +4454,7 @@ async function acceptRide(key) {
 
     await remove(ref(db, 'driver_requests/' + DRIVER_PHONE + '/' + key)).catch(()=>{});
     activeRequestMap.delete(key);
+    if (typeof dismissTakenRide === 'function') dismissTakenRide(key);
 
     let allReqs = await get(ref(db, 'driver_requests'));
     if (allReqs.exists()) {
@@ -4165,10 +4464,16 @@ async function acceptRide(key) {
     }
 
     stopSound();
-    alert(currentLang === 'bn' ? '✅ রাইড সফলভাবে একসেপ্ট হয়েছে! নিচে কাস্টমার ডিটেইলস দেখুন।' : '✅ Ride Accepted! Check customer details below.');
+    alert(currentLang === 'bn' ? '✅ রাইড সফলভাবে একসেপ্ট হয়েছে! কাস্টমার পিকআপ লোকেশন ও OTP অপশন সামনে দেখুন।' : '✅ Ride Accepted! Customer pickup location & OTP option ready in front.');
     startLiveTracking();
     requestWakeLock();
   } catch(e) {
+    window.hasActiveOngoingRide = false;
+    window.activeTripKey = null;
+    if (window._acceptedRideKeys) window._acceptedRideKeys.delete(key);
+    const reqBox = document.getElementById('requests');
+    if (reqBox) reqBox.style.display = 'block';
+    renderAllIncoming();
     alert('ত্রুটি: ' + e.message);
     if (btn) { btn.innerText = '✅ ACCEPT'; btn.disabled = false; }
   }
@@ -4200,6 +4505,9 @@ window.dismissCustomerCancelAlert = function() {
   window.activeTripKey = null;
   let box = document.getElementById('acceptedBox');
   if (box) box.innerHTML = '';
+  let reqBox = document.getElementById('requests');
+  if (reqBox) reqBox.style.display = 'block';
+  if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
 };
 
 // === ACTIVE TRIPS WITH QUICK-REPLY WHATSAPP BUTTONS ===
@@ -4213,6 +4521,9 @@ function listenAccepted() {
       box.innerHTML = '';
       window.hasActiveOngoingRide = false;
       window.activeTripKey = null;
+      const reqBox = document.getElementById('requests');
+      if (reqBox) reqBox.style.display = 'block';
+      if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
       return;
     }
 
@@ -4234,6 +4545,9 @@ function listenAccepted() {
           box.innerHTML = '';
           window.hasActiveOngoingRide = false;
           window.activeTripKey = null;
+          const reqBox = document.getElementById('requests');
+          if (reqBox) reqBox.style.display = 'block';
+          if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
         }
         return;
       }
@@ -4356,6 +4670,23 @@ function listenAccepted() {
           let pDur = pKm > 0 ? ('~' + (typeof formatRideDuration === 'function' ? formatRideDuration(Math.max(3, Math.round(pKm * 3)), currentLang) : (Math.round(pKm * 3) + ' mins'))) : '';
           ongoingDistText = `<div class="detail-row"><span>🛣️ ${currentLang === 'bn' ? 'যাত্রার মোট দূরত্ব' : 'Trip Distance'}</span><b>${rawDDist} ${pDur ? '(' + pDur + ')' : ''}</b></div>`;
         }
+
+        // 1-MINUTE DRIVER CANCEL TIMEOUT (After OTP verification, cancel option disappears after 60 seconds)
+        let tripStartedTime = Number(d.startedAt || d.startTime || localStorage.getItem('rsg_trip_startedAt_' + key) || 0);
+        if (!tripStartedTime) {
+          tripStartedTime = Date.now();
+          try { localStorage.setItem('rsg_trip_startedAt_' + key, String(tripStartedTime)); } catch(e) {}
+        }
+        let elapsedCancelSec = Math.floor((Date.now() - tripStartedTime) / 1000);
+        let canCancelTrip = elapsedCancelSec < 60;
+        let remainingCancelMs = Math.max(0, (60 - elapsedCancelSec) * 1000);
+
+        let cancelBtnHtml = canCancelTrip ? `
+          <button class="btn reject" id="ongoingCancelBtn_${key}" onclick="openDriverCancelModal('${key}')" data-driver-cancel="${key}" style="flex:0.8;padding:16px" title="${currentLang === 'bn' ? '১ মিনিটের মধ্যে বাতিলযোগ্য' : 'Cancellable within 1 min'}">
+            ❌ ${dict.cancelTripBtn}
+          </button>
+        ` : '';
+
         card.innerHTML = `
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="background:#16a34a;color:#fff;padding:4px 10px;border-radius:14px;font-size:12px;font-weight:900">
@@ -4390,14 +4721,12 @@ function listenAccepted() {
             ${ongoingDistText}
           </div>
 
-          <!-- COMPLETE TRIP & EMERGENCY CANCEL BUTTONS -->
-          <div class="btn-row" style="display:flex;gap:10px;margin-top:12px">
-            <button class="btn accept" onclick="completeRide('${key}')" data-complete="${key}" style="flex:1.5;padding:16px;font-size:17px;font-weight:900;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border-radius:14px;border:none;cursor:pointer;box-shadow:0 4px 15px rgba(22,163,74,.4)">
+          <!-- COMPLETE TRIP & 1-MINUTE EMERGENCY CANCEL BUTTONS -->
+          <div class="btn-row" id="ongoingBtnRow_${key}" style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn accept" onclick="completeRide('${key}')" data-complete="${key}" style="${canCancelTrip ? 'flex:1.5;' : 'width:100%;flex:1;'}padding:16px;font-size:17px;font-weight:900;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border-radius:14px;border:none;cursor:pointer;box-shadow:0 4px 15px rgba(22,163,74,.4)">
               ✅ ${dict.completeTripBtn || 'COMPLETE TRIP (সম্পন্ন)'}
             </button>
-            <button class="btn reject" onclick="openDriverCancelModal('${key}')" data-driver-cancel="${key}" style="flex:0.8;padding:16px">
-              ❌ ${dict.cancelTripBtn}
-            </button>
+            ${cancelBtnHtml}
           </div>
         `;
       }
@@ -4442,6 +4771,23 @@ function listenAccepted() {
       card.querySelectorAll('[data-driver-cancel]').forEach(b => {
         b.onclick = () => openDriverCancelModal(b.getAttribute('data-driver-cancel'));
       });
+
+      // AUTO-DISMISS CANCEL BUTTON AFTER EXACTLY 60 SECONDS (1 MINUTE):
+      if (isOngoing && canCancelTrip && remainingCancelMs > 0) {
+        window._ongoingCancelTimers = window._ongoingCancelTimers || {};
+        if (window._ongoingCancelTimers[key]) clearTimeout(window._ongoingCancelTimers[key]);
+        window._ongoingCancelTimers[key] = setTimeout(() => {
+          const cancelBtn = document.getElementById('ongoingCancelBtn_' + key);
+          if (cancelBtn) {
+            cancelBtn.remove();
+          }
+          const compBtn = document.querySelector(`[data-complete="${key}"]`);
+          if (compBtn) {
+            compBtn.style.flex = '1';
+            compBtn.style.width = '100%';
+          }
+        }, remainingCancelMs);
+      }
     });
 
     // Remove any leftover cards that are no longer active
@@ -4453,6 +4799,16 @@ function listenAccepted() {
     });
 
     if (hasActive) {
+      window.hasActiveOngoingRide = true;
+      const reqBox = document.getElementById('requests');
+      if (reqBox) {
+        reqBox.innerHTML = '';
+        reqBox.style.display = 'none';
+      }
+      activeRequestMap.clear();
+      if (document.getElementById('liveCount')) document.getElementById('liveCount').innerText = 0;
+      stopSound();
+
       if (!liveLocationWatchId) {
         startLiveTracking();
       }
@@ -4463,6 +4819,13 @@ function listenAccepted() {
         window.activeTripKey = null;
       }
       box.innerHTML = '';
+      const reqBox = document.getElementById('requests');
+      if (reqBox) {
+        reqBox.style.display = 'block';
+      }
+      if (typeof renderAllIncoming === 'function' && isOnline) {
+        renderAllIncoming();
+      }
     }
   });
 }
@@ -4521,7 +4884,9 @@ async function verifyAndStart(key) {
       return;
     }
 
-    const startPayload = { status: 'ONGOING', startedAt: Date.now() };
+    const nowTime = Date.now();
+    try { localStorage.setItem('rsg_trip_startedAt_' + targetKey, String(nowTime)); } catch(e) {}
+    const startPayload = { status: 'ONGOING', startedAt: nowTime, startTime: nowTime };
     await update(ref(db, 'accepted_rides/' + targetKey), startPayload);
     await update(ref(db, 'rides/' + targetKey), startPayload);
     await update(ref(db, 'bookings/' + targetKey), startPayload);
@@ -4597,6 +4962,16 @@ function completeRide(key) {
     remove(ref(db, 'rideRequests/' + key)).catch(()=>{});
     remove(ref(db, 'accepted_rides/' + key)).catch(()=>{});
     remove(ref(db, 'live_trips/' + key)).catch(()=>{});
+    try { localStorage.removeItem('rsg_trip_startedAt_' + key); } catch(e) {}
+    if (window._ongoingCancelTimers && window._ongoingCancelTimers[key]) clearTimeout(window._ongoingCancelTimers[key]);
+    window.hasActiveOngoingRide = false;
+    window.activeTripKey = null;
+    let accBox = document.getElementById('acceptedBox');
+    if (accBox) accBox.innerHTML = '';
+    let reqBox = document.getElementById('requests');
+    if (reqBox) reqBox.style.display = 'block';
+    if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
+    startLiveTracking(); // Immediately revert GPS to low-power battery-saver mode
     try {
       if (typeof firebase !== 'undefined' && firebase.firestore) {
         firebase.firestore().collection('bookings').doc(key).update({
@@ -4685,7 +5060,29 @@ function completeRide(key) {
 // === DRIVER ACTIVE TRIP CANCELLATION HANDLER ===
 let driverCancelKey = null;
 function openDriverCancelModal(k) {
-  driverCancelKey = k || window.activeTripKey;
+  let key = k || window.activeTripKey;
+  if (!key) return;
+
+  // Strict 1-Minute Rule: If driver already started trip with OTP, cancel option is only available for 60 seconds
+  let card = document.getElementById('card_accepted_' + key);
+  let status = card ? card.getAttribute('data-status') : null;
+  let tripStartTime = Number(localStorage.getItem('rsg_trip_startedAt_' + key) || 0);
+
+  if (status === 'ONGOING' && tripStartTime > 0 && (Date.now() - tripStartTime >= 60000)) {
+    alert(currentLang === 'bn' 
+      ? '⚠️ ট্রিপ শুরু হওয়ার ১ মিনিট অতিক্রান্ত হয়েছে! যাত্রী গাড়িতে থাকায় এখন আর ট্রিপ বাতিল করা যাবে না। গন্তব্যে পৌঁছে ট্রিপ সম্পন্ন (Complete) করুন।' 
+      : '⚠️ 1 minute has elapsed since starting with OTP. The trip can no longer be cancelled. Please complete the trip at drop location.');
+    const cancelBtn = document.getElementById('ongoingCancelBtn_' + key);
+    if (cancelBtn) cancelBtn.remove();
+    const compBtn = document.querySelector(`[data-complete="${key}"]`);
+    if (compBtn) {
+      compBtn.style.flex = '1';
+      compBtn.style.width = '100%';
+    }
+    return;
+  }
+
+  driverCancelKey = key;
   let m = document.getElementById('driverCancelModal');
   if (m) m.classList.add('show');
 }
@@ -4745,11 +5142,17 @@ async function confirmDriverCancel() {
     await remove(ref(db, 'rideRequests/' + key)).catch(()=>{});
     await remove(ref(db, 'live_trips/' + key)).catch(()=>{});
 
+    try { localStorage.removeItem('rsg_trip_startedAt_' + key); } catch(e) {}
+    if (window._ongoingCancelTimers && window._ongoingCancelTimers[key]) clearTimeout(window._ongoingCancelTimers[key]);
     window.hasActiveOngoingRide = false;
     window.activeTripKey = null;
     closeDriverCancelModal();
     let box = document.getElementById('acceptedBox');
     if (box) box.innerHTML = '';
+    let reqBox = document.getElementById('requests');
+    if (reqBox) reqBox.style.display = 'block';
+    if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
+    startLiveTracking(); // Immediately revert GPS to low-power battery-saver mode
     alert(currentLang === 'bn' ? '❌ ট্রিপটি বাতিল করা হয়েছে।' : '❌ Trip cancelled successfully.');
   } catch(err) {
     alert('বাতিল করতে সমস্যা হয়েছে: ' + err.message);
@@ -4810,11 +5213,15 @@ async function confirmReject() {
   document.getElementById('req-' + key)?.remove();
   activeRequestMap.delete(key);
   rejectedRideKeys.add(key);
+  if (typeof dismissTakenRide === 'function') dismissTakenRide(key);
 
   let box = document.getElementById('requests');
   let visibleCards = box ? box.querySelectorAll('.card').length : activeRequestMap.size;
+  if (visibleCards === 0 || activeRequestMap.size === 0) {
+    if (box) box.innerHTML = '';
+    stopSound();
+  }
   if (document.getElementById('liveCount')) document.getElementById('liveCount').innerText = visibleCards;
-  if (visibleCards === 0 || activeRequestMap.size === 0) stopSound();
 
   closeRejectModal();
 }
@@ -5325,20 +5732,28 @@ function listenBroadcastNotice() {
   onValue(ref(db, 'settings/broadcast'), snap => {
     let b = snap.val();
     let banner = document.getElementById('noticeBanner');
-    if (!banner) return;
+    let isActive = b && (b.active === true || b.active === 1 || b.active === '1');
 
-    if (b && b.active && (Date.now() - (b.time || 0) < 24 * 60 * 60 * 1000)) {
+    if (isActive && (Date.now() - (b.time || 0) < 7 * 24 * 60 * 60 * 1000)) {
       let target = b.target || 'ALL';
       if (target === 'ALL' || target === 'DRIVER') {
-        document.getElementById('noticeTitle').innerText = (b.type === 'ALERT' ? '🚨 ' : (b.type === 'BONUS' ? '🎁 ' : '📢 ')) + (b.title || 'Notice');
-        document.getElementById('noticeMsg').innerText = b.message || '';
-        banner.className = 'notice-bar ' + (b.type === 'ALERT' ? 'alert' : (b.type === 'BONUS' ? 'bonus' : ''));
-        banner.style.display = 'block';
+        let icon = (b.type === 'ALERT' ? '🚨' : (b.type === 'BONUS' ? '🎁' : '📢'));
+        if (banner) {
+          document.getElementById('noticeTitle').innerText = icon + ' ' + (b.title || 'Notice');
+          document.getElementById('noticeMsg').innerText = b.message || '';
+          banner.className = 'notice-bar ' + (b.type === 'ALERT' ? 'alert' : (b.type === 'BONUS' ? 'bonus' : ''));
+          banner.style.display = 'block';
+        }
 
-        let lastSeen = localStorage.getItem('lastNoticeTime');
-        if (String(b.time) !== lastSeen) {
+        let noticeId = b.id || b.time || '';
+        let lastSeen = localStorage.getItem('last_driver_notice_' + noticeId);
+        if (!lastSeen) {
+          localStorage.setItem('last_driver_notice_' + noticeId, 'true');
+          if (typeof window.showHeadsUpNotification === 'function') {
+            window.showHeadsUpNotification(b.title || 'Driver Notice', b.message || '', { icon, tag: 'broadcast_' + noticeId });
+          }
           if (!isSoundMuted && ('speechSynthesis' in window)) {
-            let u = new SpeechSynthesisUtterance("Notice: " + b.title);
+            let u = new SpeechSynthesisUtterance("Notice: " + (b.title || ''));
             u.lang = currentLang === 'bn' ? 'bn-IN' : 'en-IN';
             speechSynthesis.speak(u);
           }
@@ -5346,8 +5761,43 @@ function listenBroadcastNotice() {
         return;
       }
     }
-    banner.style.display = 'none';
+    // IMMEDIATE REMOVAL: When notice is stopped, turned off, or deleted by Admin, hide banner instantly!
+    if (banner) banner.style.display = 'none';
   });
+
+  // Cloudflare D1 Edge Broadcast Sync for Driver (Zero quota burn, high scale)
+  async function syncCloudflareDriverBroadcasts() {
+    try {
+      const res = await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/broadcasts?target=DRIVER', { cache: 'no-cache' });
+      const json = await res.json();
+      if (json.success && Array.isArray(json.broadcasts) && json.broadcasts.length > 0) {
+        const latest = json.broadcasts[0];
+        const isActive = latest && (latest.active === 1 || latest.active === true || latest.active === '1');
+        if (isActive) {
+          let banner = document.getElementById('noticeBanner');
+          let icon = (latest.type === 'ALERT' ? '🚨' : (latest.type === 'BONUS' ? '🎁' : '📢'));
+          if (banner) {
+            document.getElementById('noticeTitle').innerText = icon + ' ' + (latest.title || 'Notice');
+            document.getElementById('noticeMsg').innerText = latest.message || '';
+            banner.className = 'notice-bar ' + (latest.type === 'ALERT' ? 'alert' : (latest.type === 'BONUS' ? 'bonus' : ''));
+            banner.style.display = 'block';
+          }
+
+          let noticeId = latest.id || latest.created_at || '';
+          let lastSeen = localStorage.getItem('last_driver_notice_' + noticeId);
+          if (!lastSeen) {
+            localStorage.setItem('last_driver_notice_' + noticeId, 'true');
+            if (typeof window.showHeadsUpNotification === 'function') {
+              window.showHeadsUpNotification(latest.title || 'Driver Notice', latest.message || '', { icon, tag: 'broadcast_' + noticeId });
+            }
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('CF driver broadcast sync fallback:', e);
+    }
+  }
+  syncCloudflareDriverBroadcasts();
 }
 
 // Sync Live Promo Codes & Coupons from Admin
@@ -6018,6 +6468,7 @@ async function initDriverApp() {
           driverMobile: DRIVER_PHONE,
           driverName: DRIVER_NAME,
           driverVehicle: DRIVER_VEHICLE,
+          role: 'driver',
           lat: lat || 0,
           lng: lng || 0,
           time: Date.now(),
@@ -6879,6 +7330,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.activeTripKey = null;
         let box = document.getElementById('acceptedBox');
         if (box) box.innerHTML = '';
+        let reqBox = document.getElementById('requests');
+        if (reqBox) reqBox.style.display = 'block';
+        if (typeof renderAllIncoming === 'function' && isOnline) renderAllIncoming();
       } else if (n.message) {
         if (typeof showDriverToast === 'function') {
           showDriverToast('🔔 ' + n.message);

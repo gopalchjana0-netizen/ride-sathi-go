@@ -111,6 +111,246 @@ export default {
       }
     }
 
+    // 0.2 BROADCAST NOTICES API (Cloudflare D1 Storage & Edge Filtering)
+    if (path === "/api/broadcasts") {
+      await safeRun(
+        env.DB,
+        "CREATE TABLE IF NOT EXISTS broadcast_notices (id TEXT PRIMARY KEY, title TEXT, message TEXT, type TEXT, target TEXT, active INTEGER DEFAULT 1, created_at TEXT)"
+      );
+
+      // GET: Fetch broadcasts
+      if (request.method === "GET") {
+        const target = url.searchParams.get("target"); // 'CUSTOMER' | 'DRIVER' | 'ALL'
+        const all = url.searchParams.get("all"); // 'true' for admin view of all history
+
+        if (all === "true") {
+          const q = await safeQuery(
+            env.DB,
+            "SELECT * FROM broadcast_notices ORDER BY created_at DESC LIMIT 50"
+          );
+          return jsonResponse({
+            success: true,
+            broadcasts: q.result?.results || [],
+            source: "cloudflare_d1"
+          });
+        }
+
+        let query = "SELECT * FROM broadcast_notices WHERE active = 1";
+        let params: any[] = [];
+        if (target) {
+          query += " AND (target = ? OR target = 'ALL')";
+          params.push(target);
+        }
+        query += " ORDER BY created_at DESC LIMIT 10";
+
+        const q = await safeQuery(env.DB, query, params);
+        return jsonResponse({
+          success: true,
+          broadcasts: q.result?.results || [],
+          source: "cloudflare_d1"
+        });
+      }
+
+      // POST: Create or update broadcast
+      if (request.method === "POST") {
+        try {
+          const body = await request.json();
+          const id = body.id || ("bc_" + Date.now());
+          const title = (body.title || "").trim();
+          const message = (body.message || "").trim();
+          const type = body.type || "INFO";
+          const target = body.target || "ALL"; // 'ALL' | 'CUSTOMER' | 'DRIVER'
+          const active = (body.active === false || body.active === 0 || body.active === "0") ? 0 : 1;
+          const createdAt = body.created_at || new Date().toISOString();
+
+          if (!title || !message) {
+            return jsonResponse({ success: false, message: "Title and message are required" }, 400);
+          }
+
+          await safeRun(
+            env.DB,
+            "INSERT OR REPLACE INTO broadcast_notices (id, title, message, type, target, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [id, title, message, type, target, active, createdAt]
+          );
+
+          return jsonResponse({
+            success: true,
+            id,
+            broadcast: { id, title, message, type, target, active, created_at: createdAt },
+            message: "Broadcast saved on Cloudflare D1",
+            source: "cloudflare_d1"
+          });
+        } catch (e: any) {
+          return jsonResponse({ success: false, error: e.message }, 500);
+        }
+      }
+
+      // DELETE: Delete a broadcast
+      if (request.method === "DELETE") {
+        const id = url.searchParams.get("id");
+        if (!id) return jsonResponse({ success: false, message: "Broadcast ID required" }, 400);
+        if (id === "ALL") {
+          await safeRun(env.DB, "DELETE FROM broadcast_notices");
+        } else {
+          await safeRun(env.DB, "DELETE FROM broadcast_notices WHERE id = ?", [id]);
+        }
+        return jsonResponse({ success: true, message: `Broadcast ${id} deleted from Cloudflare D1` });
+      }
+    }
+
+    // 0.3 BROADCAST TOGGLE (Active/Inactive) & DELETE ALIAS
+    if (path === "/api/broadcasts/toggle" && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const id = body.id;
+        const active = (body.active === false || body.active === 0 || body.active === "0") ? 0 : 1;
+        if (!id) return jsonResponse({ success: false, message: "Broadcast ID required" }, 400);
+
+        if (id === "ALL") {
+          await safeRun(env.DB, "UPDATE broadcast_notices SET active = ?", [active]);
+        } else {
+          await safeRun(env.DB, "UPDATE broadcast_notices SET active = ? WHERE id = ?", [active, id]);
+        }
+        return jsonResponse({ success: true, message: `Broadcast status updated to ${active}`, source: "cloudflare_d1" });
+      } catch (e: any) {
+        return jsonResponse({ success: false, error: e.message }, 500);
+      }
+    }
+
+    if (path === "/api/broadcasts/delete" && (request.method === "POST" || request.method === "DELETE")) {
+      try {
+        let id = url.searchParams.get("id");
+        if (!id) {
+          try {
+            const body = await request.json();
+            id = body.id;
+          } catch(e) {}
+        }
+        if (!id) return jsonResponse({ success: false, message: "Broadcast ID required" }, 400);
+
+        if (id === "ALL") {
+          await safeRun(env.DB, "DELETE FROM broadcast_notices");
+        } else {
+          await safeRun(env.DB, "DELETE FROM broadcast_notices WHERE id = ?", [id]);
+        }
+        return jsonResponse({ success: true, message: `Broadcast ${id} deleted from Cloudflare D1`, source: "cloudflare_d1" });
+      } catch (e: any) {
+        return jsonResponse({ success: false, error: e.message }, 500);
+      }
+    }
+
+    // 0.4 OPERATIONAL CITIES & MULTI-CITY EXPANSION API (Cloudflare D1 Edge)
+    if (path === "/api/cities") {
+      await safeRun(
+        env.DB,
+        "CREATE TABLE IF NOT EXISTS operational_cities (id TEXT PRIMARY KEY, name TEXT, center_lat REAL, center_lng REAL, radius_km REAL, base_fare REAL, per_km REAL, per_min REAL, min_fare REAL, active INTEGER DEFAULT 1, raw_data TEXT, updated_at TEXT)"
+      );
+
+      // GET: Return operational cities (0 latency CDN Edge, saves 100% Firebase bandwidth)
+      if (request.method === "GET") {
+        const all = url.searchParams.get("all"); // 'true' for admin view of all history
+        let query = "SELECT * FROM operational_cities";
+        if (all !== "true") {
+          query += " WHERE active = 1";
+        }
+        query += " ORDER BY name ASC";
+
+        const q = await safeQuery(env.DB, query);
+        let cities = (q.result?.results || []).map((row: any) => {
+          let parsed: any = {};
+          try { if (row.raw_data) parsed = JSON.parse(row.raw_data); } catch(e) {}
+          return {
+            id: row.id,
+            name: row.name,
+            cityName: row.name,
+            centerLat: row.center_lat,
+            centerLng: row.center_lng,
+            lat: row.center_lat,
+            lng: row.center_lng,
+            radiusKm: row.radius_km,
+            radius: row.radius_km,
+            baseFare: row.base_fare,
+            perKm: row.per_km,
+            perKmFare: row.per_km,
+            perMin: row.per_min,
+            perMinFare: row.per_min,
+            minFare: row.min_fare,
+            minimumFare: row.min_fare,
+            active: row.active === 1,
+            isActive: row.active === 1,
+            isServiceActive: row.active === 1,
+            status: row.active === 1 ? "ON" : "OFF",
+            ...parsed
+          };
+        });
+
+        // Default cities if D1 table is brand new/empty
+        if (cities.length === 0) {
+          cities = [
+            { id: "kolkata", name: "Kolkata", cityName: "Kolkata", centerLat: 22.5726, centerLng: 88.3639, lat: 22.5726, lng: 88.3639, radiusKm: 35, radius: 35, baseFare: 30, perKm: 15, perKmFare: 15, perMin: 1, perMinFare: 1, minFare: 30, active: true, isActive: true, isServiceActive: true, status: "ON" },
+            { id: "howrah", name: "Howrah", cityName: "Howrah", centerLat: 22.5958, centerLng: 88.2636, lat: 22.5958, lng: 88.2636, radiusKm: 30, radius: 30, baseFare: 30, perKm: 15, perKmFare: 15, perMin: 1, perMinFare: 1, minFare: 30, active: true, isActive: true, isServiceActive: true, status: "ON" },
+            { id: "kharagpur", name: "Kharagpur", cityName: "Kharagpur", centerLat: 22.3458, centerLng: 87.3235, lat: 22.3458, lng: 87.3235, radiusKm: 30, radius: 30, baseFare: 30, perKm: 15, perKmFare: 15, perMin: 1, perMinFare: 1, minFare: 30, active: true, isActive: true, isServiceActive: true, status: "ON" },
+            { id: "medinipur", name: "Medinipur", cityName: "Medinipur", centerLat: 22.4257, centerLng: 87.3199, lat: 22.4257, lng: 87.3199, radiusKm: 30, radius: 30, baseFare: 30, perKm: 15, perKmFare: 15, perMin: 1, perMinFare: 1, minFare: 30, active: true, isActive: true, isServiceActive: true, status: "ON" },
+            { id: "haldia", name: "Haldia", cityName: "Haldia", centerLat: 22.0620, centerLng: 88.0645, lat: 22.0620, lng: 88.0645, radiusKm: 30, radius: 30, baseFare: 30, perKm: 15, perKmFare: 15, perMin: 1, perMinFare: 1, minFare: 30, active: true, isActive: true, isServiceActive: true, status: "ON" }
+          ];
+        }
+
+        return jsonResponse({ success: true, cities, source: "cloudflare_d1" });
+      }
+
+      // POST: Save or update city (Admin authenticated)
+      if (request.method === "POST") {
+        const authKey = request.headers.get("x-admin-key") || url.searchParams.get("key");
+        if (authKey !== "RS_ADMIN_SECRET_2026") {
+          return jsonResponse({ success: false, message: "Unauthorized: Invalid admin key" }, 401);
+        }
+
+        try {
+          const body = await request.json();
+          const id = body.id || ("city_" + (body.name || "city").toLowerCase().replace(/[^a-z0-9]/g, "_"));
+          const name = (body.name || body.cityName || "City").trim();
+          const centerLat = Number(body.centerLat ?? body.lat ?? 22.5726);
+          const centerLng = Number(body.centerLng ?? body.lng ?? 88.3639);
+          const radiusKm = Number(body.radiusKm ?? body.radius ?? 25);
+          const baseFare = Number(body.baseFare ?? 30);
+          const perKm = Number(body.perKm ?? body.perKmFare ?? 15);
+          const perMin = Number(body.perMin ?? body.perMinFare ?? 1);
+          const minFare = Number(body.minFare ?? body.minimumFare ?? 30);
+          const active = (body.active === false || body.isActive === false || body.status === "OFF") ? 0 : 1;
+          const rawData = JSON.stringify(body);
+          const now = new Date().toISOString();
+
+          await safeRun(
+            env.DB,
+            "INSERT OR REPLACE INTO operational_cities (id, name, center_lat, center_lng, radius_km, base_fare, per_km, per_min, min_fare, active, raw_data, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [id, name, centerLat, centerLng, radiusKm, baseFare, perKm, perMin, minFare, active, rawData, now]
+          );
+
+          return jsonResponse({
+            success: true,
+            message: `City ${name} saved on Cloudflare D1`,
+            id,
+            source: "cloudflare_d1"
+          });
+        } catch(e: any) {
+          return jsonResponse({ success: false, error: e.message }, 500);
+        }
+      }
+
+      // DELETE: Delete a city (Admin authenticated)
+      if (request.method === "DELETE") {
+        const authKey = request.headers.get("x-admin-key") || url.searchParams.get("key");
+        if (authKey !== "RS_ADMIN_SECRET_2026") {
+          return jsonResponse({ success: false, message: "Unauthorized: Invalid admin key" }, 401);
+        }
+        const id = url.searchParams.get("id");
+        if (!id) return jsonResponse({ success: false, message: "City ID required" }, 400);
+
+        await safeRun(env.DB, "DELETE FROM operational_cities WHERE id = ?", [id]);
+        return jsonResponse({ success: true, message: `City ${id} deleted from Cloudflare D1` });
+      }
+    }
+
     // 1. MANUAL CLEANUP API FOR ADMIN
     if (path === "/api/admin/cleanup" && (request.method === "POST" || request.method === "GET")) {
       const authKey = request.headers.get("x-admin-key") || url.searchParams.get("key");
@@ -168,13 +408,22 @@ export default {
         const customer = body.customer_name || body.name || "Customer";
         const pickup = body.pickup || body.from || "";
         const drop = body.drop_location || body.drop || body.to || "";
+        const vehicle = body.vehicle || body.vehicleType || "TOTO";
+        const fare = Number(body.fare || 0);
         const status = "searching";
         const now = new Date().toISOString();
 
+        await safeRun(
+          env.DB,
+          "CREATE TABLE IF NOT EXISTS rides (id TEXT PRIMARY KEY, customer_name TEXT, pickup TEXT, drop_location TEXT, status TEXT, driver_name TEXT, vehicle_number TEXT, vehicle TEXT, fare REAL, created_at TEXT)"
+        );
+        await safeRun(env.DB, "ALTER TABLE rides ADD COLUMN vehicle TEXT");
+        await safeRun(env.DB, "ALTER TABLE rides ADD COLUMN fare REAL");
+
         const q = await safeRun(
           env.DB,
-          "INSERT OR REPLACE INTO rides (id, customer_name, pickup, drop_location, status, driver_name, vehicle_number, created_at) VALUES (?,?,?,?,?,?,?,?)",
-          [rideId, customer, pickup, drop, status, "", "", now]
+          "INSERT OR REPLACE INTO rides (id, customer_name, pickup, drop_location, status, driver_name, vehicle_number, vehicle, fare, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+          [rideId, customer, pickup, drop, status, "", "", vehicle, fare, now]
         );
 
         if (!q.success) {
@@ -279,8 +528,11 @@ export default {
 
         const requests = (q.result.results || []).map((r: any) => ({
           ...r,
-          message_en: `New Ride! ${r.pickup || "Pickup"} to ${r.drop_location || "Destination"}`,
-          message_bn: `নতুন রাইড! ${r.pickup || "পিকআপ"} থেকে ${r.drop_location || "গন্তব্য"}`
+          vehicle: r.vehicle || 'TOTO',
+          vehicleType: r.vehicle || 'TOTO',
+          fare: Number(r.fare || 0),
+          message_en: `New Ride! ${r.pickup || "Pickup"} to ${r.drop_location || "Destination"} (${r.vehicle || 'TOTO'})`,
+          message_bn: `নতুন রাইড! ${r.pickup || "পিকআপ"} থেকে ${r.drop_location || "গন্তব্য"} (${r.vehicle || 'টোটো'})`
         }));
 
         return jsonResponse({ success: true, requests });
