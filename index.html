@@ -1897,7 +1897,7 @@ window.autoFetchCurrentLocationOnStartup = function(options) {
     if (typeof window.calcFare === 'function') window.calcFare();
     if (typeof window.autoResolveAndCalcKM === 'function') window.autoResolveAndCalcKM();
 
-    // Reverse geocode via OSM Nominatim (Primary) with Photon (Fallback)
+    // Reverse geocode via OSM Nominatim (Primary) with Photon (Fallback) - High Landmark Precision
     var nomUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon + "&zoom=18&addressdetails=1&accept-language=en,en-IN;q=0.9";
     fetch(nomUrl, { headers: { 'Accept': 'application/json' } })
       .then(function(r) { return r.json(); })
@@ -1905,21 +1905,37 @@ window.autoFetchCurrentLocationOnStartup = function(options) {
         var cleanAddress = "";
         if (d && d.address) {
           var a = d.address;
-          var parts = [
-            a.road || a.pedestrian || a.suburb || a.neighbourhood || a.hamlet,
-            a.village || a.town || a.city || a.municipality,
-            a.county || a.state_district
-          ].filter(Boolean);
+          var poi = d.name || a.amenity || a.shop || a.highway || a.building || a.railway || a.tourism || a.leisure || a.office || a.historic || a.place || '';
+          var street = a.road || a.pedestrian || a.street || a.footway || a.path || a.residential || '';
+          var local = a.suburb || a.neighbourhood || a.quarter || a.hamlet || '';
+          var city = a.village || a.town || a.city || a.municipality || '';
+          var dist = a.county || a.state_district || '';
+          var pin = a.postcode || '';
+
+          var seen = {};
+          var parts = [];
+          [poi, street, local, city, dist, pin].forEach(function(item) {
+            if (!item) return;
+            var cleanItem = String(item).trim();
+            var lower = cleanItem.toLowerCase();
+            if (!seen[lower] && cleanItem.length > 1) {
+              seen[lower] = true;
+              parts.push(cleanItem);
+            }
+          });
+
           if (parts.length > 0) {
-            cleanAddress = parts.slice(0, 3).join(', ');
+            cleanAddress = parts.slice(0, 4).join(', ');
           }
         }
         if (!cleanAddress && d && d.display_name) {
-          cleanAddress = d.display_name.split(',').slice(0, 4).join(',').trim();
+          cleanAddress = d.display_name.split(',').slice(0, 4).map(function(s){return s.trim();}).filter(Boolean).join(', ');
         }
 
         if (cleanAddress && pInput) {
           pInput.value = cleanAddress;
+          window.pickupInputAddress = cleanAddress;
+          window.pickupCoordsDirty = false;
           try {
             localStorage.setItem('rs_last_known_pickup', JSON.stringify({
               lat: lat,
@@ -1940,10 +1956,28 @@ window.autoFetchCurrentLocationOnStartup = function(options) {
           .then(function(data) {
             if (data && data.features && data.features[0] && data.features[0].properties) {
               var p = data.features[0].properties;
-              var parts = [p.name || p.street, p.district || p.locality || p.city, p.state].filter(Boolean);
-              if (parts.length > 0 && pInput) {
-                var clean = parts.join(', ');
+              var parts = [
+                p.name,
+                p.street,
+                p.district || p.suburb || p.locality,
+                p.city || p.town,
+                p.postcode
+              ].filter(Boolean);
+              var seenP = {};
+              var cleanParts = [];
+              parts.forEach(function(pt) {
+                var c = String(pt).trim();
+                var l = c.toLowerCase();
+                if (!seenP[l] && c.length > 1) {
+                  seenP[l] = true;
+                  cleanParts.push(c);
+                }
+              });
+              if (cleanParts.length > 0 && pInput) {
+                var clean = cleanParts.slice(0, 4).join(', ');
                 pInput.value = clean;
+                window.pickupInputAddress = clean;
+                window.pickupCoordsDirty = false;
                 try {
                   localStorage.setItem('rs_last_known_pickup', JSON.stringify({
                     lat: lat,
@@ -11295,10 +11329,18 @@ function attachSearch(inputEl, sugEl, isPickup) {
       div.innerHTML = icon + " <b>" + displayTitle + "</b><br><small style='color:#64748b'>" + (item.subtitle || '') + "</small>";
       div.onclick = (ev) => {
         ev.stopPropagation();
-        inputEl.value = displayTitle + (item.subtitle ? ", " + item.subtitle : "");
-        const coords = { lat: parseFloat(item.lat), lon: parseFloat(item.lon) };
-        if (isPickup) window.pickupCoords = coords;
-        else window.dropCoords = coords;
+        const fullAddr = displayTitle + (item.subtitle ? ", " + item.subtitle : "");
+        inputEl.value = fullAddr;
+        const coords = { lat: parseFloat(item.lat), lon: parseFloat(item.lon), lng: parseFloat(item.lon) };
+        if (isPickup) {
+          window.pickupCoords = coords;
+          window.pickupInputAddress = fullAddr;
+          window.pickupCoordsDirty = false;
+        } else {
+          window.dropCoords = coords;
+          window.dropInputAddress = fullAddr;
+          window.dropCoordsDirty = false;
+        }
         saveRecentPlace(item);
         sugEl.style.display = 'none';
         if (typeof calcFare === 'function') calcFare();
@@ -11309,6 +11351,11 @@ function attachSearch(inputEl, sugEl, isPickup) {
   }
 
   inputEl.addEventListener('input', () => {
+    if (isPickup) {
+      window.pickupCoordsDirty = true;
+    } else {
+      window.dropCoordsDirty = true;
+    }
     clearTimeout(searchDebounce);
     const q = inputEl.value.trim();
     if (q.length < 2) {
@@ -11350,24 +11397,28 @@ async function autoResolveAndCalcKM() {
   const pVal = (pInput ? pInput.value : '').trim();
   const dVal = (dInput ? dInput.value : '').trim();
 
-  // Resolve pickup coords dynamically via OSM
-  if (!window.pickupCoords && pVal.length >= 2) {
+  // Resolve pickup coords dynamically via OSM if dirty, missing, or text mismatch
+  if ((window.pickupCoordsDirty || !window.pickupCoords || (pVal && pVal !== window.pickupInputAddress)) && pVal.length >= 2 && pVal.indexOf('📡') === -1) {
     try {
       const isPEn = hasEnglish(pVal);
       const list = await queryLiveOSM(pVal, null, null, isPEn);
       if (list && list[0]) {
-        window.pickupCoords = { lat: list[0].lat, lon: list[0].lon };
+        window.pickupCoords = { lat: parseFloat(list[0].lat), lon: parseFloat(list[0].lon), lng: parseFloat(list[0].lon) };
+        window.pickupInputAddress = pVal;
+        window.pickupCoordsDirty = false;
       }
     } catch(e) {}
   }
 
-  // Resolve drop coords dynamically via OSM
-  if (!window.dropCoords && dVal.length >= 2) {
+  // Resolve drop coords dynamically via OSM if dirty, missing, or text mismatch
+  if ((window.dropCoordsDirty || !window.dropCoords || (dVal && dVal !== window.dropInputAddress)) && dVal.length >= 2) {
     try {
       const isDEn = hasEnglish(dVal);
       const list = await queryLiveOSM(dVal, null, null, isDEn);
       if (list && list[0]) {
-        window.dropCoords = { lat: list[0].lat, lon: list[0].lon };
+        window.dropCoords = { lat: parseFloat(list[0].lat), lon: parseFloat(list[0].lon), lng: parseFloat(list[0].lon) };
+        window.dropInputAddress = dVal;
+        window.dropCoordsDirty = false;
       }
     } catch(e) {}
   }
@@ -11444,18 +11495,26 @@ window.proceedToConfirm = async function() {
     return;
   }
 
-  if (!window.pickupCoords) {
+  // Strictly resolve exact pickup coords if dirty, missing, or text mismatch
+  if ((window.pickupCoordsDirty || !window.pickupCoords || pickup !== window.pickupInputAddress) && pickup.length >= 2 && pickup.indexOf('📡') === -1) {
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(pickup)}&countrycodes=in&limit=1`);
-      const d = await r.json();
-      if (d && d[0]) window.pickupCoords = { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) };
+      const list = await queryLiveOSM(pickup, null, null, hasEnglish(pickup));
+      if (list && list[0]) {
+        window.pickupCoords = { lat: parseFloat(list[0].lat), lon: parseFloat(list[0].lon), lng: parseFloat(list[0].lon) };
+        window.pickupInputAddress = pickup;
+        window.pickupCoordsDirty = false;
+      }
     } catch(e) {}
   }
-  if (!window.dropCoords) {
+  // Strictly resolve exact drop coords if dirty, missing, or text mismatch
+  if ((window.dropCoordsDirty || !window.dropCoords || drop !== window.dropInputAddress) && drop.length >= 2) {
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(drop)}&countrycodes=in&limit=1`);
-      const d = await r.json();
-      if (d && d[0]) window.dropCoords = { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon) };
+      const list = await queryLiveOSM(drop, null, null, hasEnglish(drop));
+      if (list && list[0]) {
+        window.dropCoords = { lat: parseFloat(list[0].lat), lon: parseFloat(list[0].lon), lng: parseFloat(list[0].lon) };
+        window.dropInputAddress = drop;
+        window.dropCoordsDirty = false;
+      }
     } catch(e) {}
   }
 
@@ -11671,6 +11730,9 @@ window.confirmAndPlaceBooking = async function(e) {
     refDriverPhone: sessionStorage.getItem('ref_driver_phone') || localStorage.getItem('ref_driver_phone') || '',
     refDriverName: sessionStorage.getItem('ref_driver_name') || localStorage.getItem('ref_driver_name') || '',
     parcelReceiver: receiverInfo || null,
+    customerLiveLat: pLat,
+    customerLiveLng: pLon,
+    exactGpsTracked: true,
     fromLat: pLat,
     fromLng: pLon,
     fromLon: pLon,
@@ -11797,6 +11859,11 @@ function listenForDriver(key, otp) {
 
     // 1. TRIP COMPLETED -> Rate Driver & Feedback
     if (rawSt === 'COMPLETED' || rawSt === 'FINISHED') {
+      if (window._custLiveWatchId != null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(window._custLiveWatchId);
+        window._custLiveWatchId = null;
+        window._custLiveStreamActive = false;
+      }
       // Auto-generate Tax Invoice & save to offline history
       try {
         const activeCustMob = localStorage.getItem('current_user_mobile') || localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || b.customerPhone || '';
@@ -12028,13 +12095,22 @@ function listenForDriver(key, otp) {
       if (ratingValEl) ratingValEl.innerText = drvRatingNum.toFixed(1);
       if (ratingStarsEl) ratingStarsEl.innerText = '★'.repeat(Math.max(1, Math.min(5, Math.round(drvRatingNum))));
 
+      // Check if ride record itself already carries the driver's real photo
+      const directPhoto = b.driverPhoto || b.photo || b.driverProfileImage;
+      if (directPhoto && avatarEl) {
+        avatarEl.innerHTML = `<img src="${directPhoto}" alt="Driver Photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      }
+
       // Fetch live rating, photo and vehicle number from drivers/{drvPhone}
       try {
         const cleanP = cleanPhone(drvPhone);
         if (cleanP && typeof db !== 'undefined' && db) {
-          get(ref(db, 'drivers/' + cleanP)).then(dSnap => {
-            if (dSnap.exists()) {
-              const dData = dSnap.val() || {};
+          Promise.all([
+            get(ref(db, 'drivers/' + cleanP)).then(s => s.exists() ? s.val() : null).catch(()=>null),
+            get(ref(db, 'drivers/DRIVER_' + cleanP)).then(s => s.exists() ? s.val() : null).catch(()=>null)
+          ]).then(([d1, d2]) => {
+            const dData = d1 || d2;
+            if (dData) {
               const liveR = dData.rating || dData.avgRating || dData.stars;
               if (liveR) {
                 const numR = parseFloat(liveR) || 4.9;
@@ -12045,13 +12121,31 @@ function listenForDriver(key, otp) {
                 vehNumEl.innerText = dData.vehicleNumber;
                 vehNumEl.style.display = 'inline-block';
               }
-              if (dData.photo && avatarEl) {
-                avatarEl.innerHTML = `<img src="${dData.photo}" alt="Driver Photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+              const liveDriverImg = dData.photo || dData.driverPhoto || dData.profileImage;
+              if (liveDriverImg && avatarEl) {
+                avatarEl.innerHTML = `<img src="${liveDriverImg}" alt="Driver Photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
               }
             }
           }).catch(()=>{});
         }
       } catch(e) {}
+
+      // Throttled real-time customer GPS stream to Driver (100% Free Tier, max once per 15s)
+      if (!window._custLiveStreamActive && navigator.geolocation) {
+        window._custLiveStreamActive = true;
+        let lastCustPush = 0;
+        window._custLiveWatchId = navigator.geolocation.watchPosition(function(cPos) {
+          const now = Date.now();
+          if (now - lastCustPush < 15000) return; // Throttled to max once every 15s (zero wasted writes)
+          lastCustPush = now;
+          const cLat = cPos.coords.latitude;
+          const cLng = cPos.coords.longitude;
+          if (realtimeDb && key) {
+            update(ref(realtimeDb, 'rides/' + key), { customerLiveLat: cLat, customerLiveLng: cLng }).catch(()=>{});
+            update(ref(realtimeDb, 'accepted_rides/' + key), { customerLiveLat: cLat, customerLiveLng: cLng }).catch(()=>{});
+          }
+        }, function(){}, { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 });
+      }
 
       // 1-Click Call & WhatsApp
       const callBtn = document.getElementById('liveDriverCallBtn');
@@ -13152,7 +13246,7 @@ window.handleLiveChatDocUpload = function(event) {
       var img = new Image();
       img.onload = function() {
         var canvas = document.createElement('canvas');
-        var maxDim = 850;
+        var maxDim = 520;
         var width = img.width;
         var height = img.height;
         if (width > maxDim || height > maxDim) {
@@ -13169,7 +13263,7 @@ window.handleLiveChatDocUpload = function(event) {
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        var compressedBase64 = canvas.toDataURL('image/jpeg', 0.82);
+        var compressedBase64 = canvas.toDataURL('image/jpeg', 0.52);
 
         chatRef.child('messages').push({
           sender: 'customer',

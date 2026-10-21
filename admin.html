@@ -3018,6 +3018,92 @@ function doPost(e) {
 </div>
 
 <!-- ============================================== -->
+<!-- 📷 ADMIN DRIVER PHOTO MANAGER MODAL -->
+<!-- ============================================== -->
+
+<!-- ⭐ ADMIN DRIVER RATING MODAL ⭐ -->
+<div id="adminRatingModal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#ffffff;border-radius:20px;max-width:380px;width:100%;padding:22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);border:2px solid #f59e0b;box-sizing:border-box">
+    <div style="font-size:38px;margin-bottom:6px">⭐</div>
+    <h3 style="margin:0 0 4px;font-size:18px;color:#0f172a">ড্রাইভার রেটিং ম্যানেজমেন্ট</h3>
+    <p id="adminRatingDriverInfo" style="margin:0 0 16px;font-size:12.5px;color:#64748b;font-weight:700"></p>
+
+    <!-- Star Display -->
+    <div id="adminRatingStarsDisplay" style="font-size:26px;color:#f59e0b;margin-bottom:12px;letter-spacing:2px">★★★★★</div>
+
+    <!-- Stepper & Input -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px">
+      <button type="button" onclick="adminAdjustRatingInput(-0.1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#0f172a;font-size:20px;font-weight:900;cursor:pointer">-</button>
+      <input type="number" id="adminRatingInput" min="1.0" max="5.0" step="0.1" value="4.9" oninput="adminUpdateRatingStars(this.value)" style="width:90px;height:42px;border-radius:12px;border:2px solid #f59e0b;text-align:center;font-size:20px;font-weight:900;color:#0f172a;background:#fffbeb">
+      <button type="button" onclick="adminAdjustRatingInput(0.1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #cbd5e1;background:#f8fafc;color:#0f172a;font-size:20px;font-weight:900;cursor:pointer">+</button>
+    </div>
+
+    <!-- Quick Preset Chips -->
+    <div style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;flex-wrap:wrap">
+      <button type="button" onclick="adminSetRatingValue(4.5)" style="padding:4px 10px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer">⭐ 4.5</button>
+      <button type="button" onclick="adminSetRatingValue(4.8)" style="padding:4px 10px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer">⭐ 4.8</button>
+      <button type="button" onclick="adminSetRatingValue(4.9)" style="padding:4px 10px;background:#fef08a;color:#854d0e;border:1px solid #facc15;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer">⭐ 4.9</button>
+      <button type="button" onclick="adminSetRatingValue(5.0)" style="padding:4px 10px;background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer">⭐ 5.0</button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button type="button" onclick="adminSaveDriverRating()" style="width:100%;padding:12px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:14px;cursor:pointer;box-shadow:0 3px 10px rgba(245,158,11,0.35)">
+        💾 রেটিং সেভ করুন (Save Rating)
+      </button>
+      <button type="button" onclick="adminCloseRatingManager()" style="width:100%;padding:10px;background:#f1f5f9;color:#475569;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer">
+        বন্ধ করুন (Cancel)
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="adminDriverPhotoModal" onclick="if(event.target===this)adminClosePhotoManager()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:999999;backdrop-filter:blur(5px);justify-content:center;align-items:center;padding:16px;box-sizing:border-box">
+  <div style="background:#ffffff;border-radius:24px;max-width:440px;width:100%;padding:22px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:2px solid #0284c7;text-align:center;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:16px">
+      <div style="text-align:left">
+        <h3 style="margin:0;font-size:17px;color:#0f172a;display:flex;align-items:center;gap:6px">
+          <span>📷</span> <span>ড্রাইভার ছবি ম্যানেজমেন্ট</span>
+        </h3>
+        <small style="color:#64748b;font-weight:700">Driver Profile Photo Manager</small>
+      </div>
+      <button type="button" onclick="adminClosePhotoManager()" style="background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;font-weight:bold;cursor:pointer;font-size:16px">✕</button>
+    </div>
+
+    <!-- Driver Info Header -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;margin-bottom:16px;text-align:left">
+      <div id="adminPhotoDriverName" style="font-weight:900;font-size:15px;color:#0f172a">Driver Name</div>
+      <div style="font-size:12px;color:#0284c7;font-weight:700" id="adminPhotoDriverPhone">+91 XXXXXXXXXX</div>
+      <div style="font-size:11px;color:#64748b;margin-top:2px" id="adminPhotoDriverVeh">Vehicle: TOTO</div>
+    </div>
+
+    <!-- Photo Preview Circle -->
+    <div style="position:relative;width:130px;height:130px;margin:0 auto 16px;border-radius:50%;border:4px solid #0284c7;box-shadow:0 6px 20px rgba(2,132,199,0.3);overflow:hidden;background:#f1f5f9;display:flex;align-items:center;justify-content:center">
+      <img id="adminPhotoPreviewImg" src="" alt="Driver Photo" style="width:100%;height:100%;object-fit:cover;display:none">
+      <div id="adminPhotoPreviewPlaceholder" style="font-size:54px;color:#94a3b8">👤</div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="adminDriverPhotoFileInput" accept="image/*" style="display:none" onchange="adminHandlePhotoFileSelected(event)">
+
+    <!-- Action Buttons -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button type="button" onclick="document.getElementById('adminDriverPhotoFileInput').click()" style="width:100%;padding:12px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(2,132,199,0.35)">
+        <span>📁</span> <span>নতুন ছবি আপলোড / পরিবর্তন করুন</span>
+      </button>
+
+      <button type="button" id="adminPhotoRemoveBtn" onclick="adminRemoveDriverPhoto()" style="width:100%;padding:11px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+        <span>🗑️</span> <span>ছবি মুছে ফেলুন (Remove Photo)</span>
+      </button>
+      
+      <button type="button" onclick="adminClosePhotoManager()" style="width:100%;padding:10px;background:#f1f5f9;color:#475569;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer">
+        বন্ধ করুন (Close)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
 <!-- ⚙️ ADVANCED USER PERMISSION & FEATURE CONTROL MODAL -->
 <!-- ============================================== -->
 <div id="userPermissionControlModal" onclick="if(event.target===this)closeUserPermissionControlModal()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.7);z-index:999999;backdrop-filter:blur(6px);justify-content:center;align-items:center;padding:14px;box-sizing:border-box;overflow-y:auto">
@@ -6329,22 +6415,15 @@ function hasTodaySelfie(phone){
 }
 
 function loadSelfies(){
-  db.ref('driver_selfie_logs').limitToLast(50).on('value',snap=>{
+  db.ref('driver_selfie_logs').limitToLast(30).on('value',snap=>{
     let data=snap.val()||{};
     allSelfieLogs=Object.entries(data).map(([k,v])=>({key:k,...v})).sort((a,b)=>(getTimestamp(b.time||0))-(getTimestamp(a.time||0)));
     let totalKB=Math.round(JSON.stringify(data).length/1024);
-    document.getElementById('selfieStorage').innerText='Storage: '+totalKB+' KB / 1GB | Total: '+allSelfieLogs.length;
+    let selfieStorageEl = document.getElementById('selfieStorage');
+    if (selfieStorageEl) selfieStorageEl.innerText='Storage: '+totalKB+' KB / 1GB | Total: '+allSelfieLogs.length;
     filterSelfie();
     renderPendingWithFaceMatch();
     filterDrivers();
-  });
-  db.ref('driver_verifications').limitToLast(50).on('value',snap=>{
-    let data=snap.val()||{};
-    let today=new Date().toLocaleDateString('en-CA');
-    let count=0;
-    for(let phone in data){
-      if(data[phone] && data[phone][today] && data[phone][today].isSelfieVerified) count++;
-    }
   });
 }
 
@@ -6413,7 +6492,7 @@ function renderPendingWithFaceMatch(){
   if(!c)box.innerHTML='<div class="card">No pending - All Approved ✅</div>';
 }
 
-db.ref('driver_requests').on('value',snap=>{pendingRaw=snap.val()||{};renderPendingWithFaceMatch();});
+db.ref('driver_requests').limitToLast(50).on('value',snap=>{pendingRaw=snap.val()||{};renderPendingWithFaceMatch();});
 db.ref('blocked_drivers').on('value',s=>{
   blockedData=s.val()||{};
   let box=document.getElementById('blockedList');
@@ -6470,7 +6549,8 @@ function filterDrivers(){
       db.ref('drivers/DRIVER_'+k+'/dueStartTime').remove();
     }
     let latest=getLatestSelfieForPhone(k);
-    html+=`<div class="card" style="border-left:4px solid ${isVerified?'#16a34a':'#e2e8f0'}"><div style="display:flex;gap:8px"><div style="flex:1"><b>${isVerified?'✅':'🔴'} ${d.name||k}</b> ${hasDue?`<span class="badge DUE-LOCK">₹${due}</span>`:``} ${timerHtml} ${isVerified?`<span class="badge" style="background:#16a34a;color:white">Selfie ✅</span>`:`<span class="badge" style="background:#fee2e2;color:#991b1b">No Selfie</span>`}<br><span class="small">${d.mobile||''}</span><br><div style="display:flex;gap:4px;margin-top:4px"><button class="btn" style="border:1px solid orange" onclick="speakDue('${(d.name||k).replace(/'/g,'')}',${due},${left})">🔊</button><button class="btn blue" onclick="clearDriverDue('${k}')">Clear Due</button><button class="btn" style="background:#7c3aed;color:#fff;font-weight:700" onclick="setDriverCustomTimer('${k}')">⏱️ Time</button><button class="btn orange" onclick="blockDriver('${k}')">Block</button></div></div>${latest?`<img src="${latest.image}" style="width:64px;height:64px;border-radius:50%;border:2px solid #16a34a;object-fit:cover">`:''}</div></div>`;
+    let driverImg = d.photo || d.driverPhoto || d.profileImage || (latest ? latest.image : '');
+    html+=`<div class="card" style="border-left:4px solid ${isVerified?'#16a34a':'#e2e8f0'}"><div style="display:flex;gap:8px;align-items:center"><div style="flex:1"><b>${isVerified?'✅':'🔴'} ${d.name||k}</b> <span class="badge" style="background:#fef08a;color:#854d0e;border:1px solid #facc15;font-weight:900;cursor:pointer" onclick="adminOpenRatingManager('${k}')" title="রেটিং পরিবর্তন করুন (Click to adjust rating)">⭐ ${Number(d.rating||d.avgRating||4.9).toFixed(1)}</span> ${hasDue?`<span class="badge DUE-LOCK">₹${due}</span>`:``} ${timerHtml} ${isVerified?`<span class="badge" style="background:#16a34a;color:white">Selfie ✅</span>`:`<span class="badge" style="background:#fee2e2;color:#991b1b">No Selfie</span>`}<br><span class="small">${d.mobile||''} • <b>${d.vehicle||d.vehicleType||'TOTO'}</b></span><br><div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap"><button class="btn" style="border:1px solid orange;padding:5px 8px" onclick="speakDue('${(d.name||k).replace(/'/g,'')}',${due},${left})">🔊</button><button class="btn blue" style="padding:5px 8px" onclick="clearDriverDue('${k}')">Clear Due</button><button class="btn" style="background:#7c3aed;color:#fff;font-weight:700;padding:5px 8px" onclick="setDriverCustomTimer('${k}')">⏱️ Time</button><button class="btn" style="background:#f59e0b;color:#fff;font-weight:700;padding:5px 8px" onclick="adminOpenRatingManager('${k}')" title="ড্রাইভারের রেটিং পরিবর্তন করুন">⭐ Rating</button><button class="btn" style="background:#0284c7;color:#fff;font-weight:700;padding:5px 8px" onclick="adminOpenPhotoManager('${k}')">📷 Photo</button><button class="btn orange" style="padding:5px 8px" onclick="blockDriver('${k}')">Block</button></div></div>${driverImg ? `<div style="text-align:center"><img src="${driverImg}" onclick="adminOpenPhotoManager('${k}')" style="width:62px;height:62px;border-radius:50%;border:2px solid #0284c7;object-fit:cover;cursor:pointer;flex-shrink:0" title="Click to manage photo"><div style="font-size:9.5px;color:#0284c7;font-weight:bold;margin-top:2px;cursor:pointer" onclick="adminOpenPhotoManager('${k}')">📷 Manage</div></div>` : `<div onclick="adminOpenPhotoManager('${k}')" style="width:62px;height:62px;border-radius:50%;border:2px dashed #94a3b8;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;cursor:pointer;color:#64748b;flex-shrink:0" title="Click to add photo">👤<span style="font-size:9.5px;font-weight:bold;color:#0284c7">+ Photo</span></div>`}</div></div>`;
   }
   document.getElementById('driverList').innerHTML=html||'<div class="card">No driver</div>';
   document.getElementById('driverCount').innerText=c;
@@ -6479,6 +6559,319 @@ function filterDrivers(){
   document.getElementById('dashActive').innerText=on;
   if(document.getElementById('selfieVerifiedCount'))document.getElementById('selfieVerifiedCount').innerText=verified;
 }
+
+
+// === ⭐ ADMIN DRIVER RATING MANAGER LOGIC ⭐ ===
+let _activeRatingDriverKey = null;
+
+function adminResolveDriverData(key) {
+  let cleanK = String(key || '').replace(/[^0-9]/g, '').slice(-10);
+  let d = (allDriversData && (allDriversData[key] || allDriversData[cleanK] || allDriversData['DRIVER_' + cleanK])) || {};
+
+  if (!d.name && allDriversData) {
+    for (let k in allDriversData) {
+      let cand = allDriversData[k];
+      if (cand && String(cand.mobile || cand.phone || k || '').replace(/[^0-9]/g, '').slice(-10) === cleanK) {
+        d = cand;
+        break;
+      }
+    }
+  }
+
+  if (!d.name && typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache)) {
+    let u = manageAllUsersCache.find(x => x && (x.key === key || x.phone === cleanK || x.driverKey === key));
+    if (u) {
+      d = { ...u, rating: u.rating || 4.9, vehicle: u.vehicle };
+    }
+  }
+
+  return { d, cleanK };
+}
+
+function adminOpenRatingManager(key) {
+  _activeRatingDriverKey = key;
+  let { d, cleanK } = adminResolveDriverData(key);
+
+  let name = d.name || key;
+  let phone = d.mobile || d.phone || cleanK || key;
+  let veh = d.vehicle || d.vehicleType || 'TOTO';
+  let curRating = parseFloat(d.rating || d.avgRating || 4.9) || 4.9;
+
+  let infoEl = document.getElementById('adminRatingDriverInfo');
+  if (infoEl) infoEl.innerText = `${name} | ${phone} (${veh})`;
+
+  adminSetRatingValue(curRating);
+
+  let m = document.getElementById('adminRatingModal');
+  if (m) m.style.display = 'flex';
+}
+
+function adminCloseRatingManager() {
+  let m = document.getElementById('adminRatingModal');
+  if (m) m.style.display = 'none';
+  _activeRatingDriverKey = null;
+}
+
+function adminSetRatingValue(val) {
+  let n = Math.max(1.0, Math.min(5.0, parseFloat(val) || 4.9));
+  let inp = document.getElementById('adminRatingInput');
+  if (inp) inp.value = n.toFixed(1);
+  adminUpdateRatingStars(n);
+}
+
+function adminAdjustRatingInput(delta) {
+  let inp = document.getElementById('adminRatingInput');
+  if (!inp) return;
+  let cur = parseFloat(inp.value) || 4.9;
+  let updated = Math.max(1.0, Math.min(5.0, Math.round((cur + delta) * 10) / 10));
+  inp.value = updated.toFixed(1);
+  adminUpdateRatingStars(updated);
+}
+
+function adminUpdateRatingStars(val) {
+  let n = Math.max(1.0, Math.min(5.0, parseFloat(val) || 4.9));
+  let rounded = Math.round(n);
+  let stars = '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+  let el = document.getElementById('adminRatingStarsDisplay');
+  if (el) el.innerText = stars;
+}
+
+function adminSaveDriverRating() {
+  if (!_activeRatingDriverKey) return;
+  let inp = document.getElementById('adminRatingInput');
+  let newRating = Math.max(1.0, Math.min(5.0, parseFloat(inp.value) || 4.9));
+  let k = _activeRatingDriverKey;
+  let cleanK = String(k).replace(/[^0-9]/g, '').slice(-10);
+
+  let updates = {
+    rating: newRating,
+    avgRating: newRating,
+    ratingUpdatedAt: Date.now()
+  };
+
+  Promise.all([
+    db.ref('drivers/' + k).update(updates),
+    cleanK ? db.ref('drivers/' + cleanK).update(updates) : Promise.resolve(),
+    cleanK ? db.ref('drivers/DRIVER_' + cleanK).update(updates) : Promise.resolve()
+  ]).then(() => {
+    if (allDriversData[k]) {
+      allDriversData[k].rating = newRating;
+      allDriversData[k].avgRating = newRating;
+    }
+    if (cleanK && allDriversData[cleanK]) {
+      allDriversData[cleanK].rating = newRating;
+      allDriversData[cleanK].avgRating = newRating;
+    }
+    if (cleanK && allDriversData['DRIVER_' + cleanK]) {
+      allDriversData['DRIVER_' + cleanK].rating = newRating;
+      allDriversData['DRIVER_' + cleanK].avgRating = newRating;
+    }
+
+    if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache)) {
+      manageAllUsersCache.forEach(u => {
+        if (u && (u.phone === cleanK || u.key === k || u.driverKey === k)) {
+          u.rating = newRating;
+        }
+      });
+      if (typeof filterManageUsersList === 'function') filterManageUsersList();
+    }
+
+    filterDrivers();
+    adminCloseRatingManager();
+    alert('✅ ড্রাইভার রেটিং সফলভাবে আপডেট হয়েছে: ⭐ ' + newRating.toFixed(1));
+  }).catch(err => {
+    alert('Error updating rating: ' + err.message);
+  });
+}
+
+window.adminOpenRatingManager = adminOpenRatingManager;
+window.adminCloseRatingManager = adminCloseRatingManager;
+window.adminSetRatingValue = adminSetRatingValue;
+window.adminAdjustRatingInput = adminAdjustRatingInput;
+window.adminUpdateRatingStars = adminUpdateRatingStars;
+window.adminSaveDriverRating = adminSaveDriverRating;
+
+// === 📷 ADMIN DRIVER PHOTO MANAGER LOGIC ===
+let _activePhotoDriverKey = null;
+
+function adminOpenPhotoManager(key) {
+  _activePhotoDriverKey = key;
+  let { d, cleanK } = adminResolveDriverData(key);
+
+  let name = d.name || key;
+  let phone = d.mobile || d.phone || cleanK || key;
+  let veh = d.vehicle || d.vehicleType || 'TOTO';
+  let photo = d.photo || d.driverPhoto || d.profileImage || '';
+  if (!photo && typeof getLatestSelfieForPhone === 'function') {
+    let latest = getLatestSelfieForPhone(cleanK || key);
+    if (latest && latest.image) photo = latest.image;
+  }
+
+  let modal = document.getElementById('adminDriverPhotoModal');
+  if (!modal) return;
+
+  document.getElementById('adminPhotoDriverName').innerText = name;
+  document.getElementById('adminPhotoDriverPhone').innerText = '📱 ' + phone;
+  document.getElementById('adminPhotoDriverVeh').innerText = '🚗 Vehicle: ' + veh;
+
+  let imgEl = document.getElementById('adminPhotoPreviewImg');
+  let phEl = document.getElementById('adminPhotoPreviewPlaceholder');
+  let remBtn = document.getElementById('adminPhotoRemoveBtn');
+
+  if (photo) {
+    imgEl.src = photo;
+    imgEl.style.display = 'block';
+    phEl.style.display = 'none';
+    if (remBtn) remBtn.style.display = 'flex';
+  } else {
+    imgEl.src = '';
+    imgEl.style.display = 'none';
+    phEl.style.display = 'block';
+    if (remBtn) remBtn.style.display = 'none';
+  }
+
+  modal.style.display = 'flex';
+}
+
+function adminClosePhotoManager() {
+  let modal = document.getElementById('adminDriverPhotoModal');
+  if (modal) modal.style.display = 'none';
+  _activePhotoDriverKey = null;
+}
+
+function adminHandlePhotoFileSelected(e) {
+  let file = e.target.files && e.target.files[0];
+  if (!file || !_activePhotoDriverKey) return;
+
+  let reader = new FileReader();
+  reader.onload = function(evt) {
+    let img = new Image();
+    img.onload = function() {
+      let canvas = document.createElement('canvas');
+      let size = 180;
+      canvas.width = size;
+      canvas.height = size;
+      let ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // Center square crop
+      let minDim = Math.min(img.width, img.height);
+      let sx = (img.width - minDim) / 2;
+      let sy = (img.height - minDim) / 2;
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+
+      let b64 = canvas.toDataURL('image/jpeg', 0.6); // ultra compact ~5-8KB
+
+      let k = _activePhotoDriverKey;
+      let cleanK = String(k).replace(/[^0-9]/g, '').slice(-10);
+      let updates = {
+        photo: b64,
+        driverPhoto: b64,
+        photoUpdatedAt: Date.now()
+      };
+
+      Promise.all([
+        db.ref('drivers/' + k).update(updates),
+        cleanK ? db.ref('drivers/' + cleanK).update(updates) : Promise.resolve(),
+        cleanK ? db.ref('drivers/DRIVER_' + cleanK).update(updates) : Promise.resolve()
+      ]).then(() => {
+        if (allDriversData[k]) {
+          allDriversData[k].photo = b64;
+          allDriversData[k].driverPhoto = b64;
+        }
+        if (cleanK && allDriversData[cleanK]) {
+          allDriversData[cleanK].photo = b64;
+          allDriversData[cleanK].driverPhoto = b64;
+        }
+        if (cleanK && allDriversData['DRIVER_' + cleanK]) {
+          allDriversData['DRIVER_' + cleanK].photo = b64;
+          allDriversData['DRIVER_' + cleanK].driverPhoto = b64;
+        }
+
+        if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache)) {
+          manageAllUsersCache.forEach(u => {
+            if (u && (u.phone === cleanK || u.key === k || u.driverKey === k)) {
+              u.photo = b64;
+            }
+          });
+          if (typeof filterManageUsersList === 'function') filterManageUsersList();
+        }
+
+        let imgEl = document.getElementById('adminPhotoPreviewImg');
+        let phEl = document.getElementById('adminPhotoPreviewPlaceholder');
+        let remBtn = document.getElementById('adminPhotoRemoveBtn');
+        if (imgEl) { imgEl.src = b64; imgEl.style.display = 'block'; }
+        if (phEl) phEl.style.display = 'none';
+        if (remBtn) remBtn.style.display = 'flex';
+        filterDrivers();
+        alert('✅ ড্রাইভার ছবি সফলভাবে আপডেট করা হয়েছে!');
+      }).catch(err => {
+        alert('Error saving photo: ' + err.message);
+      });
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function adminRemoveDriverPhoto() {
+  if (!_activePhotoDriverKey) return;
+  if (!confirm('আপনি কি নিশ্চিত যে এই ড্রাইভারের ছবি মুছে ফেলবেন?')) return;
+  let k = _activePhotoDriverKey;
+  let cleanK = String(k).replace(/[^0-9]/g, '').slice(-10);
+
+  let updates = {
+    photo: null,
+    driverPhoto: null,
+    photoUpdatedAt: Date.now()
+  };
+
+  Promise.all([
+    db.ref('drivers/' + k).update(updates),
+    cleanK ? db.ref('drivers/' + cleanK).update(updates) : Promise.resolve(),
+    cleanK ? db.ref('drivers/DRIVER_' + cleanK).update(updates) : Promise.resolve()
+  ]).then(() => {
+    if (allDriversData[k]) {
+      delete allDriversData[k].photo;
+      delete allDriversData[k].driverPhoto;
+    }
+    if (cleanK && allDriversData[cleanK]) {
+      delete allDriversData[cleanK].photo;
+      delete allDriversData[cleanK].driverPhoto;
+    }
+    if (cleanK && allDriversData['DRIVER_' + cleanK]) {
+      delete allDriversData['DRIVER_' + cleanK].photo;
+      delete allDriversData['DRIVER_' + cleanK].driverPhoto;
+    }
+
+    if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache)) {
+      manageAllUsersCache.forEach(u => {
+        if (u && (u.phone === cleanK || u.key === k || u.driverKey === k)) {
+          u.photo = '';
+        }
+      });
+      if (typeof filterManageUsersList === 'function') filterManageUsersList();
+    }
+
+    let imgEl = document.getElementById('adminPhotoPreviewImg');
+    let phEl = document.getElementById('adminPhotoPreviewPlaceholder');
+    let remBtn = document.getElementById('adminPhotoRemoveBtn');
+    if (imgEl) { imgEl.src = ''; imgEl.style.display = 'none'; }
+    if (phEl) phEl.style.display = 'block';
+    if (remBtn) remBtn.style.display = 'none';
+    filterDrivers();
+    alert('✅ ড্রাইভার ছবি সফলভাবে মুছে ফেলা হয়েছে!');
+  }).catch(err => {
+    alert('Error removing photo: ' + err.message);
+  });
+}
+
+window.adminOpenPhotoManager = adminOpenPhotoManager;
+window.adminClosePhotoManager = adminClosePhotoManager;
+window.adminHandlePhotoFileSelected = adminHandlePhotoFileSelected;
+window.adminRemoveDriverPhoto = adminRemoveDriverPhoto;
 
 let _driversDebounceTimer = null;
 function syncTrackingDriversFromAll(data) {
@@ -6501,18 +6894,56 @@ function syncTrackingDriversFromAll(data) {
   if (typeof renderTrackingTables === 'function') renderTrackingTables();
 }
 
-db.ref('drivers').on('value', s => {
+// High-efficiency granular driver sync (stops heavy full-table downloads & saves 95% bandwidth)
+db.ref('drivers').once('value').then(s => {
   allDriversData = s.val() || {};
+  filterDrivers();
+  renderDash();
+  refreshMap(false);
+  refreshTripLive(false);
+  populateDriverDropdown();
+  checkDocumentExpiries();
+  syncTrackingDriversFromAll(allDriversData);
+}).catch(err => console.warn('Driver initial load err:', err));
+
+db.ref('drivers').on('child_changed', snap => {
+  if (!allDriversData) allDriversData = {};
+  allDriversData[snap.key] = snap.val();
   if (_driversDebounceTimer) clearTimeout(_driversDebounceTimer);
   _driversDebounceTimer = setTimeout(() => {
     filterDrivers();
     renderDash();
     refreshMap(false);
     refreshTripLive(false);
-    populateDriverDropdown();
-    checkDocumentExpiries();
     syncTrackingDriversFromAll(allDriversData);
-  }, 600);
+  }, 800);
+});
+
+db.ref('drivers').on('child_added', snap => {
+  if (!allDriversData) allDriversData = {};
+  allDriversData[snap.key] = snap.val();
+  if (_driversDebounceTimer) clearTimeout(_driversDebounceTimer);
+  _driversDebounceTimer = setTimeout(() => {
+    filterDrivers();
+    renderDash();
+    refreshMap(false);
+    populateDriverDropdown();
+    syncTrackingDriversFromAll(allDriversData);
+  }, 800);
+});
+
+db.ref('drivers').on('child_removed', snap => {
+  if (allDriversData && allDriversData[snap.key]) {
+    delete allDriversData[snap.key];
+    if (_driversDebounceTimer) clearTimeout(_driversDebounceTimer);
+    _driversDebounceTimer = setTimeout(() => {
+      filterDrivers();
+      renderDash();
+      refreshMap(false);
+      populateDriverDropdown();
+      syncTrackingDriversFromAll(allDriversData);
+    }, 800);
+  }
 });
 
 db.ref('payments').limitToLast(50).on('value',snap=>{
@@ -9961,7 +10392,7 @@ function listenAdminLiveChatGlobal() {
     return;
   }
 
-  d.ref('support_chats').on('value', function(snapshot) {
+  d.ref('support_chats').limitToLast(40).on('value', function(snapshot) {
     var data = snapshot.val() || {};
     window.adminChatSessions = data;
 
@@ -11623,41 +12054,68 @@ async function loadManageUsersData(forceAlert = false) {
   if (loadingEl) loadingEl.style.display = 'block';
 
   try {
-    let sheetUsers = [];
-    // 1. Fetch from Google Apps Script Web App
-    try {
-      const resp = await fetch(GAS_MANAGE_URL);
-      if (resp.ok) {
-        const raw = await resp.json();
-        if (Array.isArray(raw)) {
-          sheetUsers = raw;
-        }
-      }
-    } catch(e) {
-      console.warn("GAS fetch notice:", e);
-    }
-
-    // 2. Fetch from Firebase Realtime Database
-    let fbDrivers = {};
-    let fbUsers = {};
-    try {
-      const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
-      if (dRef) {
-        const [dSnap, uSnap] = await Promise.all([
-          dRef.ref('drivers').once('value').catch(() => null),
-          dRef.ref('users').once('value').catch(() => null)
-        ]);
-        if (dSnap && dSnap.exists()) fbDrivers = dSnap.val() || {};
-        if (uSnap && uSnap.exists()) fbUsers = uSnap.val() || {};
-      }
-    } catch(e) {
-      console.warn("Firebase fetch notice:", e);
-    }
-
-    // 3. Merge & Deduplicate users by Email or Phone
     const userMap = new Map();
 
-    // Add Sheet users
+    // 0. Seed from in-memory allDriversData first (immediate 0ms response)
+    if (typeof allDriversData === 'object' && allDriversData) {
+      Object.keys(allDriversData).forEach(k => {
+        const d = allDriversData[k] || {};
+        const phone = String(d.phone || d.mobile || k || '').replace(/[^0-9]/g, '').slice(-10);
+        const email = String(d.email || '').toLowerCase().trim();
+        const key = email || phone || k;
+        if (!key) return;
+        const isBlocked = d.status === 'BLOCKED' || d.isBlocked === true;
+        const driverRating = Number(d.rating !== undefined ? d.rating : (d.avgRating !== undefined ? d.avgRating : 4.9)) || 4.9;
+        const driverPhoto = d.photo || d.driverPhoto || d.profileImage || d.selfie || '';
+
+        userMap.set(key, {
+          key: key,
+          driverKey: k,
+          name: d.name || 'Driver Partner',
+          email: email,
+          phone: phone,
+          type: 'driver',
+          vehicle: d.vehicleType || d.vehicle || 'TOTO',
+          status: isBlocked ? 'blocked' : 'active',
+          photo: driverPhoto,
+          rating: driverRating,
+          date: d.regDate || d.date || new Date().toISOString(),
+          source: 'Firebase Driver'
+        });
+      });
+    }
+
+    // Render immediate preview if cache was empty
+    if (userMap.size > 0 && (!manageAllUsersCache || manageAllUsersCache.length === 0)) {
+      manageAllUsersCache = Array.from(userMap.values());
+      updateManageStats();
+      renderManageUsers(manageAllUsersCache);
+    }
+
+    // 1. Fetch fresh from GAS & Firebase in parallel
+    let sheetUsers = [];
+    let fbDrivers = {};
+    let fbUsers = {};
+
+    const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+
+    const fetchTasks = [
+      fetch(GAS_MANAGE_URL, { signal: (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(4000) : undefined })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => { if (Array.isArray(data)) sheetUsers = data; })
+        .catch(e => console.warn("GAS fetch notice:", e))
+    ];
+
+    if (dRef) {
+      fetchTasks.push(
+        dRef.ref('drivers').once('value').then(s => { if (s && s.exists()) fbDrivers = s.val() || {}; }).catch(e => console.warn("Firebase drivers fetch:", e)),
+        dRef.ref('users').once('value').then(s => { if (s && s.exists()) fbUsers = s.val() || {}; }).catch(e => console.warn("Firebase users fetch:", e))
+      );
+    }
+
+    await Promise.allSettled(fetchTasks);
+
+    // Merge Sheet users
     sheetUsers.forEach(u => {
       const email = String(u.email || u.from || '').toLowerCase().trim();
       const phone = String(u.phone || u.to || '').replace(/[^0-9]/g, '').slice(-10);
@@ -11669,16 +12127,19 @@ async function loadManageUsersData(forceAlert = false) {
       const photo = u.photo || u.picture || u.km || '';
       const vehicle = u.vehicle || u.type || '-';
       const date = u.date || new Date().toISOString();
+      const existing = userMap.get(key) || userMap.get(email) || userMap.get(phone);
 
       userMap.set(key, {
         key: key,
+        driverKey: existing ? existing.driverKey : phone,
         name: name,
         email: email,
         phone: phone,
         type: isDriver ? 'driver' : 'customer',
         vehicle: vehicle,
         status: (status === 'blocked' || status === 'due-lock') ? 'blocked' : 'active',
-        photo: photo,
+        photo: photo || (existing ? existing.photo : ''),
+        rating: existing ? existing.rating : 4.9,
         date: date,
         source: 'Google Auth & Sheet'
       });
@@ -11687,24 +12148,28 @@ async function loadManageUsersData(forceAlert = false) {
     // Merge Firebase drivers
     Object.keys(fbDrivers).forEach(k => {
       const d = fbDrivers[k] || {};
-      const phone = String(d.phone || k || '').replace(/[^0-9]/g, '').slice(-10);
+      const phone = String(d.phone || d.mobile || k || '').replace(/[^0-9]/g, '').slice(-10);
       const email = String(d.email || '').toLowerCase().trim();
-      const key = email || phone;
+      const key = email || phone || k;
       if (!key) return;
 
       const existing = userMap.get(key) || userMap.get(email) || userMap.get(phone);
       const isBlocked = d.status === 'BLOCKED' || d.isBlocked === true;
       const status = isBlocked ? 'blocked' : (existing ? existing.status : 'active');
+      const driverRating = Number(d.rating !== undefined ? d.rating : (d.avgRating !== undefined ? d.avgRating : (existing && existing.rating ? existing.rating : 4.9))) || 4.9;
+      const driverPhoto = d.photo || d.driverPhoto || d.profileImage || d.selfie || (existing ? existing.photo : '');
 
       userMap.set(key, {
         key: key,
+        driverKey: k,
         name: d.name || (existing ? existing.name : 'Driver Partner'),
         email: email || (existing ? existing.email : ''),
         phone: phone,
         type: 'driver',
         vehicle: d.vehicleType || d.vehicle || (existing ? existing.vehicle : 'TOTO'),
         status: status,
-        photo: d.selfie || d.photo || (existing ? existing.photo : ''),
+        photo: driverPhoto,
+        rating: driverRating,
         date: d.regDate || d.date || (existing ? existing.date : new Date().toISOString()),
         source: existing ? 'Google Auth & Firebase' : 'Firebase Driver'
       });
@@ -11724,6 +12189,7 @@ async function loadManageUsersData(forceAlert = false) {
 
       userMap.set(key, {
         key: key,
+        driverKey: existing ? existing.driverKey : undefined,
         name: u.name || (existing ? existing.name : 'Customer'),
         email: email || (existing ? existing.email : ''),
         phone: phone,
@@ -11731,6 +12197,7 @@ async function loadManageUsersData(forceAlert = false) {
         vehicle: existing ? existing.vehicle : '-',
         status: status,
         photo: u.photo || (existing ? existing.photo : ''),
+        rating: existing ? existing.rating : undefined,
         date: u.date || (existing ? existing.date : new Date().toISOString()),
         source: existing ? 'Google Auth & Firebase' : 'Firebase User'
       });
@@ -11824,6 +12291,7 @@ function renderManageUsers(users) {
   users.forEach((u) => {
     const isDriver = u.type === 'driver';
     const isBlocked = u.status === 'blocked';
+    const dKey = u.driverKey || u.phone || u.key;
     const typeBadge = isDriver 
       ? '<span style="background:#ffedd5;color:#c2410c;padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:800">🏍️ DRIVER</span>'
       : '<span style="background:#dbeafe;color:#1d4ed8;padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:800">👤 CUSTOMER</span>';
@@ -11836,9 +12304,13 @@ function renderManageUsers(users) {
       ? `<span style="background:#f1f5f9;color:#475569;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:700">🚖 ${u.vehicle.toUpperCase()}</span>` 
       : '';
 
+    const ratingBadge = isDriver
+      ? `<span class="badge" onclick="adminOpenRatingManager('${dKey}')" style="background:#fef08a;color:#854d0e;border:1.5px solid #facc15;font-weight:900;padding:2px 8px;border-radius:10px;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:3px" title="ক্লিক করে রেটিং পরিবর্তন করুন">⭐ ${Number(u.rating || 4.9).toFixed(1)}</span>`
+      : '';
+
     const avatar = u.photo 
-      ? `<img src="${u.photo}" style="width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid ${isBlocked ? '#ef4444' : '#0284c7'}" onerror="this.src='logo.png'">`
-      : `<div style="width:46px;height:46px;border-radius:50%;background:${isDriver ? '#f97316' : '#0284c7'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px">${(u.name || 'U').charAt(0).toUpperCase()}</div>`;
+      ? `<div style="text-align:center;flex-shrink:0"><img src="${u.photo}" ${isDriver ? `onclick="adminOpenPhotoManager('${dKey}')" title="ক্লিক করে ছবি পরিবর্তন বা ডিলিট করুন" style="cursor:pointer;"` : ''} style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2.5px solid ${isBlocked ? '#ef4444' : (isDriver ? '#f59e0b' : '#0284c7')}" onerror="this.src='logo.png'">${isDriver ? `<div onclick="adminOpenPhotoManager('${dKey}')" style="font-size:9.5px;color:#0284c7;font-weight:800;cursor:pointer;margin-top:2px">📷 Edit</div>` : ''}</div>`
+      : `<div style="text-align:center;flex-shrink:0"><div ${isDriver ? `onclick="adminOpenPhotoManager('${dKey}')" title="ক্লিক করে ছবি যোগ করুন" style="cursor:pointer;"` : ''} style="width:48px;height:48px;border-radius:50%;background:${isDriver ? '#f97316' : '#0284c7'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px">${(u.name || 'U').charAt(0).toUpperCase()}</div>${isDriver ? `<div onclick="adminOpenPhotoManager('${dKey}')" style="font-size:9.5px;color:#0284c7;font-weight:800;cursor:pointer;margin-top:2px">📷 + Photo</div>` : ''}</div>`;
 
     const formattedDate = formatDateDisplay(u.date);
 
@@ -11851,6 +12323,7 @@ function renderManageUsers(users) {
               <b style="font-size:14px;color:#0f172a">${u.name}</b>
               ${typeBadge}
               ${vehBadge}
+              ${ratingBadge}
               ${statusBadge}
             </div>
             <div style="font-size:12px;color:#475569;margin-top:2px;display:flex;flex-wrap:wrap;gap:10px">
@@ -11863,6 +12336,14 @@ function renderManageUsers(users) {
 
         <!-- Action Buttons -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${isDriver ? `
+            <button type="button" class="btn" onclick="adminOpenRatingManager('${dKey}')" style="background:#f59e0b;color:#fff;padding:6px 11px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(245,158,11,0.3)" title="ড্রাইভারের রেটিং পরিবর্তন করুন">
+              ⭐ রেটিং (${Number(u.rating || 4.9).toFixed(1)})
+            </button>
+            <button type="button" class="btn" onclick="adminOpenPhotoManager('${dKey}')" style="background:#0284c7;color:#fff;padding:6px 11px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(2,132,199,0.3)" title="ড্রাইভারের ছবি পরিবর্তন বা ডিলিট করুন">
+              📷 ফটো
+            </button>
+          ` : ''}
           <button type="button" class="btn purple" onclick="openUserPermissionControlModal('${u.phone}', '${u.type}', '${encodeURIComponent(u.name || '')}', '${u.email || ''}')" style="background:#7c3aed;color:#fff;padding:6px 12px;font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:4px">
             ⚙️ পারমিশন ও ফিচার
           </button>

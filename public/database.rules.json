@@ -476,7 +476,7 @@
     },
     "user_controls": {
       ".read": true,
-      ".write": true,
+      ".write": false,
       "$userPhone": {
         ".read": true,
         ".write": true

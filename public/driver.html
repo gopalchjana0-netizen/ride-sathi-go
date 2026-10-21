@@ -33,7 +33,11 @@ window.I18N = {
     todayEarn: "আজকের আয়",
     trips: "ট্রিপ",
     orders: "অর্ডার",
-    due: "ডিউ / Due",
+    due: "ডিউ",
+    navHome: "হোম",
+    navHistory: "হিস্ট্রি",
+    navDuePay: "ডিউ পে",
+    navProfile: "প্রোফাইল",
     dueAlert: "🔴 অ্যাডমিন কমিশন বাকি / ADMIN DUE:",
     dueWarning: "নির্ধারিত সময়ের মধ্যে পরিশোধ না করলে আইডি লক হবে",
     duePayBtn: "💳 এখনই পেমেন্ট (UPI) / Pay Now",
@@ -182,7 +186,11 @@ window.I18N = {
     todayEarn: "आज की कमाई",
     trips: "ट्रिप",
     orders: "ऑर्डर",
-    due: "कमीशन ड्यू",
+    due: "ड्यू",
+    navHome: "होम",
+    navHistory: "इतिहास",
+    navDuePay: "ड्यू पे",
+    navProfile: "प्रोफ़ाइल",
     dueAlert: "🔴 एडमिन कमीशन बकाया / ADMIN DUE:",
     dueWarning: "निर्धारित समय में भुगतान न करने पर आईडी लॉक हो जाएगी",
     duePayBtn: "💳 अभी भुगतान करें (UPI) / Pay Now",
@@ -328,11 +336,15 @@ window.I18N = {
     onlineStatusOn: "🟢 ONLINE - Receiving Orders",
     onlineStatusOff: "🔴 OFFLINE - Go Online",
     testSound: "🔊 Sound Test (3 Lang)",
-    todayEarn: "Today's Earn",
+    todayEarn: "Earn",
     trips: "Trips",
     orders: "Orders",
-    due: "Due / ডিউ",
-    dueAlert: "🔴 ADMIN DUE / কমিশন বাকি:",
+    due: "Due",
+    navHome: "Home",
+    navHistory: "History",
+    navDuePay: "Pay Due",
+    navProfile: "Profile",
+    dueAlert: "🔴 ADMIN COMMISSION DUE:",
     dueWarning: "ID will be locked after deadline",
     duePayBtn: "💳 Pay Now (UPI)",
     dueSnoozeBtn: "⏰ 1-Hour Snooze",
@@ -405,7 +417,7 @@ window.I18N = {
     drawerLogoutSub: "Sign out safely from account",
     termsModalTitle: "Driver Partner Terms & Conditions",
     // Login Card & Extended UI keys
-    selectLanguage: "Select Language / ভাষা নির্বাচন করুন",
+    selectLanguage: "Select Language",
     loginDivider: "Or login directly with mobile number",
     loginPhonePlaceholder: "📱 10 Digit Mobile Number *",
     loginNamePlaceholder: "👤 Your Full Name *",
@@ -519,6 +531,11 @@ window.applyLanguage = function(lang) {
     if (isOnline && typeof setStatusOnlineUI === 'function') setStatusOnlineUI();
     else if (!isOnline && typeof setStatusOfflineUI === 'function') setStatusOfflineUI();
   }
+
+  // 6. Re-render live requests in new language instantly
+  if (typeof renderAllIncoming === 'function' && typeof isOnline !== 'undefined' && isOnline) {
+    try { renderAllIncoming(); } catch(e) {}
+  }
 };
 window.setLanguage = window.applyLanguage;
 
@@ -566,19 +583,56 @@ if (document.readyState === 'loading') {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+*, *::before, *::after {
+  box-sizing: border-box !important;
+}
+html {
+  overflow-x: clip !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}
+body {
+  overflow-x: clip !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  touch-action: pan-y !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+#mainApp {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: clip !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
 body { margin:0; font-family: sans-serif; }
 button { cursor:pointer; }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
 /* === DRIVER DARK MODE & SUNLIGHT VISIBILITY OPTIMIZATION === */
+html {
+  overflow-x: clip !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0 !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   background: #0F172A !important;
   color: #F8FAFC !important;
-  padding-bottom: 110px;
-  user-select: none;
+  padding-bottom: 110px !important;
+  user-select: none !important;
+  overflow-x: clip !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  touch-action: pan-y !important;
+  box-sizing: border-box !important;
+  position: relative !important;
 }
 /* Subtle Road Accent Line (Yellow to Amber highway line) */
 .road-accent-line {
@@ -681,34 +735,53 @@ body {
   font-weight: 700 !important;
 }
 
-body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0b1120;color:#fff;padding-bottom:110px;user-select:none}
+body{overflow-x: clip !important;width:100% !important;max-width:100vw !important;box-sizing:border-box !important;touch-action:pan-y !important}
 
 /* === VIBRANT RAINBOW HEADER (COMPACT & SLIM FOR MAXIMUM ORDER VISIBILITY) === */
+/* === RAPIDO CAPTAIN SIGNATURE HEADER (PREMIUM DARK SLATE & RAPIDO GOLD) === */
+#mainApp{
+  width:100% !important;
+  max-width:100vw !important;
+  overflow-x: clip !important;
+  box-sizing:border-box !important;
+}
 .header{
-  background:linear-gradient(90deg,#ff0080,#ff8c00,#ffd700,#00ff88,#00cfff,#8a2be2);
-  padding:6px 8px;
+  background:#0f172a;
+  border-bottom:2.5px solid #f59e0b;
+  padding:6px 6px;
   text-align:center;
-  position:-webkit-sticky;
-  position:sticky;
-  top:0;
+  position: -webkit-sticky !important; position: sticky !important; top: 0 !important;
   left:0;
   right:0;
-  width:100%;
+  width:100% !important;
+  max-width:100vw !important;
   z-index:1000;
-  box-shadow:0 4px 14px rgba(0,0,0,.4);
-  border-bottom:2px solid rgba(255,255,255,.3);
-  box-sizing:border-box;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);
+  box-sizing:border-box !important;
+  overflow-x: clip !important;
 }
 .header-glass{
-  background:rgba(15,23,42,.78);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  border-radius:14px;
-  padding:6px 10px;
+  background:rgba(30,41,59,0.78);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-radius:16px;
+  padding:8px 8px;
   max-width:640px;
+  width:100% !important;
   margin:auto;
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 3px 10px rgba(0,0,0,.25);
+  border:1.5px solid rgba(245,158,11,0.3);
+  box-shadow:0 4px 16px rgba(0,0,0,.35);
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+.header-brand{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:4px;
+  width:100% !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
 }
 .header-brand{display:flex;align-items:center;justify-content:space-between;gap:6px}
 .vehicle-avatar{
@@ -728,22 +801,22 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
   flex:1;
   max-width:340px;
   margin:0;
-  padding:8px 14px;
+  padding:10px 16px;
   border-radius:24px;
   border:none;
   font-weight:900;
-  font-size:13px;
+  font-size:13.5px;
   cursor:pointer;
-  box-shadow:0 4px 12px rgba(0,0,0,.3);
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
   transition:all .2s ease;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
-  height:36px;
+  gap:8px;
+  height:40px;
 }
-.on{background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;box-shadow:0 0 15px rgba(34,197,94,.4)}
-.off{background:#1e293b;color:#ef4444;border:2px solid #ef4444}
+.on{background:linear-gradient(90deg,#059669,#10b981) !important;color:#fff !important;box-shadow:0 0 20px rgba(16,185,129,.5) !important;border:1.5px solid #34d399 !important}
+.off{background:#1e293b !important;color:#ef4444 !important;border:2px solid #ef4444 !important}
 
 /* === CARD & TRIP ELEMENTS === */
 .card{
@@ -780,20 +853,41 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
 
 .earn{
   background:linear-gradient(135deg,#1e293b,#0f172a);
-  padding:5px 6px;
-  border-radius:12px;
+  padding:8px 8px;
+  border-radius:16px;
   text-align:center;
-  margin:5px auto;
+  margin:8px auto;
   max-width:640px;
   width:95%;
   display:grid;
   grid-template-columns:1fr 1fr 1fr 1fr;
-  gap:4px;
-  border:1px solid #334155;
-  box-shadow:0 3px 10px rgba(0,0,0,.25);
+  gap:6px;
+  border:1.5px solid #334155;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
 }
-.earn-item{background:rgba(15,23,42,.8);padding:4px 2px;border-radius:8px;border:1px solid rgba(255,255,255,.05)}
-.earn b{font-size:14px;color:#38bdf8;display:block;line-height:1.1}.earn small{font-size:10px;color:#94a3b8;font-weight:700}
+.earn-item{
+  background:rgba(15,23,42,.85);
+  padding:8px 4px;
+  border-radius:12px;
+  border:1px solid rgba(245,158,11,.15);
+  transition:transform .15s ease, border-color .15s ease;
+}
+.earn-item:hover{
+  border-color:rgba(245,158,11,.4);
+  transform:translateY(-1px);
+}
+.earn b{
+  font-size:16px;
+  color:#facc15;
+  display:block;
+  line-height:1.2;
+  font-weight:900;
+}
+.earn small{
+  font-size:10.5px;
+  color:#94a3b8;
+  font-weight:700;
+}
 
 .history-box{background:#fff;color:#0f172a;max-width:640px;width:95%;margin:14px auto;padding:16px;border-radius:20px;box-shadow:0 4px 15px rgba(0,0,0,.3)}
 .due-box{background:#fef2f2;border:2px solid #ef4444;padding:14px;border-radius:18px;max-width:640px;width:95%;margin:12px auto;text-align:center;display:none;color:#0f172a}
@@ -813,7 +907,7 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
 .verify-box input{width:160px;padding:12px;font-size:26px;font-weight:900;text-align:center;border:2.5px solid #f59e0b;border-radius:12px;letter-spacing:6px;outline:none}
 #pendingBlock{display:none;position:fixed;inset:0;background:#0f172a;z-index:999999;align-items:center;justify-content:center;padding:20px}
 #pendingBlock.show{display:flex}
-#sosBtn{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:92%;max-width:620px;background:linear-gradient(90deg,#dc2626,#ef4444);color:#fff;padding:15px;border:none;border-radius:50px;font-weight:900;font-size:17px;z-index:500;box-shadow:0 6px 20px rgba(239,68,68,.5);border:2px solid #fff;letter-spacing:1px;cursor:pointer}
+#sosBtn{display:none !important}
 .footer{background:#070d18;color:#94a3b8;text-align:center;padding:22px 14px;margin-top:25px;font-size:12px;line-height:20px;border-top:1px solid #1e293b}
 .footer b{color:#4ade80}
 .detail-row{background:#f8fafc;padding:9px 12px;border-radius:10px;margin:5px 0;font-size:13px;display:flex;justify-content:space-between;align-items:center;border:1px solid #e2e8f0}
@@ -1067,16 +1161,21 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
   <!-- Drawer Header -->
   <div class="driver-drawer-header">
     <div class="driver-drawer-profile">
-      <div id="drawerDriverAvatar" class="driver-drawer-avatar">🛺</div>
+      <div style="position:relative;cursor:pointer" onclick="triggerDriverPhotoUpload()" title="📷 ছবি যোগ বা পরিবর্তন করুন">
+        <div id="drawerDriverAvatar" class="driver-drawer-avatar" style="overflow:hidden">🛺</div>
+        <span style="position:absolute;bottom:0;right:0;background:#0f172a;color:#facc15;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;border:1.5px solid #fff">📷</span>
+      </div>
       <div>
         <div style="display:flex;align-items:center;gap:6px">
           <div id="drawerDriverName" style="font-weight:900;font-size:15px;color:#fff;letter-spacing:0.3px">ড্রাইভার পার্টনার</div>
           <button type="button" onclick="editDriverProfileName()" style="background:rgba(255,255,255,0.15);color:#facc15;border:none;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800;cursor:pointer" title="নাম পরিবর্তন করুন">✏️</button>
         </div>
         <div id="drawerDriverPhone" style="font-size:12px;color:#fde047;font-weight:700;margin-top:2px">+91 Loading...</div>
-        <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+        <div style="display:flex;gap:6px;margin-top:4px;align-items:center;flex-wrap:wrap">
           <span id="drawerDriverVehicleBadge" style="background:#22c55e;color:#fff;font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:10px">TOTO</span>
           <span id="drawerDriverStatusBadge" style="background:#0284c7;color:#fff;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:10px">🟢 সক্রিয়</span>
+          <span id="drawerDriverRating" style="background:#fef08a;color:#854d0e;font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:10px;border:1px solid #facc15">⭐ 4.9</span>
+          <button type="button" onclick="triggerDriverPhotoUpload()" style="background:rgba(255,255,255,0.15);color:#facc15;border:1px solid rgba(250,204,21,0.5);border-radius:10px;padding:2px 6px;font-size:9.5px;font-weight:800;cursor:pointer">📷 ছবি যোগ</button>
         </div>
       </div>
     </div>
@@ -1399,6 +1498,7 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
         <div style="flex:1;overflow:hidden">
           <div style="display:flex;align-items:center;gap:6px">
             <div id="idCardDriverName" style="font-size:16px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Driver Name</div>
+            <span id="idCardDriverRating" style="background:rgba(250,204,21,0.25);color:#fde047;font-size:10px;font-weight:900;padding:1px 5px;border-radius:6px;border:1px solid rgba(250,204,21,0.5)">⭐ 4.9</span>
             <button type="button" onclick="editDriverProfileName()" style="background:rgba(255,255,255,0.15);color:#facc15;border:none;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800;cursor:pointer" title="নাম পরিবর্তন করুন">✏️</button>
           </div>
           <div id="idCardDriverId" style="font-size:11px;color:#facc15;font-weight:700;margin-top:2px">ID: DRIVER_XXXXXXXXXX</div>
@@ -1630,53 +1730,67 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
   <div class="header">
     <div class="header-glass">
       <!-- 1. Sleek Top Bar: Brand + Driver info (Left) & Live Net Status + City Badge (Right) -->
-      <div class="header-brand">
-        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <div class="header-brand" style="display:flex;align-items:center;justify-content:space-between;gap:4px;width:100%;box-sizing:border-box">
+        <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;overflow:hidden">
           <!-- HAMBURGER MENU BUTTON -->
-          <button type="button" id="driverMenuBtn" onclick="openDriverNavDrawer()" class="hamburger-btn" aria-label="Open Menu" title="মেনু / Menu">
-            <i class="fa-solid fa-bars" style="font-size:16px"></i>
+          <button type="button" id="driverMenuBtn" onclick="openDriverNavDrawer()" class="hamburger-btn" aria-label="Open Menu" title="মেনু / Menu" style="flex-shrink:0;width:32px;height:32px">
+            <i class="fa-solid fa-bars" style="font-size:14px"></i>
           </button>
-          <span style="font-size:18px">🏍️</span>
-          <div style="text-align:left;line-height:1.1">
-            <span style="font-weight:900;font-size:13px;color:#fff;letter-spacing:0.5px">RIDE সাথী GO</span>
-            <small id="driverInfo" style="display:block;color:#fde047;font-weight:700;font-size:10px"></small>
+          
+          <!-- DRIVER AVATAR WITH PHOTO UPLOAD TRIGGER (RAPIDO STYLE) -->
+          <div style="position:relative;cursor:pointer;flex-shrink:0" onclick="triggerDriverPhotoUpload()" title="📷 ছবি যোগ বা পরিবর্তন করুন (Tap to upload photo)">
+            <div id="headerDriverAvatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.3);overflow:hidden">
+              🛺
+            </div>
+            <span style="position:absolute;bottom:-2px;right:-2px;background:#0f172a;color:#facc15;border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;font-size:8px;border:1.5px solid #ffffff">📷</span>
+          </div>
+
+          <div style="min-width:0;flex:1;overflow:hidden;text-align:left;line-height:1.15;cursor:pointer" onclick="openDriverNavDrawer()">
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="font-weight:900;font-size:12.5px;color:#fff;letter-spacing:0.3px;white-space:nowrap">RIDE SATHI GO</span>
+              <span id="headerDriverRating" style="background:rgba(250,204,21,0.25);color:#fde047;font-size:9px;font-weight:900;padding:1px 4px;border-radius:6px;border:1px solid rgba(250,204,21,0.5);white-space:nowrap">⭐ 4.9</span>
+            </div>
+            <small id="driverInfo" style="display:block;color:#fde047;font-weight:700;font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%"></small>
           </div>
         </div>
 
-        <!-- Right Side Live Status & City Badge (Ultra-compact) -->
-        <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-          <span id="netStatusBadge" class="net-status net-online" style="font-size:9px;padding:2px 6px">🟢 Live</span>
-          <span id="driverCityBadge" class="header-pill" style="background:#e0f2fe;color:#0369a1;border-color:#7dd3fc" title="Operational City">🏙️ <span id="driverCityText">City...</span></span>
+        <!-- HIDDEN DRIVER PHOTO FILE INPUT -->
+        <input type="file" id="driverPhotoFileInput" accept="image/*" style="display:none" onchange="handleDriverPhotoUpload(event)">
+
+        <!-- Right Side Live Status & City Badge (Ultra-compact, No Overflow) -->
+        <div style="display:flex;gap:3px;align-items:center;flex-shrink:0">
+          <span id="netStatusBadge" class="net-status net-online" style="font-size:8.5px;padding:2px 5px;white-space:nowrap">🟢 Live</span>
+          <span id="driverCityBadge" class="header-pill" style="background:#e0f2fe;color:#0369a1;border-color:#7dd3fc;font-size:9px;padding:2px 5px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Operational City">🏙️ <span id="driverCityText">City...</span></span>
         </div>
       </div>
 
-      <!-- 2. Customer-Panel Style Middle Controls: [বাং / हिंदी / ENG] [🖥️ HUD] [🔔 নোটিফিকেশন/সাউন্ড] [🟢 Due: ₹0] -->
-      <div class="header-controls-row">
+      <!-- 2. Customer-Panel Style Middle Controls: [বাং / हिंदी / ENG] [🖥️ HUD] [🔔 নোটিফিকেশন] [🟢 Due: ₹0] -->
+      <div class="header-controls-row" style="display:flex;justify-content:center;align-items:center;margin-top:6px;flex-wrap:wrap;gap:4px;width:100%;box-sizing:border-box">
         <!-- 3-Segment Language Toggle (Customer Panel Style) -->
-        <div class="lang-segment">
+        <div class="lang-segment" style="flex-shrink:0">
           <button class="lang-opt active" id="langBtn_bn" onclick="setLanguage('bn')">বাং</button>
           <button class="lang-opt" id="langBtn_hi" onclick="setLanguage('hi')">हिंदी</button>
           <button class="lang-opt" id="langBtn_en" onclick="setLanguage('en')">ENG</button>
         </div>
 
         <!-- HUD Option -->
-        <button id="fullscreenBtn" class="header-pill" onclick="toggleFullscreen()" title="HUD Mode / ফুলস্ক্রিন HUD">
+        <button id="fullscreenBtn" class="header-pill" onclick="toggleFullscreen()" title="HUD Mode / ফুলস্ক্রিন HUD" style="flex-shrink:0">
           🖥️ HUD
         </button>
 
         <!-- Notification Option -->
-        <button id="audioMuteBtn" class="header-pill" style="color:#facc15" title="বিজ্ঞপ্তি ও সাউন্ড / Notifications & Sound">
+        <button id="audioMuteBtn" class="header-pill" style="color:#facc15;flex-shrink:0" title="বিজ্ঞপ্তি ও সাউন্ড / Notifications & Sound" data-i18n="soundOn">
           🔔 নোটিফিকেশন
         </button>
 
-        <!-- Due Option (Positioned below/after notification) -->
-        <span id="headerDueBadge" class="header-pill" onclick="toggleDueDetails()" style="background:#064e3b;border-color:#34d399;font-size:10px;padding:4px 8px;cursor:pointer" title="Admin Commission Due & Countdown">🟢 Due: ₹0</span>
+        <!-- Due Option -->
+        <span id="headerDueBadge" class="header-pill" onclick="toggleDueDetails()" style="background:#064e3b;border-color:#34d399;font-size:9.5px;padding:3px 6px;cursor:pointer;flex-shrink:0" title="Admin Commission Due & Countdown">🟢 Due: ₹0</span>
       </div>
 
-      <!-- 3. Online / Offline Toggle & Sound Button in 1 Compact Line -->
-      <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin-top:6px">
-        <button id="statusBtn" class="toggle off" onclick="toggleStatus()">🔴 OFFLINE - অনলাইন হন</button>
-        <button id="testSoundBtn" style="padding:0 10px;height:36px;border-radius:20px;border:none;background:rgba(15,23,42,.75);color:#fde047;font-size:11px;font-weight:800;cursor:pointer;border:1px solid rgba(255,255,255,.2);white-space:nowrap" onclick="testSound3Lang()" data-i18n="testSound">🔊 সাউন্ড</button>
+      <!-- 3. Online / Offline Toggle & Sound Button in 1 Responsive Line -->
+      <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin-top:6px;width:100%;box-sizing:border-box">
+        <button id="statusBtn" class="toggle off" onclick="toggleStatus()" style="flex:1;min-width:170px">🔴 OFFLINE - অনলাইন হন</button>
+        <button id="testSoundBtn" style="flex-shrink:0;padding:0 10px;height:40px;border-radius:24px;border:none;background:rgba(15,23,42,.75);color:#fde047;font-size:11px;font-weight:800;cursor:pointer;border:1px solid rgba(255,255,255,.2);white-space:nowrap" onclick="testSound3Lang()" data-i18n="testSound">🔊 সাউন্ড</button>
       </div>
     </div>
   </div>
@@ -1714,7 +1828,7 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
     </div>
   </div>
 
-  <!-- COMPACT EARNINGS & STATUS DASHBOARD -->
+  <!-- COMPACT EARNINGS & STATUS DASHBOARD (RAPIDO STYLE WITH LIVE DUE TIMER) -->
   <div class="earn">
     <div class="earn-item">
       <b id="todayEarn">₹0</b><small data-i18n="todayEarn">আজকের আয়</small>
@@ -1725,8 +1839,9 @@ body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",
     <div class="earn-item">
       <b id="liveCount">0</b><small data-i18n="orders">অর্ডার</small>
     </div>
-    <div class="earn-item">
+    <div class="earn-item" onclick="openDueModal()" style="cursor:pointer" title="অ্যাডমিন ডিউ ও পেমেন্ট (Click to Pay Due)">
       <b id="fleetDue">₹0</b><small data-i18n="due">ডিউ</small>
+      <span id="fleetDueTimer" style="display:block;font-size:9.5px;font-weight:800;color:#10b981;margin-top:2px;font-family:monospace;letter-spacing:0.5px">✅ Zero Due</span>
     </div>
   </div>
 
@@ -2308,6 +2423,13 @@ window.loginDriver = function() {
     }
   } catch(e) {}
 })();
+// Prevent accidental horizontal page pan/drag on mobile
+window.preventHorizontalScrollLock = true;
+window.addEventListener('scroll', function() {
+  if (window.scrollX !== 0) {
+    window.scrollTo(0, window.scrollY);
+  }
+}, { passive: true });
 </script>
 
 <!-- FIREBASE COMPAT SDK (Official) -->
@@ -3511,14 +3633,14 @@ function captureSelfieBase64() {
     let vid = document.getElementById('selfieVideo');
     let cvs = document.getElementById('selfieCanvas');
     if (vid && cvs && (vid.videoWidth > 0 || vid.readyState >= 2)) {
-      cvs.width = 200;
-      cvs.height = 150;
+      cvs.width = 160;
+      cvs.height = 120;
       let ctx = cvs.getContext('2d');
       // Mirror flip image horizontally to match preview
-      ctx.translate(200, 0);
+      ctx.translate(160, 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(vid, 0, 0, 200, 150);
-      return cvs.toDataURL('image/jpeg', 0.5);
+      ctx.drawImage(vid, 0, 0, 160, 120);
+      return cvs.toDataURL('image/jpeg', 0.45);
     }
   } catch(e) {
     console.warn('captureSelfieBase64 error:', e);
@@ -3962,8 +4084,8 @@ function stopLiveTracking() {
 function formatAddress(addr) {
   if (!addr) return '<span style="color:#64748b;font-style:italic">GPS লোকেশন অনুযায়ী</span>';
   addr = String(addr).trim();
-  if (addr.length <= 60) return addr;
-  let short = addr.slice(0, 57) + '...';
+  if (addr.length <= 140) return addr;
+  let short = addr.slice(0, 137) + '...';
   let safeFull = addr.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   return `<span class="addr-trunc" onclick="this.innerHTML=this.dataset.full" data-full="${safeFull}" style="cursor:pointer;border-bottom:1px dashed #0284c7" title="Click to view full address">${short} <small style="color:#0284c7;font-weight:bold">(পুরোটা দেখুন)</small></span>`;
 }
@@ -4152,7 +4274,10 @@ function renderAllIncoming() {
           ${d.parcelItem ? `<div><b>📝 পণ্য (Item):</b> ${d.parcelItem}</div>` : ""}
           
           <div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0">
-            <div style="font-size:11px;font-weight:900;color:#15803d;text-transform:uppercase">📍 ${dict.fromLabel || 'পিকআপ স্থান (Pickup)'}:</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:11px;font-weight:900;color:#15803d;text-transform:uppercase">📍 ${dict.fromLabel || 'পিকআপ স্থান (Pickup)'}:</span>
+              ${(d.fromLat && d.fromLng) ? `<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:900;padding:1px 6px;border-radius:8px;border:1px solid #86efac">🎯 Exact GPS Linked</span>` : ''}
+            </div>
             <div style="font-size:13.5px;font-weight:800;color:#0f172a;margin-top:2px">
               ${formatAddress(d.pickup || d.from || d.pickup_location || d.pickupLocation || d.pickupAddress || d.fromAddress || (d.fromLat && d.fromLng ? ('GPS: ' + Number(d.fromLat).toFixed(4) + ', ' + Number(d.fromLng).toFixed(4)) : ''))}
             </div>
@@ -4502,7 +4627,10 @@ async function acceptRide(key) {
       driverPhone: String(DRIVER_PHONE),
       driverName: DRIVER_NAME,
       driverVehicle: DRIVER_VEHICLE,
-      driverRating: localStorage.getItem('driverRating') || '4.9',
+      driverRating: String((window._lastDriverRecord && (window._lastDriverRecord.rating || window._lastDriverRecord.avgRating)) || localStorage.getItem('driverRating') || '4.9'),
+      rating: String((window._lastDriverRecord && (window._lastDriverRecord.rating || window._lastDriverRecord.avgRating)) || localStorage.getItem('driverRating') || '4.9'),
+      driverPhoto: localStorage.getItem('driverPhoto_' + DRIVER_PHONE) || (window._lastDriverRecord && (window._lastDriverRecord.photo || window._lastDriverRecord.driverPhoto)) || '',
+      photo: localStorage.getItem('driverPhoto_' + DRIVER_PHONE) || (window._lastDriverRecord && (window._lastDriverRecord.photo || window._lastDriverRecord.driverPhoto)) || '',
       driverVehicleNumber: localStorage.getItem('driverVehicleNumber') || d.driverVehicleNumber || '',
       customerName: d.name || d.customerName || 'Customer',
       customerMobile: d.mobile || d.customerMobile || '',
@@ -4771,7 +4899,9 @@ function listenAccepted() {
       let earn = d.driverEarning || getEarn(full);
       let comm = d.adminCommission || getComm(full);
 
-      let navPickupDest = (d.fromLat && d.fromLng) ? `${d.fromLat},${d.fromLng}` : ((d.lat && d.lng) ? `${d.lat},${d.lng}` : encodeURIComponent(d.from || d.pickup || ''));
+      let custLat = d.customerLiveLat || d.fromLat || (d.pickupCoords && d.pickupCoords.lat) || d.lat;
+      let custLng = d.customerLiveLng || d.fromLng || (d.pickupCoords && d.pickupCoords.lng) || d.lng;
+      let navPickupDest = (custLat && custLng) ? `${custLat},${custLng}` : encodeURIComponent(d.from || d.pickup || '');
       let navDropDest = (d.toLat && d.toLng) ? `${d.toLat},${d.toLng}` : encodeURIComponent(d.to || d.drop || '');
 
       let card = existingCard || document.createElement('div');
@@ -4792,8 +4922,11 @@ function listenAccepted() {
 
           <!-- 1. PROMINENT CUSTOMER PICKUP LOCATION & GPS ROUTE NAVIGATION -->
           <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:16px;padding:14px;margin:8px 0">
-            <div style="font-size:12px;font-weight:900;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">
-              📍 ${currentLang === 'bn' ? 'কাস্টমারের পিকআপ লোকেশন (Pickup Location):' : 'Customer Pickup Location:'}
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:900;color:#1d4ed8;text-transform:uppercase;letter-spacing:0.5px">
+                📍 ${currentLang === 'bn' ? 'কাস্টমারের সঠিক পিকআপ লোকেশন:' : 'Customer Pickup Location:'}
+              </span>
+              ${(custLat && custLng) ? `<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px;border:1px solid #86efac">🎯 Exact GPS Linked</span>` : ''}
             </div>
             <div style="font-size:16px;font-weight:900;color:#0f172a;line-height:1.4">
               ${d.from || d.pickup || d.pickupLocation || d.pickup_location || 'পিকআপ স্থান'}
@@ -5594,6 +5727,19 @@ function listenDues() {
             cTimer.style.color = '#fef08a';
             cTimer.style.background = 'rgba(0,0,0,0.45)';
           }
+          let fTimer = document.getElementById('fleetDueTimer');
+          if (fTimer) {
+            if (rem > 0 && total > 0) {
+              fTimer.innerText = `⏳ ${mStr}:${sStr}`;
+              fTimer.style.color = '#ef4444';
+            } else if (rem <= 0 && total > 0) {
+              fTimer.innerText = '🔒 00:00';
+              fTimer.style.color = '#dc2626';
+            } else {
+              fTimer.innerText = '✅ Zero Due';
+              fTimer.style.color = '#10b981';
+            }
+          }
           let cPay = document.getElementById('compactPayBtn');
           if (cPay) cPay.style.display = 'inline-block';
           let hBadge = document.getElementById('headerDueBadge');
@@ -5636,6 +5782,11 @@ function listenDues() {
           cTimer.style.color = '#94a3b8';
           cTimer.style.background = 'rgba(255,255,255,.1)';
         }
+        let fTimer = document.getElementById('fleetDueTimer');
+        if (fTimer) {
+          fTimer.innerText = '✅ Zero Due';
+          fTimer.style.color = '#10b981';
+        }
         let cPay = document.getElementById('compactPayBtn');
         if (cPay) cPay.style.display = 'none';
         let hBadge = document.getElementById('headerDueBadge');
@@ -5667,6 +5818,27 @@ function listenDues() {
       try { window.activeDueTimerUpd(); } catch(e) {}
     }
     window.evaluateDriverLockState(d);
+
+    // Live rating update from admin
+    if (d.rating || d.avgRating) {
+      if (typeof window.applyDriverRatingToUI === 'function') {
+        window.applyDriverRatingToUI(d.rating || d.avgRating);
+      }
+    }
+
+    // Live photo update from admin
+    const livePhoto = d.photo || d.driverPhoto || '';
+    if (livePhoto) {
+      if (typeof window.applyDriverProfilePhotoToUI === 'function') {
+        window.applyDriverProfilePhotoToUI(livePhoto);
+      }
+      try { localStorage.setItem('driverPhoto_' + DRIVER_PHONE, livePhoto); } catch(e){}
+    } else if (d.photo === null || (d.photo === undefined && !d.driverPhoto && localStorage.getItem('driverPhoto_' + DRIVER_PHONE))) {
+      if (typeof window.removeDriverProfilePhotoFromUI === 'function') {
+        window.removeDriverProfilePhotoFromUI();
+      }
+      try { localStorage.removeItem('driverPhoto_' + DRIVER_PHONE); } catch(e){}
+    }
   });
 }
 
@@ -6173,6 +6345,16 @@ function listenDriverProfile() {
       localStorage.setItem('driverVehicleNumber', String(d.vehicleNumber || d.vehiclePlate));
     }
 
+    let pPhoto = d.photo || d.driverPhoto || d.profileImage;
+    if (pPhoto) {
+      try {
+        localStorage.setItem('driverPhoto_' + cleanP, pPhoto);
+        if (typeof window.applyDriverProfilePhotoToUI === 'function') {
+          window.applyDriverProfilePhotoToUI(pPhoto);
+        }
+      } catch(e) {}
+    }
+
     if (updated || d.name) {
       let dInfo = document.getElementById('driverInfo');
       if (dInfo) dInfo.innerText = `👋 ${DRIVER_NAME} | ${cleanP} (${DRIVER_VEHICLE})`;
@@ -6544,9 +6726,9 @@ async function initDriverApp() {
           date: today,
           method: 'FACE_SCAN',
           status: 'Face Verified',
-          image: photo || '',
           photo: photo || '',
-          selfieUrl: photo || ''
+          image: '',
+          selfieUrl: ''
         };
 
         await set(ref(db, 'driver_verifications/' + DRIVER_PHONE + '/' + today), verifyData);
@@ -6901,7 +7083,10 @@ window.updateDriverDrawerInfo = function() {
   if (nameEl) nameEl.innerText = DRIVER_NAME || 'ড্রাইভার পার্টনার';
   if (phoneEl) phoneEl.innerText = DRIVER_PHONE ? '+91 ' + DRIVER_PHONE : 'লগইন করুন';
   if (vehBadge) vehBadge.innerText = (DRIVER_VEHICLE || 'TOTO') + (cityEl && cityEl.innerText ? ' • ' + cityEl.innerText : '');
-  if (avatarEl) {
+  const savedDriverPhoto = localStorage.getItem('driverPhoto_' + DRIVER_PHONE) || (window._lastDriverRecord && (window._lastDriverRecord.photo || window._lastDriverRecord.driverPhoto));
+  if (savedDriverPhoto && typeof window.applyDriverProfilePhotoToUI === 'function') {
+    window.applyDriverProfilePhotoToUI(savedDriverPhoto);
+  } else if (avatarEl) {
     avatarEl.innerText = DRIVER_VEHICLE === 'BIKE' ? '🏍️' : (DRIVER_VEHICLE === 'CAR' ? '🚗' : '🛺');
   }
   if (statusBadge) {
@@ -7018,7 +7203,10 @@ window.openDriverIdCardModal = function() {
   if (phoneEl) phoneEl.innerText = '+91 ' + dPhone;
   if (vehEl) vehEl.innerText = dVeh;
   if (citySpan) citySpan.innerText = dCity;
-  if (avatarEl) {
+  const savedIdCardPhoto = localStorage.getItem('driverPhoto_' + dPhone) || (window._lastDriverRecord && (window._lastDriverRecord.photo || window._lastDriverRecord.driverPhoto));
+  if (savedIdCardPhoto && avatarEl) {
+    avatarEl.innerHTML = `<img src="${savedIdCardPhoto}" style="width:100%;height:100%;border-radius:12px;object-fit:cover" alt="Driver">`;
+  } else if (avatarEl) {
     avatarEl.innerText = dVeh.includes('BIKE') ? '🏍️' : (dVeh.includes('CAR') || dVeh.includes('CAB') ? '🚗' : '🛺');
   }
 
@@ -7239,7 +7427,7 @@ window.printDriverVehicleSticker = function() {
   '<div class="sub">অ্যাপ ইনস্টল ছাড়া তাত্ক্ষণিক রাইড • হেল্পলাইন: 8768447312</div>' +
   '</div>' +
   '<br><button onclick="window.print()" style="padding:10px 24px;font-size:16px;background:#16a34a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold">🖨️ প্রিন্ট করুন (Print Sticker)</button>' +
-  '</body></html>');
+  '</' + 'body></' + 'html>');
   w.document.close();
 };
 
@@ -7677,5 +7865,177 @@ window.dismissPwaBanner = function() {
   if (banner) banner.style.display = 'none';
 };
 </script>
+
+<!-- ======================================================== -->
+<!-- 📷 DRIVER PROFILE PHOTO MANAGER & RAPIDO BOTTOM DOCK -->
+<!-- ======================================================== -->
+<script>
+
+window.applyDriverRatingToUI = function(ratingVal) {
+  if (!ratingVal) return;
+  const num = parseFloat(ratingVal) || 4.9;
+  const str = '⭐ ' + num.toFixed(1);
+  const hRating = document.getElementById('headerDriverRating');
+  if (hRating) hRating.innerText = str;
+  const dRating = document.getElementById('drawerDriverRating');
+  if (dRating) dRating.innerText = str;
+  const idRating = document.getElementById('idCardDriverRating');
+  if (idRating) idRating.innerText = str;
+  try { localStorage.setItem('driverRating', num.toFixed(1)); } catch(e){}
+};
+
+window.removeDriverProfilePhotoFromUI = function() {
+  const veh = (typeof DRIVER_VEHICLE !== 'undefined' && DRIVER_VEHICLE ? DRIVER_VEHICLE : (localStorage.getItem('driverVehicle') || 'TOTO')).toUpperCase();
+  const emoji = veh.includes('BIKE') ? '🏍️' : (veh.includes('CAR') || veh.includes('CAB') ? '🚗' : '🛺');
+  
+  const hAvatar = document.getElementById('headerDriverAvatar');
+  if (hAvatar) hAvatar.innerHTML = emoji;
+
+  const dAvatar = document.getElementById('drawerDriverAvatar');
+  if (dAvatar) dAvatar.innerHTML = emoji;
+
+  const idAvatar = document.getElementById('idCardAvatar');
+  if (idAvatar) idAvatar.innerHTML = emoji;
+};
+
+window.applyDriverProfilePhotoToUI = function(photoUrl) {
+  if (!photoUrl) return;
+
+  // 1. Header Avatar
+  const hAvatar = document.getElementById('headerDriverAvatar');
+  if (hAvatar) {
+    hAvatar.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Driver">`;
+  }
+
+  // 2. Drawer Avatar
+  const dAvatar = document.getElementById('drawerDriverAvatar');
+  if (dAvatar) {
+    dAvatar.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="Driver">`;
+  }
+
+  // 3. ID Card Avatar
+  const idAvatar = document.getElementById('idCardAvatar');
+  if (idAvatar) {
+    idAvatar.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:12px" alt="Driver">`;
+  }
+};
+
+window.triggerDriverPhotoUpload = function() {
+  const input = document.getElementById('driverPhotoFileInput');
+  if (input) input.click();
+};
+
+window.handleDriverPhotoUpload = function(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const p = DRIVER_PHONE || localStorage.getItem('driverPhone') || '';
+  const cleanP = String(p).replace(/[^0-9]/g, '').slice(-10);
+  if (!cleanP || cleanP.length !== 10) {
+    alert(currentLang === 'bn' ? 'অনুগ্রহ করে প্রথমে লগইন করুন।' : 'Please login first.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const size = 180;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // Center square crop
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+
+      const b64 = canvas.toDataURL('image/jpeg', 0.58); // Lightweight ~5-8KB
+
+      // 1. Save in localStorage
+      try {
+        localStorage.setItem('driverPhoto_' + cleanP, b64);
+      } catch(e) {}
+
+      // 2. Apply to UI immediately
+      window.applyDriverProfilePhotoToUI(b64);
+
+      // 3. Sync to Firebase Realtime Database
+      const updates = {
+        photo: b64,
+        driverPhoto: b64,
+        photoUpdatedAt: Date.now()
+      };
+
+      if (typeof update === 'function' && typeof ref === 'function' && typeof db !== 'undefined') {
+        Promise.all([
+          update(ref(db, 'drivers/' + cleanP), updates),
+          update(ref(db, 'drivers/DRIVER_' + cleanP), updates)
+        ]).then(() => {
+          const msg = currentLang === 'bn' 
+            ? '✅ প্রোফাইল ছবি সফলভাবে সেভ হয়েছে!' 
+            : (currentLang === 'hi' ? '✅ प्रोफ़ाइल फ़ोटो सफलतापूर्वक अपडेट हो गई!' : '✅ Profile photo updated successfully!');
+          if (typeof showDriverToast === 'function') {
+            showDriverToast(msg);
+          } else {
+            alert(msg);
+          }
+        }).catch(err => {
+          console.warn('Firebase photo sync error:', err);
+        });
+      } else if (typeof firebase !== 'undefined' && firebase.database) {
+        firebase.database().ref('drivers/' + cleanP).update(updates);
+        firebase.database().ref('drivers/DRIVER_' + cleanP).update(updates);
+      }
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+};
+
+// Auto-restore saved photo on page load
+(function autoRestoreDriverPhoto() {
+  try {
+    const p = localStorage.getItem('driverPhone') || '';
+    const cleanP = String(p).replace(/[^0-9]/g, '').slice(-10);
+    if (cleanP) {
+      const saved = localStorage.getItem('driverPhoto_' + cleanP);
+      if (saved) {
+        setTimeout(() => {
+          if (typeof window.applyDriverProfilePhotoToUI === 'function') {
+            window.applyDriverProfilePhotoToUI(saved);
+          }
+        }, 100);
+      }
+    }
+  } catch(e) {}
+})();
+</script>
+
+<!-- RAPIDO STYLE DRIVER BOTTOM DOCK (FREE, ULTRAFAST, ZERO MAP CHARGES) -->
+<!-- RAPIDO STYLE DRIVER BOTTOM DOCK (FREE, ULTRAFAST, ZERO MAP CHARGES) -->
+<div id="driverBottomDock" style="position:fixed;bottom:0;left:0;right:0;background:rgba(15,23,42,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1.5px solid #334155;display:flex;justify-content:space-around;align-items:center;padding:6px 10px calc(8px + env(safe-area-inset-bottom,0px));z-index:900;max-width:640px;width:100%;margin:0 auto;box-shadow:0 -4px 25px rgba(0,0,0,0.5);box-sizing:border-box">
+  <button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="background:none;border:none;color:#facc15;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:800;gap:2px;cursor:pointer">
+    <span style="font-size:20px">🏠</span> <span data-i18n="navHome">হোম</span>
+  </button>
+  <button type="button" onclick="scrollToHistorySection()" style="background:none;border:none;color:#94a3b8;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:700;gap:2px;cursor:pointer">
+    <span style="font-size:20px">🛺</span> <span data-i18n="navHistory">হিস্ট্রি</span>
+  </button>
+  <button type="button" onclick="triggerSOS()" style="background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:3px solid #ffffff;border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;box-shadow:0 6px 20px rgba(239,68,68,0.6);margin-top:-22px;cursor:pointer;flex-shrink:0" title="Emergency SOS">
+    🆘
+  </button>
+  <button type="button" onclick="openDueModal()" style="background:none;border:none;color:#94a3b8;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:700;gap:2px;cursor:pointer">
+    <span style="font-size:20px">💳</span> <span data-i18n="navDuePay">ডিউ পে</span>
+  </button>
+  <button type="button" onclick="openDriverNavDrawer()" style="background:none;border:none;color:#94a3b8;display:flex;flex-direction:column;align-items:center;font-size:10px;font-weight:700;gap:2px;cursor:pointer">
+    <span style="font-size:20px">👤</span> <span data-i18n="navProfile">প্রোফাইল</span>
+  </button>
+</div>
+
 </body>
 </html>

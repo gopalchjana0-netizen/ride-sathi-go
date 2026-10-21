@@ -41,6 +41,7 @@
       "old_pngs/**",
       "release_v*/**",
       "temp_v*/**",
+      "public/**",
       "*.md",
       "*.log"
     ],
