@@ -253,7 +253,7 @@
       }
     },
     "users": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".read": true,
       ".write": false,
       "$userId": {
         ".read": true,
