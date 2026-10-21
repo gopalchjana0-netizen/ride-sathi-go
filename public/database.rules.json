@@ -239,7 +239,7 @@
       }
     },
     "login_history": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "loginAt",
@@ -248,12 +248,12 @@
         "uid"
       ],
       "$historyId": {
-        ".read": true,
+        ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
         ".write": true
       }
     },
     "users": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$userId": {
         ".read": true,
@@ -261,7 +261,7 @@
       }
     },
     "driver_requests": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$reqId": {
         ".read": true,
@@ -269,7 +269,7 @@
       }
     },
     "school_pass_requests": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$reqId": {
         ".read": true,
@@ -277,7 +277,7 @@
       }
     },
     "medical_emergency_logs": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$logId": {
         ".read": true,
@@ -285,7 +285,7 @@
       }
     },
     "driver_registrations": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "status",
@@ -299,7 +299,7 @@
       }
     },
     "driver_verifications": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$driverPhone": {
         ".read": true,
@@ -307,7 +307,7 @@
       }
     },
     "blocked_drivers": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".indexOn": [
         "blockedAt"
@@ -318,7 +318,7 @@
       }
     },
     "pending_drivers": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$driverPhone": {
         ".read": true,
@@ -326,7 +326,7 @@
       }
     },
     "driver_dues": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "status",
@@ -339,7 +339,7 @@
       }
     },
     "payments": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "status",
@@ -352,7 +352,7 @@
       }
     },
     "wallet": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "driverPhone",
@@ -365,7 +365,7 @@
       }
     },
     "sos_alerts": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "status",
@@ -377,7 +377,7 @@
       }
     },
     "driver_selfie_logs": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       ".indexOn": [
         "date",
@@ -390,7 +390,7 @@
       }
     },
     "driver_selfies": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$selfieId": {
         ".read": true,
@@ -406,7 +406,7 @@
       }
     },
     "commission_records": {
-      ".read": true,
+      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
       ".write": false,
       "$recId": {
         ".read": true,
