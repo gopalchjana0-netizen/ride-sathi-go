@@ -2400,7 +2400,42 @@ function doPost(e) {
         <b style="font-size:15px;color:#c2410c">🏖️ 7. Tourist Day Rental & Packages Hub (ট্যুরিস্ট ডে-রেন্টাল প্যাকেজ কন্ট্রোল)</b>
         <p class="small" style="margin:2px 0 0;color:#64748b">দীঘা, বকখালি, গঙ্গাসাগর বা লোকাল ট্যুরিস্ট প্যাকেজ ম্যানেজ করুন। যাত্রীরা এক ক্লিকে ঘণ্টা ও দূরত্বের প্যাকেজ বুক করতে পারবে।</p>
       </div>
-      <span class="badge" style="background:#ffedd5;color:#c2410c;padding:4px 10px;font-size:12px" id="adminRentalSummaryBadge">0 Packages Active</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="badge" style="background:#dcfce7;color:#166534;padding:5px 12px;font-size:12px;font-weight:800;border-radius:20px" id="adminRentalMasterStatusBadge">🟢 সচল (LIVE)</span>
+        <span class="badge" style="background:#ffedd5;color:#c2410c;padding:5px 12px;font-size:12px;font-weight:800;border-radius:20px" id="adminRentalSummaryBadge">0 Packages Active</span>
+        <button type="button" class="btn orange" onclick="loadRentalPackagesAdmin(true)" style="padding:5px 12px;font-size:11.5px;font-weight:700">🔄 রিফ্রেশ</button>
+      </div>
+    </div>
+
+    <!-- Master Feature Toggle Banner (Active / Disable for All Customers) -->
+    <div id="adminRentalMasterControlBox" style="background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:2px solid #fdba74;border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:0 3px 10px rgba(234,88,12,0.08);transition:all 0.3s ease">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="adminRentalMasterIcon" style="width:46px;height:46px;border-radius:12px;background:#ea580c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 3px 6px rgba(234,88,12,0.25);flex-shrink:0">
+            🏖️
+          </div>
+          <div>
+            <div style="font-size:14.5px;font-weight:900;color:#9a3412;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span>ট্যুরিস্ট ডে-রেন্টাল মাস্টার সুইচ (Master Control Switch)</span>
+              <span id="adminRentalPillStatus" style="background:#16a34a;color:#fff;font-size:11px;font-weight:800;padding:2px 10px;border-radius:12px">🟢 সচল (ACTIVE)</span>
+            </div>
+            <p id="adminRentalStatusDesc" style="margin:3px 0 0;font-size:12.5px;color:#7c2d12;font-weight:600">
+              🟢 চালু রয়েছে: সকল কাস্টমার অ্যাপে "ট্যুরিস্ট / ডে-রেন্টাল" অপশন দেখা যাচ্ছে এবং যাত্রীরা প্যাকেজ বুক করতে পারছে।
+            </p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button type="button" id="btnRentalMasterActive" onclick="toggleTouristRentalMaster(true)" class="btn" style="background:#16a34a;color:#fff;font-weight:800;padding:9px 18px;border-radius:10px;font-size:13px;box-shadow:0 2px 6px rgba(22,163,74,0.3);cursor:pointer;border:2px solid #15803d;display:flex;align-items:center;gap:6px">
+            <span>🟢</span> <span>চালু রাখুন (Active)</span>
+          </button>
+          <button type="button" id="btnRentalMasterDisable" onclick="toggleTouristRentalMaster(false)" class="btn" style="background:#ffffff;color:#64748b;font-weight:700;padding:9px 18px;border-radius:10px;font-size:13px;cursor:pointer;border:2px solid #cbd5e1;display:flex;align-items:center;gap:6px">
+            <span>🔴</span> <span>বন্ধ করুন (Disable)</span>
+          </button>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(255,255,255,0.85);border-radius:8px;font-size:11.5px;color:#64748b;display:flex;align-items:center;gap:6px;border:1px dashed #fed7aa">
+        <span>⚡</span> <span><b>স্মার্ট লাইভ সিঙ্ক:</b> অ্যাডমিন এটি "বন্ধ" করলে সাথে সাথে সকল কাস্টমার অ্যাপ থেকে অপশনটি উধাও হয়ে যাবে। আবার "চালু" করলে সাথে সাথে ফিরে আসবে।</span>
+      </div>
     </div>
 
     <!-- Package Create/Edit Form -->
@@ -10917,10 +10952,143 @@ function adminShareDriverCardWa() {
 
 // === 7. TOURIST DAY RENTAL & PACKAGES (Point 3) ===
 var adminAllRentalPackages = {};
+var isTouristRentalMasterEnabled = true;
 
-function loadRentalPackagesAdmin() {
+function listenTouristRentalMasterConfig() {
   var d = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
   if (!d) return;
+
+  d.ref('settings/features/tourist_rental').on('value', function(snap) {
+    var val = snap.val();
+    var isEnabled = true;
+    if (val !== null) {
+      if (typeof val === 'object' && val.enabled === false) isEnabled = false;
+      else if (val === false) isEnabled = false;
+    }
+    isTouristRentalMasterEnabled = isEnabled;
+    updateTouristRentalMasterUI(isEnabled);
+  });
+}
+
+function updateTouristRentalMasterUI(isEnabled) {
+  var badge = document.getElementById('adminRentalMasterStatusBadge');
+  var pill = document.getElementById('adminRentalPillStatus');
+  var desc = document.getElementById('adminRentalStatusDesc');
+  var box = document.getElementById('adminRentalMasterControlBox');
+  var icon = document.getElementById('adminRentalMasterIcon');
+  var btnAct = document.getElementById('btnRentalMasterActive');
+  var btnDis = document.getElementById('btnRentalMasterDisable');
+
+  if (isEnabled) {
+    if (badge) {
+      badge.style.background = '#dcfce7';
+      badge.style.color = '#166534';
+      badge.innerText = '🟢 সচল (LIVE)';
+    }
+    if (pill) {
+      pill.style.background = '#16a34a';
+      pill.innerText = '🟢 সচল (ACTIVE)';
+    }
+    if (desc) {
+      desc.style.color = '#166534';
+      desc.innerHTML = '🟢 <b>চালু রয়েছে:</b> কাস্টমার অ্যাপে "ট্যুরিস্ট / ডে-রেন্টাল" অপশন লাইভ দেখা যাচ্ছে এবং যাত্রীরা প্যাকেজ বুক করতে পারছে।';
+    }
+    if (box) {
+      box.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+      box.style.borderColor = '#86efac';
+    }
+    if (icon) {
+      icon.style.background = '#16a34a';
+    }
+    if (btnAct) {
+      btnAct.style.background = '#16a34a';
+      btnAct.style.color = '#ffffff';
+      btnAct.style.borderColor = '#15803d';
+      btnAct.style.boxShadow = '0 2px 6px rgba(22,163,74,0.3)';
+    }
+    if (btnDis) {
+      btnDis.style.background = '#ffffff';
+      btnDis.style.color = '#64748b';
+      btnDis.style.borderColor = '#cbd5e1';
+      btnDis.style.boxShadow = 'none';
+    }
+  } else {
+    if (badge) {
+      badge.style.background = '#fee2e2';
+      badge.style.color = '#991b1b';
+      badge.innerText = '🔴 সাময়িক বন্ধ (OFF)';
+    }
+    if (pill) {
+      pill.style.background = '#dc2626';
+      pill.innerText = '🔴 বন্ধ (DISABLED)';
+    }
+    if (desc) {
+      desc.style.color = '#991b1b';
+      desc.innerHTML = '🔴 <b>সাময়িক বন্ধ:</b> কাস্টমার প্যানেল থেকে "ট্যুরিস্ট / ডে-রেন্টাল" অপশন সম্পূর্ণভাবে সরিয়ে নেওয়া হয়েছে।';
+    }
+    if (box) {
+      box.style.background = 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)';
+      box.style.borderColor = '#fca5a5';
+    }
+    if (icon) {
+      icon.style.background = '#dc2626';
+    }
+    if (btnAct) {
+      btnAct.style.background = '#ffffff';
+      btnAct.style.color = '#64748b';
+      btnAct.style.borderColor = '#cbd5e1';
+      btnAct.style.boxShadow = 'none';
+    }
+    if (btnDis) {
+      btnDis.style.background = '#dc2626';
+      btnDis.style.color = '#ffffff';
+      btnDis.style.borderColor = '#b91c1c';
+      btnDis.style.boxShadow = '0 2px 6px rgba(220,38,38,0.3)';
+    }
+  }
+}
+
+function toggleTouristRentalMaster(enable) {
+  var d = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+  if (!d) {
+    alert('ডাটাবেস কানেকশন পাওয়া যায়নি!');
+    return;
+  }
+
+  var confirmMsg = enable ? 
+    'আপনি কি ট্যুরিস্ট ডে-রেন্টাল প্যাকেজ সার্ভিস কাস্টমার প্যানেলে সচল (ACTIVE) করতে চান?' :
+    '⚠️ আপনি কি ট্যুরিস্ট ডে-রেন্টাল প্যাকেজ সার্ভিস বন্ধ করতে চান?\n\nবন্ধ করলে সাথে সাথে সকল কাস্টমার অ্যাপ থেকে রেন্টাল অপশনটি উধাও হয়ে যাবে।';
+
+  if (!confirm(confirmMsg)) return;
+
+  var payload = {
+    enabled: Boolean(enable),
+    status: enable ? 'ACTIVE' : 'DISABLED',
+    updatedAt: firebase.database.ServerValue.TIMESTAMP,
+    updatedBy: 'Admin'
+  };
+
+  Promise.allSettled([
+    d.ref('settings/features/tourist_rental').set(payload),
+    d.ref('settings/rental_packages_config/enabled').set(Boolean(enable))
+  ]).then(function() {
+    updateTouristRentalMasterUI(enable);
+    if (enable) {
+      alert('✅ ট্যুরিস্ট ডে-রেন্টাল প্যাকেজ সফলভাবে সচল করা হয়েছে! কাস্টমার প্যানেলে এটি এখন দেখা যাবে।');
+    } else {
+      alert('🔴 ট্যুরিস্ট ডে-রেন্টাল প্যাকেজ নিষ্ক্রিয় করা হয়েছে! কাস্টমার প্যানেল থেকে অপশনটি সরে গেছে।');
+    }
+  }).catch(function(err) {
+    alert('❌ সেভ করতে ত্রুটি: ' + (err.message || err));
+  });
+}
+
+function loadRentalPackagesAdmin(forceAlert) {
+  var d = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
+  if (!d) return;
+
+  // Realtime listen to master feature switch
+  listenTouristRentalMasterConfig();
 
   d.ref('settings/rental_packages').on('value', function(snap) {
     var data = snap.val() || {};
@@ -10962,6 +11130,9 @@ function loadRentalPackagesAdmin() {
         '</div>';
     });
     list.innerHTML = html;
+    if (forceAlert) {
+      alert('✅ ট্যুরিস্ট ডে-রেন্টাল প্যাকেজ তালিকা ও মাস্টার কন্ট্রোল রিফ্রেশ হয়েছে!');
+    }
   });
 }
 
@@ -11211,6 +11382,9 @@ window.clearRentalPackageForm = clearRentalPackageForm;
 window.editRentalPackageAdmin = editRentalPackageAdmin;
 window.toggleRentalPackageAdmin = toggleRentalPackageAdmin;
 window.deleteRentalPackageAdmin = deleteRentalPackageAdmin;
+window.toggleTouristRentalMaster = toggleTouristRentalMaster;
+window.listenTouristRentalMasterConfig = listenTouristRentalMasterConfig;
+window.updateTouristRentalMasterUI = updateTouristRentalMasterUI;
 window.listenScheduledBookingsAdmin = listenScheduledBookingsAdmin;
 window.saveScheduleSettingsAdmin = saveScheduleSettingsAdmin;
 window.cancelScheduledBookingAdmin = cancelScheduledBookingAdmin;

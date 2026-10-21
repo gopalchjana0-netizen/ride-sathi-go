@@ -2053,6 +2053,9 @@ window.scheduledPurpose = '';
 window.scheduledDateTimeVal = '';
 
 window.selectVehicle = function(veh) {
+  if (veh && veh.toLowerCase() === 'rental' && window.isTouristRentalEnabled === false) {
+    return;
+  }
   window.selectedVehicle = veh;
   ['Bike', 'Toto', 'Car', 'Parcel', 'Rental'].forEach(function(v) {
     var box = document.getElementById(v.toLowerCase() + 'Box');
@@ -2064,7 +2067,7 @@ window.selectVehicle = function(veh) {
   var rBox = document.getElementById('rentalDetailsBox');
   if (rBox) {
     var isRental = (veh.toLowerCase() === 'rental');
-    rBox.style.display = isRental ? 'block' : 'none';
+    rBox.style.display = (isRental && window.isTouristRentalEnabled !== false) ? 'block' : 'none';
     if (isRental && typeof window.loadCustomerRentalPackages === 'function') {
       window.loadCustomerRentalPackages();
     }
@@ -2135,6 +2138,13 @@ window.setQuickSchedulePreset = function(presetType) {
 
 // POINT 3: Tourist Day Rental Packages Loader & Selector
 window.loadCustomerRentalPackages = function() {
+  if (window.isTouristRentalEnabled === false) {
+    var rBox = document.getElementById('rentalBox');
+    if (rBox) rBox.style.setProperty('display', 'none', 'important');
+    var rDetails = document.getElementById('rentalDetailsBox');
+    if (rDetails) rDetails.style.setProperty('display', 'none', 'important');
+    return;
+  }
   var listEl = document.getElementById('customerRentalPackagesList');
   if (!listEl) return;
   listEl.innerHTML = '<div style="font-size:12px;color:#78350f">প্যাকেজ লোড হচ্ছে...</div>';
@@ -2200,6 +2210,7 @@ window.loadCustomerRentalPackages = function() {
 };
 
 window.selectCustomerRentalPackage = function(pkgId) {
+  if (window.isTouristRentalEnabled === false) return;
   var pkg = (window.cachedRentalPackages || []).find(function(p) { return p.id === pkgId; });
   if (!pkg) return;
   window.selectedRentalPackage = pkg;
@@ -2217,6 +2228,66 @@ window.selectCustomerRentalPackage = function(pkgId) {
     window.calcFare();
   }
 };
+
+// === REALTIME TOURIST RENTAL MASTER SYNC CONTROLLER ===
+window.isTouristRentalEnabled = true;
+
+window.initTouristRentalMasterListener = function() {
+  var d = (typeof getClientDb === 'function') ? getClientDb() : ((typeof db !== 'undefined') ? db : (typeof firebase !== 'undefined' && firebase.database ? firebase.database() : null));
+  if (!d) return;
+
+  d.ref('settings/features/tourist_rental').on('value', function(snap) {
+    var val = snap.val();
+    var isEnabled = true;
+    if (val !== null) {
+      if (typeof val === 'object' && val.enabled === false) isEnabled = false;
+      else if (val === false) isEnabled = false;
+    }
+    window.isTouristRentalEnabled = isEnabled;
+
+    var rBox = document.getElementById('rentalBox');
+    var rDetails = document.getElementById('rentalDetailsBox');
+
+    if (!isEnabled) {
+      // Hide completely from customer screen
+      if (rBox) {
+        rBox.style.setProperty('display', 'none', 'important');
+      }
+      if (rDetails) {
+        rDetails.style.setProperty('display', 'none', 'important');
+      }
+
+      // Auto switch back if customer currently has Rental selected
+      if (window.selectedVehicle && window.selectedVehicle.toLowerCase() === 'rental') {
+        window.selectedRentalPackage = null;
+        if (typeof window.selectVehicle === 'function') {
+          window.selectVehicle('Toto');
+        } else {
+          window.selectedVehicle = 'Toto';
+        }
+      }
+    } else {
+      // Show back on customer screen
+      if (rBox) {
+        rBox.style.removeProperty('display');
+        rBox.style.display = 'flex';
+      }
+      if (window.selectedVehicle && window.selectedVehicle.toLowerCase() === 'rental') {
+        if (rDetails) {
+          rDetails.style.removeProperty('display');
+          rDetails.style.display = 'block';
+        }
+      }
+    }
+  });
+};
+
+// Auto-init listener if firebase is ready
+try {
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    window.initTouristRentalMasterListener();
+  }
+} catch(e) {}
 
 // POINT 1: WhatsApp Live Ride Share with Family for Safety
 window.shareLiveTripSafety = function() {
@@ -2974,6 +3045,9 @@ window.selectPay = function(mode) {
 
 // DOMContentLoaded INITIALIZATION
 document.addEventListener('DOMContentLoaded', function() {
+  if (typeof window.initTouristRentalMasterListener === 'function') {
+    window.initTouristRentalMasterListener();
+  }
   window.restoreCustomerState();
   if (typeof window.autoFetchCurrentLocationOnStartup === 'function') {
     window.autoFetchCurrentLocationOnStartup();
@@ -10210,6 +10284,9 @@ window.logoutCustomer = function() {
 
 // Select Vehicle
 window.selectVehicle = function(veh) {
+  if (veh && veh.toLowerCase() === 'rental' && window.isTouristRentalEnabled === false) {
+    return;
+  }
   window.selectedVehicle = veh;
   ['bike', 'toto', 'car', 'parcel', 'rental'].forEach(function(v) {
     const el = document.getElementById(v + 'Box');
@@ -10222,7 +10299,7 @@ window.selectVehicle = function(veh) {
   const rBox = document.getElementById('rentalDetailsBox');
   if (rBox) {
     const isRental = (veh.toLowerCase() === 'rental');
-    rBox.style.display = isRental ? 'block' : 'none';
+    rBox.style.display = (isRental && window.isTouristRentalEnabled !== false) ? 'block' : 'none';
     if (isRental && typeof window.loadCustomerRentalPackages === 'function') {
       window.loadCustomerRentalPackages();
     }
@@ -14964,6 +15041,9 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   }
 
   function initNextGenFeaturesListener() {
+    if (typeof window.initTouristRentalMasterListener === 'function') {
+      window.initTouristRentalMasterListener();
+    }
     const d = getClientDb();
     if (!d) return;
 
