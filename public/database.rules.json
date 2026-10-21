@@ -133,7 +133,7 @@
     },
     "cities": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       ".indexOn": [
         "isActive",
         "name",
@@ -141,19 +141,19 @@
       ],
       "$cityId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "operational_cities": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       ".indexOn": [
         "active",
         "name"
       ],
       "$cityId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "feedback": {
@@ -192,34 +192,34 @@
     },
     "coupons": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       ".indexOn": [
         "code",
         "active"
       ],
       "$code": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "promo_codes": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       ".indexOn": [
         "code",
         "active"
       ],
       "$code": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "promoCodes": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$code": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "notifications": {
@@ -239,8 +239,8 @@
       }
     },
     "login_history": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "loginAt",
         "expiresAt",
@@ -248,7 +248,7 @@
         "uid"
       ],
       "$historyId": {
-        ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+        ".read": true,
         ".write": true
       }
     },
@@ -261,32 +261,32 @@
       }
     },
     "driver_requests": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$reqId": {
         ".read": true,
         ".write": true
       }
     },
     "school_pass_requests": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$reqId": {
         ".read": true,
         ".write": true
       }
     },
     "medical_emergency_logs": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$logId": {
         ".read": true,
         ".write": true
       }
     },
     "driver_registrations": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "status",
         "phone",
@@ -318,8 +318,8 @@
       }
     },
     "pending_drivers": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$driverPhone": {
         ".read": true,
         ".write": true
@@ -339,8 +339,8 @@
       }
     },
     "payments": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "status",
         "time",
@@ -365,8 +365,8 @@
       }
     },
     "sos_alerts": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "status",
         "time"
@@ -377,8 +377,8 @@
       }
     },
     "driver_selfie_logs": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       ".indexOn": [
         "date",
         "phone",
@@ -390,8 +390,8 @@
       }
     },
     "driver_selfies": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$selfieId": {
         ".read": true,
         ".write": true
@@ -406,8 +406,8 @@
       }
     },
     "commission_records": {
-      ".read": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
-      ".write": false,
+      ".read": true,
+      ".write": true,
       "$recId": {
         ".read": true,
         ".write": true
@@ -428,50 +428,50 @@
     },
     "app_config": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$configKey": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "settings": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$settingKey": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "slides": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$slideId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "app_content": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$contentKey": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "broadcast_history": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$historyId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "notices": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+      ".write": true,
       "$noticeId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'"
+        ".write": true
       }
     },
     "user_controls": {
