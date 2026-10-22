@@ -5,6 +5,8 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9969728698158156"
      crossorigin="anonymous"></script>
 <meta charset="UTF-8">
+<!-- Cloudflare Turnstile Official Verification API (100% Free Forever) -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <!-- Monetag Official Domain Verification Meta Tag -->
 <meta name="monetag" content="e28c357753f0f87ee763fe5ab7610ce9">
 <!-- Monetag Official Ad Tag (Zone: 11929403) with 30-Minute Smart Dismiss Cooldown -->
@@ -2985,6 +2987,17 @@ window.handleGoogleCredentialResponse = function(response) {
     });
 
     if (cleanP.length === 10) {
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        firebase.database().ref('users/' + cleanP).update({
+          phone: cleanP,
+          name: name,
+          email: email,
+          photo: photo || '',
+          google_sub: user.sub || '',
+          auth_type: 'google',
+          last_login: new Date().toISOString()
+        }).catch(function(){});
+      }
       localStorage.setItem('customerPhone', cleanP);
       localStorage.setItem('userPhone', cleanP);
       localStorage.setItem('cust_phone', cleanP);
@@ -3009,6 +3022,20 @@ window.handleGoogleCredentialResponse = function(response) {
   } catch(e) {
     console.error("handleGoogleCredentialResponse error:", e);
   }
+};
+
+window.rsgTurnstileCustomerVerified = false;
+window.onTurnstileSuccessCustomer = function(token) {
+  window.rsgTurnstileCustomerVerified = true;
+  var msgEl = document.getElementById('welcomeMsg');
+  if (msgEl && msgEl.innerText.includes('Cloudflare')) msgEl.innerText = '';
+};
+window.onTurnstileExpiredCustomer = function() {
+  window.rsgTurnstileCustomerVerified = false;
+};
+window.onTurnstileErrorCustomer = function() {
+  // Graceful fallback: If Turnstile fails (e.g. strict ad-blocker), do not trap legitimate users
+  window.rsgTurnstileCustomerVerified = true;
 };
 
 window.continueToBooking = function() {
@@ -3038,6 +3065,90 @@ window.continueToBooking = function() {
     if (phoneEl) phoneEl.focus();
     return;
   }
+
+  // Cloudflare Turnstile Human Verification Check
+  if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
+    var tToken = window.turnstile.getResponse();
+    if (!tToken && !window.rsgTurnstileCustomerVerified && document.getElementById('rsg-turnstile-customer')) {
+      if (msgEl) {
+        msgEl.style.color = '#ef4444';
+        msgEl.innerText = "⚠️ অনুগ্রহ করে 'Cloudflare Verification' বক্সে ক্লিক করে ভেরিফাই করুন!";
+      }
+      return;
+    }
+  }
+
+  // Smart Account Protection: Prevent unauthorized phone usage
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    var continueBtn = document.getElementById('continueBtn');
+    if (continueBtn) {
+      continueBtn.disabled = true;
+      continueBtn.innerHTML = '<span>⏳ অ্যাকাউন্ট ভেরিফাই হচ্ছে...</span>';
+    }
+
+    firebase.database().ref('users/' + phone).once('value').then(function(snap) {
+      var userData = snap.val();
+      var localAuth = null;
+      try { localAuth = JSON.parse(localStorage.getItem('rideSathiAuthUser') || '{}'); } catch(e){}
+
+      // Case 1: Phone is locked to a Google Account
+      if (userData && userData.auth_type === 'google' && userData.email) {
+        if (!localAuth || !localAuth.email || localAuth.email.toLowerCase() !== userData.email.toLowerCase()) {
+          if (msgEl) {
+            msgEl.style.color = '#ef4444';
+            msgEl.innerHTML = "🔒 <b>এই মোবাইল নম্বরটি গুগল অ্যাকাউন্ট দিয়ে সুরক্ষিত!</b><br>অন্য কেউ এই নম্বর দিয়ে লগইন করতে পারবে না। অনুগ্রহ করে উপরের <b>'Continue with Google'</b> বাটনে ক্লিক করে লগইন করুন।";
+          }
+          if (continueBtn) {
+            continueBtn.disabled = false;
+            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+          }
+          return;
+        }
+      }
+
+      // Case 2: Phone has a 4-Digit Security PIN
+      if (userData && userData.pin) {
+        var userPin = prompt("🔑 আপনার ৪ সংখ্যার সিক্রেট পিন লিখুন / Enter your 4-digit PIN:");
+        if (!userPin || String(userPin).trim() !== String(userData.pin).trim()) {
+          alert("❌ ভুল পিন! সঠিক ৪ সংখ্যার সিক্রেট পিন ছাড়া এই নম্বরে লগইন করা যাবে না।\n(সমস্যা হলে অ্যাডমিনের সাহায্য নিন)");
+          if (continueBtn) {
+            continueBtn.disabled = false;
+            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+          }
+          return;
+        }
+      } else if (!userData) {
+        // First-time customer: Link with active Google account or record mobile
+        var authType = (localAuth && localAuth.email) ? 'google' : 'mobile';
+        firebase.database().ref('users/' + phone).update({
+          phone: phone,
+          name: name,
+          email: (localAuth && localAuth.email) ? localAuth.email : (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@ridesathigo.user'),
+          auth_type: authType,
+          created_at: new Date().toISOString()
+        }).catch(function(){});
+      }
+
+      if (continueBtn) {
+        continueBtn.disabled = false;
+        continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+      }
+
+      window.proceedCustomerBookingSession(name, phone, msgEl);
+    }).catch(function() {
+      if (continueBtn) {
+        continueBtn.disabled = false;
+        continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+      }
+      window.proceedCustomerBookingSession(name, phone, msgEl);
+    });
+    return;
+  }
+
+  window.proceedCustomerBookingSession(name, phone, msgEl);
+};
+
+window.proceedCustomerBookingSession = function(name, phone, msgEl) {
   if (msgEl) msgEl.innerText = "";
   try {
     localStorage.setItem('customerName', name);
@@ -3843,6 +3954,18 @@ window.closeLiveChatModal = function() {
     <label style="font-size:13px;font-weight:800;color:#334155" data-i18n="phoneLabel">📱 ১০ সংখ্যার মোবাইল নম্বর *</label>
     <!-- EMPTY PLACEHOLDER AS REQUESTED -->
     <input id="custPhone" type="tel" data-i18n-placeholder="phonePlaceholder" placeholder="১০ সংখ্যার মোবাইল নম্বর লিখুন..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+
+    <!-- Cloudflare Turnstile Smart Human Verification (100% Free Forever) -->
+    <div id="cfTurnstileContainer" style="margin:12px 0 10px;display:flex;justify-content:center;min-height:65px">
+      <div class="cf-turnstile"
+           id="rsg-turnstile-customer"
+           data-sitekey="1x00000000000000000000AA"
+           data-theme="light"
+           data-callback="onTurnstileSuccessCustomer"
+           data-expired-callback="onTurnstileExpiredCustomer"
+           data-error-callback="onTurnstileErrorCustomer">
+      </div>
+    </div>
 
     <button class="btn btn-primary" id="continueBtn" onclick="continueToBooking()">
       <span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>

@@ -4,7 +4,7 @@ service cloud.firestore {
     // 1. Cities operational configuration
     match /cities/{cityId} {
       allow read: if true;
-      allow create, update: if request.auth != null && request.auth.token.email == 'support.ridesathi@gmail.com';
+      allow create, update: if request.auth != null && (request.auth.token.email == 'support.ridesathi@gmail.com' || request.auth.token.email == 'gopalchjana0@gmail.com');
       allow delete: if false;
     }
     

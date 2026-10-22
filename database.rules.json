@@ -1,7 +1,7 @@
 {
   "rules": {
     ".read": false,
-    ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com'",
+    ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
     "bookings": {
       ".read": true,
       ".write": false,
@@ -16,7 +16,7 @@
       ],
       "$bookingId": {
         ".read": true,
-        ".write": "auth != null && auth.token.email == 'support.ridesathi@gmail.com' || !data.exists() || data.child('customerPhone').val() == newData.child('customerPhone').val() || data.child('mobile').val() == newData.child('mobile').val() || newData.hasChild('driverPhone')"
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com') || !data.exists() || data.child('customerPhone').val() == newData.child('customerPhone').val() || data.child('mobile').val() == newData.child('mobile').val() || newData.hasChild('driverPhone')"
       }
     },
     "rides": {
@@ -128,12 +128,12 @@
       ],
       "$driverPhone": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com') || newData.exists()"
       }
     },
     "cities": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       ".indexOn": [
         "isActive",
         "name",
@@ -141,19 +141,19 @@
       ],
       "$cityId": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "operational_cities": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       ".indexOn": [
         "active",
         "name"
       ],
       "$cityId": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "feedback": {
@@ -192,34 +192,34 @@
     },
     "coupons": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       ".indexOn": [
         "code",
         "active"
       ],
       "$code": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "promo_codes": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       ".indexOn": [
         "code",
         "active"
       ],
       "$code": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "promoCodes": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       "$code": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "notifications": {
@@ -428,34 +428,34 @@
     },
     "app_config": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       "$configKey": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "settings": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       "$settingKey": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "slides": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       "$slideId": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "app_content": {
       ".read": true,
-      ".write": true,
+      ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')",
       "$contentKey": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && (auth.token.email == 'support.ridesathi@gmail.com' || auth.token.email == 'gopalchjana0@gmail.com')"
       }
     },
     "broadcast_history": {
