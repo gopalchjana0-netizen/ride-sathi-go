@@ -93,6 +93,22 @@ async function register(){
  if(!vn){alert('গাড়ির নম্বর লিখুন / Enter Vehicle Number');return;}
  btn.innerText='⏳ হচ্ছে... / Processing...';btn.disabled=true;
  try{
+  // Dual-Role Restriction: Check if this phone already belongs to a Customer
+  let [custCheckSnap, ctrlCheckSnap] = await Promise.all([
+    db.ref('users/' + m).once('value').catch(() => null),
+    db.ref('user_controls/' + m).once('value').catch(() => null)
+  ]);
+  let isCustomerAccount = Boolean(custCheckSnap && custCheckSnap.exists() && (custCheckSnap.val()?.auth_type || custCheckSnap.val()?.name));
+  let ctrlVal = (ctrlCheckSnap && ctrlCheckSnap.exists()) ? ctrlCheckSnap.val() : {};
+  let allowDual = Boolean(ctrlVal && ctrlVal.allow_dual_role);
+
+  if (isCustomerAccount && !allowDual) {
+    alert('🚫 কাস্টমার অ্যাকাউন্টে ড্রাইভার রেজিস্ট্রেশন নিষিদ্ধ!\n\nএই মোবাইল নম্বরটি (' + m + ') ইতিমধ্যে কাস্টমার অ্যাকাউন্ট হিসেবে ব্যবহৃত হচ্ছে। একই নম্বরে ড্রাইভার পার্টনার হতে অ্যাডমিনের বিশেষ অনুমতি (Dual Role Permission) প্রয়োজন।\n\nঅনুগ্রহ করে অ্যাডমিন হেল্পলাইনে যোগাযোগ করুন: 8768447312');
+    btn.innerText='✅ রেজিস্টার করুন / Register Now';
+    btn.disabled=false;
+    return;
+  }
+
   let now=Date.now();
   let data={name:n,mobile:m,vehicle:v,vehNo:vn,status:'PENDING',type:'REGISTRATION',isRegistration:true,isSelfieVerified:false,due:0,createdAt:now,lastUpdate:now};
    // Sync with all admin listener paths

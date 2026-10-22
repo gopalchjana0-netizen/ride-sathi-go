@@ -3174,6 +3174,22 @@ function doPost(e) {
         </div>
       </div>
 
+      <!-- 1.1 Dual Role Permission: Customer + Driver on Same Mobile Number -->
+      <div style="background:linear-gradient(135deg,#fdf4ff,#fae8ff);border:1.5px solid #d8b4fe;border-radius:16px;padding:12px 14px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <b style="font-size:13.5px;color:#6b21a8">🔀 ডুয়াল রোল পারমিশন (Customer + Driver):</b>
+            <p class="small" style="margin:2px 0 0;color:#7e22ce">অনুমোদন দিলে একই মোবাইল নম্বর দিয়ে কাস্টমার ও ড্রাইভার উভয় অ্যাকাউন্ট চালাতে পারবে।</p>
+          </div>
+          <div>
+            <label style="display:inline-flex;align-items:center;gap:6px;background:#fff;padding:6px 12px;border-radius:10px;border:1.5px solid #a855f7;cursor:pointer;font-size:12px;font-weight:800;color:#6b21a8">
+              <input type="checkbox" id="chkPermAllowDualRole" style="width:18px;height:18px;accent-color:#9333ea;cursor:pointer"> 
+              অনুমতি দিন (Allow Dual Role)
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- 2. Customer Specific Feature Flags -->
       <div id="permCustomerFeaturesSection" style="margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -12855,6 +12871,7 @@ function openUserPermissionControlModal(phone, type, name, email) {
   setAllPermCheckboxes('driver', true);
   if (document.getElementById('permStatusActive')) document.getElementById('permStatusActive').checked = true;
   if (document.getElementById('permSuspendReasonWrap')) document.getElementById('permSuspendReasonWrap').style.display = 'none';
+  if (document.getElementById('chkPermAllowDualRole')) document.getElementById('chkPermAllowDualRole').checked = false;
 
   // Fetch current live settings from Firebase RTDB (Targeted single node)
   const dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (firebase && firebase.database ? firebase.database() : null));
@@ -12873,6 +12890,11 @@ function openUserPermissionControlModal(phone, type, name, email) {
         } else {
           if (document.getElementById('permStatusActive')) document.getElementById('permStatusActive').checked = true;
           if (document.getElementById('permSuspendReasonWrap')) document.getElementById('permSuspendReasonWrap').style.display = 'none';
+        }
+
+        // Dual Role Permission (Customer + Driver on same phone)
+        if (document.getElementById('chkPermAllowDualRole')) {
+          document.getElementById('chkPermAllowDualRole').checked = Boolean(val.allow_dual_role);
         }
 
         // Features
@@ -12913,6 +12935,7 @@ async function saveUserPermissionControl() {
 
   const isSuspended = Boolean(document.getElementById('permStatusSuspended')?.checked);
   const suspendReason = (document.getElementById('permSuspendReasonInput')?.value || '').trim() || 'অ্যাডমিন কর্তৃক অ্যাকাউন্ট সাময়িকভাবে স্থগিত রাখা হয়েছে। বিস্তারিত জানতে হেল্পলাইনে যোগাযোগ করুন।';
+  const allowDualRole = Boolean(document.getElementById('chkPermAllowDualRole')?.checked);
 
   const features = {};
   if (type === 'driver') {
@@ -12934,6 +12957,7 @@ async function saveUserPermissionControl() {
     type: type,
     status: isSuspended ? 'SUSPENDED' : 'ACTIVE',
     suspendReason: suspendReason,
+    allow_dual_role: allowDualRole,
     features: features,
     updatedAt: firebase.database.ServerValue.TIMESTAMP,
     updatedBy: 'Admin'
@@ -12954,14 +12978,17 @@ async function saveUserPermissionControl() {
       dRef.ref('user_controls/' + cleanP).set(payload)
     ];
 
-    // Keep legacy status field synced in users or drivers
+    // Keep status and dual role synced in users or drivers
     if (type === 'driver') {
       promises.push(dRef.ref('drivers/' + cleanP + '/status').set(isSuspended ? 'BLOCKED' : 'APPROVED'));
       promises.push(dRef.ref('drivers/' + cleanP + '/isBlocked').set(isSuspended));
+      promises.push(dRef.ref('drivers/' + cleanP + '/allow_dual_role').set(allowDualRole));
       promises.push(dRef.ref('drivers/DRIVER_' + cleanP + '/status').set(isSuspended ? 'BLOCKED' : 'APPROVED'));
+      promises.push(dRef.ref('drivers/DRIVER_' + cleanP + '/allow_dual_role').set(allowDualRole));
     } else {
       promises.push(dRef.ref('users/' + cleanP + '/status').set(isSuspended ? 'BLOCKED' : 'ACTIVE'));
       promises.push(dRef.ref('users/' + cleanP + '/isBlocked').set(isSuspended));
+      promises.push(dRef.ref('users/' + cleanP + '/allow_dual_role').set(allowDualRole));
     }
 
     await Promise.allSettled(promises);

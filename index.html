@@ -2062,6 +2062,42 @@ window.setLanguage = function(lang) {
 };
 window.setAppLanguage = window.setLanguage;
 
+// === STRICT CUSTOMER ACCESS CONTROL (Protects all features until login) ===
+window.isCustomerLoggedIn = function() {
+  var p = (localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || '').replace(/[^0-9]/g, '');
+  if (p.length > 10 && p.indexOf('91') === 0) p = p.slice(2);
+  else if (p.length > 10 && p.indexOf('0') === 0) p = p.slice(1);
+  p = p.slice(0, 10);
+  var n = (localStorage.getItem('customerName') || localStorage.getItem('custName') || '').trim();
+  return (p.length === 10 && n.length >= 2);
+};
+
+window.requireCustomerLogin = function(featureName) {
+  if (window.isCustomerLoggedIn()) {
+    return true;
+  }
+  var curLang = localStorage.getItem('appLang') || localStorage.getItem('customerLang') || window.currentLang || 'bn';
+  var msg = "⚠️ অনুগ্রহ করে প্রথমে আপনার নাম ও ১০ সংখ্যার মোবাইল নম্বর দিয়ে লগইন করুন!\n\nলগইন করার পর আপনি সকল ফিচার ব্যবহার করতে পারবেন।";
+  if (curLang === 'hi') {
+    msg = "⚠️ कृपया पहले अपना नाम और १० अंकों का मोबाइल नंबर डालकर लॉगिन करें!\n\nलॉगिन करने के बाद आप सभी सुविधाओं का उपयोग कर सकेंगे।";
+  } else if (curLang === 'en') {
+    msg = "⚠️ Please enter your Name and 10-digit Mobile Number to Login first!\n\nAfter logging in, you will have full access to all features.";
+  }
+  alert(msg);
+
+  if (typeof window.switchCustomerScreen === 'function') {
+    window.switchCustomerScreen('welcome');
+  }
+  var nameInp = document.getElementById('custName');
+  var phoneInp = document.getElementById('custPhone');
+  if (nameInp && !nameInp.value) {
+    nameInp.focus();
+  } else if (phoneInp) {
+    phoneInp.focus();
+  }
+  return false;
+};
+
 // 2. Ride Timing Toggle Handler (NOW vs SCHEDULED)
 window.selectedTiming = 'NOW';
 window.selectTiming = function(m) { return window.setRideTiming(m); };
@@ -3091,12 +3127,24 @@ window.continueToBooking = function() {
       var localAuth = null;
       try { localAuth = JSON.parse(localStorage.getItem('rideSathiAuthUser') || '{}'); } catch(e){}
 
-      // Case 1: Phone is locked to a Google Account
-      if (userData && userData.auth_type === 'google' && userData.email) {
-        if (!localAuth || !localAuth.email || localAuth.email.toLowerCase() !== userData.email.toLowerCase()) {
+      // Check Dual-Role Restriction: Driver account trying to open Customer account
+      Promise.all([
+        firebase.database().ref('drivers/' + phone).once('value').catch(function(){ return null; }),
+        firebase.database().ref('drivers/DRIVER_' + phone).once('value').catch(function(){ return null; }),
+        firebase.database().ref('pending_drivers/' + phone).once('value').catch(function(){ return null; }),
+        firebase.database().ref('user_controls/' + phone).once('value').catch(function(){ return null; })
+      ]).then(function(checkRes) {
+        var drv1 = checkRes[0] && checkRes[0].exists();
+        var drv2 = checkRes[1] && checkRes[1].exists();
+        var drv3 = checkRes[2] && checkRes[2].exists();
+        var ctrl = checkRes[3] && checkRes[3].exists() ? checkRes[3].val() : {};
+        var isDriverRegistered = drv1 || drv2 || drv3;
+        var isDualRoleAllowed = Boolean(ctrl && ctrl.allow_dual_role);
+
+        if (isDriverRegistered && !isDualRoleAllowed) {
           if (msgEl) {
             msgEl.style.color = '#ef4444';
-            msgEl.innerHTML = "🔒 <b>এই মোবাইল নম্বরটি গুগল অ্যাকাউন্ট দিয়ে সুরক্ষিত!</b><br>অন্য কেউ এই নম্বর দিয়ে লগইন করতে পারবে না। অনুগ্রহ করে উপরের <b>'Continue with Google'</b> বাটনে ক্লিক করে লগইন করুন।";
+            msgEl.innerHTML = "🚫 <b>ড্রাইভার অ্যাকাউন্টে কাস্টমার বুকিং নিষিদ্ধ!</b><br>এই মোবাইল নম্বরটি ইতিমধ্যে ড্রাইভার পার্টনার হিসেবে নিবন্ধিত। একই নম্বরে কাস্টমার অ্যাকাউন্ট ব্যবহার করতে <b>অ্যাডমিনের বিশেষ অনুমতি (Dual Role Permission)</b> প্রয়োজন। হেল্পলাইনে যোগাযোগ করুন।";
           }
           if (continueBtn) {
             continueBtn.disabled = false;
@@ -3104,37 +3152,58 @@ window.continueToBooking = function() {
           }
           return;
         }
-      }
 
-      // Case 2: Phone has a 4-Digit Security PIN
-      if (userData && userData.pin) {
-        var userPin = prompt("🔑 আপনার ৪ সংখ্যার সিক্রেট পিন লিখুন / Enter your 4-digit PIN:");
-        if (!userPin || String(userPin).trim() !== String(userData.pin).trim()) {
-          alert("❌ ভুল পিন! সঠিক ৪ সংখ্যার সিক্রেট পিন ছাড়া এই নম্বরে লগইন করা যাবে না।\n(সমস্যা হলে অ্যাডমিনের সাহায্য নিন)");
-          if (continueBtn) {
-            continueBtn.disabled = false;
-            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+        // Case 1: Phone is locked to a Google Account
+        if (userData && userData.auth_type === 'google' && userData.email) {
+          if (!localAuth || !localAuth.email || localAuth.email.toLowerCase() !== userData.email.toLowerCase()) {
+            if (msgEl) {
+              msgEl.style.color = '#ef4444';
+              msgEl.innerHTML = "🔒 <b>এই মোবাইল নম্বরটি গুগল অ্যাকাউন্ট দিয়ে সুরক্ষিত!</b><br>অন্য কেউ এই নম্বর দিয়ে লগইন করতে পারবে না। অনুগ্রহ করে উপরের <b>'Continue with Google'</b> বাটনে ক্লিক করে লগইন করুন।";
+            }
+            if (continueBtn) {
+              continueBtn.disabled = false;
+              continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+            }
+            return;
           }
-          return;
         }
-      } else if (!userData) {
-        // First-time customer: Link with active Google account or record mobile
-        var authType = (localAuth && localAuth.email) ? 'google' : 'mobile';
-        firebase.database().ref('users/' + phone).update({
-          phone: phone,
-          name: name,
-          email: (localAuth && localAuth.email) ? localAuth.email : (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@ridesathigo.user'),
-          auth_type: authType,
-          created_at: new Date().toISOString()
-        }).catch(function(){});
-      }
 
-      if (continueBtn) {
-        continueBtn.disabled = false;
-        continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
-      }
+        // Case 2: Phone has a 4-Digit Security PIN
+        if (userData && userData.pin) {
+          var userPin = prompt("🔑 আপনার ৪ সংখ্যার সিক্রেট পিন লিখুন / Enter your 4-digit PIN:");
+          if (!userPin || String(userPin).trim() !== String(userData.pin).trim()) {
+            alert("❌ ভুল পিন! সঠিক ৪ সংখ্যার সিক্রেট পিন ছাড়া এই নম্বরে লগইন করা যাবে না।\n(সমস্যা হলে অ্যাডমিনের সাহায্য নিন)");
+            if (continueBtn) {
+              continueBtn.disabled = false;
+              continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+            }
+            return;
+          }
+        } else if (!userData) {
+          // First-time customer: Link with active Google account or record mobile
+          var authType = (localAuth && localAuth.email) ? 'google' : 'mobile';
+          firebase.database().ref('users/' + phone).update({
+            phone: phone,
+            name: name,
+            email: (localAuth && localAuth.email) ? localAuth.email : (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@ridesathigo.user'),
+            auth_type: authType,
+            created_at: new Date().toISOString()
+          }).catch(function(){});
+        }
 
-      window.proceedCustomerBookingSession(name, phone, msgEl);
+        if (continueBtn) {
+          continueBtn.disabled = false;
+          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+        }
+
+        window.proceedCustomerBookingSession(name, phone, msgEl);
+      }).catch(function() {
+        if (continueBtn) {
+          continueBtn.disabled = false;
+          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+        }
+        window.proceedCustomerBookingSession(name, phone, msgEl);
+      });
     }).catch(function() {
       if (continueBtn) {
         continueBtn.disabled = false;
@@ -3216,6 +3285,7 @@ window.logoutCustomer = function() {
 
 // ROCK-SOLID SOS EMERGENCY TRIGGER
 window.triggerSOS = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('SOS')) return;
   var phone = localStorage.getItem('userPhone') || localStorage.getItem('customerPhone') || localStorage.getItem('cust_phone') || document.getElementById('custPhone')?.value || 'Customer';
   var name = localStorage.getItem('userName') || localStorage.getItem('customerName') || document.getElementById('custName')?.value || 'Customer';
 
@@ -3326,6 +3396,7 @@ window.closeSosModal = function() {
 
 // REFERRAL MODAL HELPERS
 window.openReferralModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Offers')) return;
   var phone = localStorage.getItem('userPhone') || localStorage.getItem('customerPhone') || localStorage.getItem('cust_phone') || document.getElementById('custPhone')?.value || '';
   var cleanP = phone.replace(/[^0-9]/g, '').slice(-4);
   var code = cleanP ? ('RSGO-' + cleanP) : (window.userReferralCode || 'RSGO-GUEST');
@@ -3356,6 +3427,7 @@ window.copyReferralCode = function() {
 
 // NOTIFICATION MODAL HELPERS
 window.openNotifModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Notifications')) return;
   var dot = document.getElementById('headerNotifDot');
   if (dot) dot.classList.add('hidden');
   var modal = document.getElementById('notifModal');
@@ -3819,6 +3891,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- EARLY INSTANT HANDLER FOR LIVE CHAT (Ensures instant opening even before deferred scripts) -->
 <script>
 window.openLiveChatModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
   var modal = document.getElementById('liveChatModal');
   if (modal) {
     modal.style.display = 'flex';
@@ -9018,6 +9091,7 @@ window.downloadInvoiceFromHistory = function(invOrRideId) {
 
 // === UBER / RAPIDO NAVIGATION DRAWER CONTROLLER ===
 window.openNavDrawer = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Menu')) return;
   var overlay = document.getElementById('navDrawerOverlay');
   var drawer = document.getElementById('navDrawer');
   if (overlay) overlay.classList.add('active');
@@ -9094,6 +9168,7 @@ window.downloadLatestInvoiceFromDrawer = function() {
 };
 
 window.openCustomerHistoryModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('History')) return;
   const rawP = localStorage.getItem('current_user_mobile') || localStorage.getItem('customerPhone') || (document.getElementById('custPhone') ? document.getElementById('custPhone').value : '');
   const phone = cleanPhone(rawP);
   const modal = document.getElementById('customerHistoryModal');
@@ -14135,6 +14210,7 @@ try {
 
 // 1. OFFLINE SMS & CALL BOOKING
 window.openOfflineBookingModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Offline Booking')) return;
   if (typeof window.closeNavDrawer === 'function') window.closeNavDrawer();
   const m = document.getElementById('offlineBookingModal');
   if (!m) return;
@@ -14195,6 +14271,7 @@ window.sendOfflineSmsBooking = function() {
 
 // 2. 1-SCAN STAND & POINT QR GENERATOR
 window.openStandQrModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Stand QR')) return;
   if (typeof window.closeNavDrawer === 'function') window.closeNavDrawer();
   const m = document.getElementById('standQrModal');
   if (!m) return;
@@ -15221,6 +15298,9 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
   // Bottom Navigation Handler
   window.handleNavTabClick = function(tabName, elem) {
+    if (tabName !== 'home' && typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin(tabName)) {
+      return;
+    }
     document.querySelectorAll('.rapido-nav-tab').forEach(function(t) {
       t.classList.remove('active');
     });
@@ -15248,6 +15328,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
   // Profile Modal Controllers
   window.openProfileModal = function() {
+    if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Profile')) return;
     const m = document.getElementById('profileModal');
     if (!m) return;
     
@@ -15318,6 +15399,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   };
 
   window.triggerVoiceRideBooking = function() {
+    if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Voice Ride')) return;
     const modal = document.getElementById('voiceRideModal');
     if (!modal) return;
     modal.style.display = 'flex';
