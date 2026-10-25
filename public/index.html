@@ -2069,7 +2069,8 @@ window.isCustomerLoggedIn = function() {
   else if (p.length > 10 && p.indexOf('0') === 0) p = p.slice(1);
   p = p.slice(0, 10);
   var n = (localStorage.getItem('customerName') || localStorage.getItem('custName') || '').trim();
-  return (p.length === 10 && n.length >= 2);
+  var pinOk = localStorage.getItem('customerPinVerified') === 'true';
+  return (p.length === 10 && n.length >= 2 && pinOk);
 };
 
 window.requireCustomerLogin = function(featureName) {
@@ -2077,7 +2078,7 @@ window.requireCustomerLogin = function(featureName) {
     return true;
   }
   var curLang = localStorage.getItem('appLang') || localStorage.getItem('customerLang') || window.currentLang || 'bn';
-  var msg = "⚠️ অনুগ্রহ করে প্রথমে আপনার নাম ও ১০ সংখ্যার মোবাইল নম্বর দিয়ে লগইন করুন!\n\nলগইন করার পর আপনি সকল ফিচার ব্যবহার করতে পারবেন।";
+  var msg = "⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\n\nলগইন করার পর আপনি সকল ফিচার ব্যবহার করতে পারবেন।";
   if (curLang === 'hi') {
     msg = "⚠️ कृपया पहले अपना नाम और १० अंकों का मोबाइल नंबर डालकर लॉगिन करें!\n\nलॉगिन करने के बाद आप सभी सुविधाओं का उपयोग कर सकेंगे।";
   } else if (curLang === 'en') {
@@ -3008,6 +3009,8 @@ window.handleGoogleCredentialResponse = function(response) {
 
     var cName = document.getElementById('custName');
     if (cName) cName.value = name;
+    var cEmail = document.getElementById('custEmail');
+    if (cEmail && email) cEmail.value = email;
 
     var pInput = document.getElementById('custPhone');
     var currentPhone = (pInput ? pInput.value : '') || localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || '';
@@ -3946,6 +3949,7 @@ window.logoutCustomer = function() {
 // ROCK-SOLID SOS EMERGENCY TRIGGER
 window.triggerSOS = function() {
   if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('SOS')) return;
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('SOS')) return;
   var phone = localStorage.getItem('userPhone') || localStorage.getItem('customerPhone') || localStorage.getItem('cust_phone') || document.getElementById('custPhone')?.value || 'Customer';
   var name = localStorage.getItem('userName') || localStorage.getItem('customerName') || document.getElementById('custName')?.value || 'Customer';
 
@@ -4072,6 +4076,7 @@ window.closeReferralModal = function() {
 };
 
 window.openOffersModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Offers')) return;
   var modal = document.getElementById('exclusiveOffersModal');
   if (modal) {
     modal.classList.add('show');
@@ -4584,6 +4589,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 window.openLiveChatModal = function() {
   if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
   var modal = document.getElementById('liveChatModal');
   if (modal) {
     modal.style.display = 'flex';
@@ -4688,15 +4694,13 @@ window.closeLiveChatModal = function() {
     <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#f59e0b,#fbbf24,#10b981,#f59e0b)"></div>
 
     <div style="text-align:center;margin-bottom:18px">
-      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:900;letter-spacing:0.5px;margin-bottom:10px">
-        <span>🛡️</span> <span>VERIFIED SECURE ACCESS • ২০২৬ এডিশন</span>
-      </div>
+      
       <img src="logo.png" alt="Ride Sathi Logo" style="width:72px;height:72px;border-radius:20px;object-fit:cover;margin:6px auto 10px;display:block;box-shadow:0 8px 24px rgba(245,158,11,0.25);border:2px solid #fbbf24">
-      <h2 style="margin:4px 0 2px;color:#ffffff;font-size:23px;font-weight:900;letter-spacing:0.5px">
-        রাইড সাথী গো • RIDE SATHI GO
+      <h2 style="margin:4px 0 2px;color:#ffffff;font-size:23px;font-weight:900;letter-spacing:0.5px" data-i18n="welcomeTitle">
+        স্বাগতম!
       </h2>
-      <p style="margin:0;color:#94a3b8;font-size:13px;font-weight:600">
-        নিরাপদ ও নির্ভরযোগ্য রাইড বুকিং • Safe Rides, Trusted Service
+      <p style="margin:0;color:#94a3b8;font-size:13px;font-weight:600" data-i18n="welcomeSub">
+        গুগল অথবা মোবাইল নম্বর দিয়ে শুরু করুন
       </p>
     </div>
 
@@ -4721,50 +4725,35 @@ window.closeLiveChatModal = function() {
     <!-- Divider -->
     <div style="display:flex;align-items:center;margin:16px 0;gap:10px">
       <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
-      <span style="font-size:12px;color:#cbd5e1;font-weight:700">অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান / Or Continue with Mobile</span>
+      <span style="font-size:12px;color:#cbd5e1;font-weight:700" data-i18n="orDirectMobile">অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান</span>
       <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
     </div>
 
-    <!-- Full Name Input -->
+        <!-- Full Name Input -->
     <div style="margin-bottom:12px">
-      <label style="font-size:13px;font-weight:800;color:#fde047;display:flex;justify-content:space-between;margin-bottom:5px">
-        <span>👤 আপনার নাম / Full Name *</span>
+      <label style="font-size:13px;font-weight:800;color:#fde047;display:block;margin-bottom:5px" data-i18n="nameLabel">
+        👤 আপনার নাম *
       </label>
-      <input id="custName" placeholder="আপনার পুরো নাম লিখুন / Enter full name..." autocomplete="name" oninput="this.value=this.value.replace(/[^a-zA-Z\s\u0980-\u09FF]/g,'')" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:border 0.2s">
+      <input id="custName" data-i18n-placeholder="namePlaceholder" placeholder="আপনার পুরো নাম লিখুন..." autocomplete="name" oninput="this.value=this.value.replace(/[^a-zA-Z\s\u0980-\u09FF]/g,'')" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:border 0.2s">
     </div>
 
     <!-- 10-Digit Mobile Input -->
     <div style="margin-bottom:12px">
-      <label style="font-size:13px;font-weight:800;color:#fde047;display:flex;justify-content:space-between;margin-bottom:5px">
-        <span>📱 ১০ সংখ্যার মোবাইল / Mobile Number *</span>
-        <span style="color:#94a3b8;font-size:11px;font-weight:700">স্থায়ী নম্বর / Locked</span>
+      <label style="font-size:13px;font-weight:800;color:#fde047;display:block;margin-bottom:5px" data-i18n="phoneLabel">
+        📱 ১০ সংখ্যার মোবাইল নম্বর *
       </label>
       <div style="position:relative;display:flex;align-items:center">
         <span style="position:absolute;left:14px;color:#f59e0b;font-weight:900;font-size:14px">+91</span>
-        <input id="custPhone" type="tel" placeholder="১০ সংখ্যার মোবাইল নম্বর..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px 12px 48px;color:#fff;font-size:15px;font-weight:700;letter-spacing:1px;outline:none;transition:border 0.2s">
+        <input id="custPhone" type="tel" data-i18n-placeholder="phonePlaceholder" placeholder="১০ সংখ্যার মোবাইল নম্বর লিখুন..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px 12px 48px;color:#fff;font-size:15px;font-weight:700;letter-spacing:1px;outline:none;transition:border 0.2s">
       </div>
     </div>
 
-    <!-- Email Address Input (For OTP & Recovery) -->
+    <!-- Email Address Input (Supports Manual Typing + Google Auto-fill) -->
     <div style="margin-bottom:14px">
-      <label style="font-size:13px;font-weight:800;color:#fde047;display:flex;justify-content:space-between;margin-bottom:5px">
-        <span>📧 ইমেইল আইডি / Email Address *</span>
-        <span style="color:#38bdf8;font-size:11px;font-weight:700">🔒 ওটিপি ভেরিফিকেশন / Free OTP</span>
+      <label style="font-size:13px;font-weight:800;color:#fde047;display:block;margin-bottom:5px" data-i18n="emailLabel">
+        📧 ইমেইল আইডি *
       </label>
-      <input id="custEmail" type="email" placeholder="আপনার ইমেইল (যেমন: name@gmail.com)..." autocomplete="email" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:border 0.2s">
-      <div style="font-size:11px;color:#94a3b8;margin-top:4px">💡 নতুন কাস্টমারদের জন্য Brevo দিয়ে ৬-সংখ্যার ফ্রি ইমেল ওটিপি পাঠানো হবে।</div>
-    </div>
-
-    <!-- Cloudflare Turnstile Smart Human Verification -->
-    <div id="cfTurnstileContainer" style="margin:10px 0 14px;display:flex;justify-content:center;min-height:65px">
-      <div class="cf-turnstile"
-           id="rsg-turnstile-customer"
-           data-sitekey="1x00000000000000000000AA"
-           data-theme="dark"
-           data-callback="onTurnstileSuccessCustomer"
-           data-expired-callback="onTurnstileExpiredCustomer"
-           data-error-callback="onTurnstileErrorCustomer">
-      </div>
+      <input id="custEmail" type="email" data-i18n-placeholder="emailPlaceholder" placeholder="আপনার ইমেইল আইডি লিখুন (যেমন: name@gmail.com)..." autocomplete="email" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:border 0.2s">
     </div>
 
     <!-- Submit / Continue Button -->
@@ -7896,6 +7885,9 @@ const TRANSLATIONS = {
     step1Badge: "ধাপ ১: স্বাগতম",
     welcomeTitle: "স্বাগতম!",
     welcomeSub: "আপনার নাম ও মোবাইল নম্বর দিয়ে বুকিং শুরু করুন",
+    emailLabel: "📧 ইমেইল আইডি *",
+    emailPlaceholder: "আপনার ইমেইল আইডি লিখুন (যেমন: name@gmail.com)...",
+    orDirectMobile: "অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান",
     nameLabel: "👤 আপনার নাম *",
     namePlaceholder: "আপনার নাম লিখুন...",
     phoneLabel: "📱 ১০ সংখ্যার মোবাইল নম্বর *",
@@ -8262,6 +8254,9 @@ const TRANSLATIONS = {
     step1Badge: "चरण १: स्वागत है",
     welcomeTitle: "स्वागत है!",
     welcomeSub: "अपना नाम और मोबाइल नंबर दर्ज करके बुकिंग शुरू करें",
+    emailLabel: "📧 ईमेल आईडी *",
+    emailPlaceholder: "अपना ईमेल आईडी लिखें (जैसे: name@gmail.com)...",
+    orDirectMobile: "या सीधे मोबाइल नंबर से आगे बढ़ें",
     nameLabel: "👤 आपका नाम *",
     namePlaceholder: "अपना नाम दर्ज करें...",
     phoneLabel: "📱 10 अंकों का मोबाइल नंबर *",
@@ -9562,6 +9557,11 @@ window.selectCouponChip = function(code) {
 };
 
 window.autoApplyPromo = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Offers')) return;
+  if (!window.isCustomerLoggedIn()) {
+    alert(window.currentLang === 'en' ? "⚠️ Please login first to view and apply offers!" : (window.currentLang === 'hi' ? "⚠️ ऑफर देखने के लिए कृपया पहले लॉगिन करें!" : "⚠️ অফার দেখতে ও কুপন ব্যবহার করতে অনুগ্রহ করে আগে লগইন করুন!"));
+    return;
+  }
   if (window._topPromoCode) {
     document.getElementById('couponInput').value = window._topPromoCode;
     applyManualCoupon();
@@ -17053,6 +17053,10 @@ window.closeDriverVerifyPopup = function(focusBooking) {
   };
 
   window.triggerVoiceRideBooking = function() {
+  if (!window.isCustomerLoggedIn()) {
+    alert(window.currentLang === 'en' ? "⚠️ Please login first to book rides by voice!" : (window.currentLang === 'hi' ? "⚠️ बोलकर बुकिंग के लिए कृपया पहले लॉगिन करें!" : "⚠️ মুখে বলে রাইড বুকিংয়ের জন্য অনুগ্রহ করে আগে লগইন করুন!"));
+    return;
+  }
     if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Voice Ride')) return;
     const modal = document.getElementById('voiceRideModal');
     if (!modal) return;
