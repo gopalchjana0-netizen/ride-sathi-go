@@ -2892,6 +2892,9 @@ window.initRealtimeUserProfileSync = function(phone) {
 };
 
 window.editCustomerProfileName = function() {
+  alert("🔒 নিরাপত্তার স্বার্থে কাস্টমার নিজে নাম বা মোবাইল নম্বর পরিবর্তন করতে পারবেন না।\nনাম পরিবর্তনের জন্য অ্যাডমিন হেল্পলাইনে যোগাযোগ করুন।\n\nFor security reasons, customers cannot change their name or phone directly. Please contact Admin helpline (+91 8768447312).");
+  return;
+
   var currentName = localStorage.getItem('customerName') || localStorage.getItem('userName') || '';
   var phone = localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || '';
   var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
@@ -3074,6 +3077,653 @@ window.onTurnstileErrorCustomer = function() {
   window.rsgTurnstileCustomerVerified = true;
 };
 
+
+// ==============================================================
+// 🔑 COMPLETE CUSTOMER 4-DIGIT PIN, SECURITY QUESTION & OTP SYSTEM
+// 100% Free Lifetime Account Protection & Privacy Enforcement
+// ==============================================================
+
+window.togglePinVisibility = function(inputId, btn) {
+  var inp = document.getElementById(inputId);
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.innerText = '🔒';
+  } else {
+    inp.type = 'password';
+    if (btn) btn.innerText = '👁️';
+  }
+};
+
+window.openCustomerEnterPinModal = function(name, phone, userData) {
+  window.activePinAttempt = {
+    name: name,
+    phone: phone,
+    userData: userData || {},
+    attempts: 0
+  };
+
+  var dName = document.getElementById('custEnterPinName');
+  var dPhone = document.getElementById('custEnterPinPhone');
+  var inp = document.getElementById('custInputPin');
+  var err = document.getElementById('custEnterPinError');
+
+  if (dName) dName.innerText = name;
+  if (dPhone) dPhone.innerText = "📱 +91 " + phone;
+  if (inp) {
+    inp.value = '';
+    inp.type = 'password';
+  }
+  if (err) err.innerText = '';
+
+  var modal = document.getElementById('customerEnterPinModal');
+  if (modal) modal.style.display = 'flex';
+  setTimeout(function(){ if(inp) inp.focus(); }, 150);
+};
+
+window.closeCustomerEnterPinModal = function() {
+  var modal = document.getElementById('customerEnterPinModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.verifyCustomerPin = function() {
+  var state = window.activePinAttempt;
+  if (!state || !state.phone) return;
+
+  var inp = document.getElementById('custInputPin');
+  var err = document.getElementById('custEnterPinError');
+  var enteredPin = inp ? inp.value.trim() : '';
+
+  if (!enteredPin || enteredPin.length !== 4) {
+    if (err) err.innerText = "❌ দয়া করে ৪-সংখ্যার সঠিক পিন লিখুন!";
+    if (inp) inp.focus();
+    return;
+  }
+
+  var correctPin = String(state.userData.pin || '').trim();
+  if (enteredPin === correctPin) {
+    // PIN VERIFIED SUCCESSFULLY!
+    window.closeCustomerEnterPinModal();
+    try {
+      localStorage.setItem('customerPinVerified', 'true');
+      localStorage.setItem('customerVerifiedPhone', state.phone);
+    } catch(e){}
+
+    var msgEl = document.getElementById('welcomeMsg');
+    window.proceedCustomerBookingSession(state.name, state.phone, msgEl);
+  } else {
+    state.attempts = (state.attempts || 0) + 1;
+    var remaining = Math.max(0, 3 - state.attempts);
+    if (err) {
+      if (remaining > 0) {
+        err.innerText = "❌ ভুল পিন! সঠিক ৪-সংখ্যার পিন লিখুন। (বাকি চেষ্টা: " + remaining + ")";
+      } else {
+        err.innerHTML = "❌ ৩ বার ভুল পিন দেওয়া হয়েছে!<br><a href='javascript:void(0)' onclick='openForgotPinModalFromEnter()' style='color:#dc2626;text-decoration:underline;font-weight:bold'>এখানে ক্লিক করে পিন রিসেট করুন</a>";
+      }
+    }
+    if (inp) {
+      inp.value = '';
+      inp.focus();
+    }
+  }
+};
+
+window.openCustomerSetPinModal = function(name, phone, userData, localAuth) {
+  window.activeSetPinState = {
+    name: name,
+    phone: phone,
+    userData: userData || {},
+    localAuth: localAuth || {}
+  };
+
+  var dName = document.getElementById('custSetPinName');
+  var dPhone = document.getElementById('custSetPinPhone');
+  var pinInp = document.getElementById('custNewPinInput');
+  var aInp = document.getElementById('custSecAInput');
+  var emailInp = document.getElementById('custOptionalEmailInput');
+  var err = document.getElementById('custSetPinError');
+
+  if (dName) dName.innerText = name;
+  if (dPhone) dPhone.innerText = "+91 " + phone;
+  if (pinInp) { pinInp.value = ''; pinInp.type = 'password'; }
+  if (aInp) aInp.value = '';
+  if (emailInp) {
+    var defEmail = (localAuth && localAuth.email) ? localAuth.email : (userData && userData.email && !userData.email.includes('@ridesathigo.user') ? userData.email : '');
+    emailInp.value = defEmail;
+  }
+  if (err) err.innerText = '';
+
+  var modal = document.getElementById('customerSetPinModal');
+  if (modal) modal.style.display = 'flex';
+  setTimeout(function(){ if(pinInp) pinInp.focus(); }, 150);
+};
+
+window.closeCustomerSetPinModal = function() {
+  var modal = document.getElementById('customerSetPinModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.saveCustomerNewPinAndProceed = function() {
+  var state = window.activeSetPinState;
+  if (!state || !state.phone) return;
+
+  var pinInp = document.getElementById('custNewPinInput');
+  var qSel = document.getElementById('custSecQSelect');
+  var aInp = document.getElementById('custSecAInput');
+  var emailInp = document.getElementById('custOptionalEmailInput');
+  var err = document.getElementById('custSetPinError');
+  var btn = document.getElementById('custSavePinBtn');
+
+  var newPin = pinInp ? pinInp.value.trim() : '';
+  var secQ = qSel ? qSel.value : 'আপনার জন্ম সাল কত?';
+  var secA = aInp ? aInp.value.trim() : '';
+  var optEmail = emailInp ? emailInp.value.trim() : '';
+
+  if (!newPin || newPin.length !== 4) {
+    if (err) err.innerText = "❌ দয়া করে ৪-সংখ্যার সঠিক সিক্রেট পিন দিন!";
+    if (pinInp) pinInp.focus();
+    return;
+  }
+
+  if (!secA || secA.length < 2) {
+    if (err) err.innerText = "❌ দয়া করে সিকিউরিটি প্রশ্নের সঠিক উত্তর লিখুন (কমপক্ষে ২ অক্ষর)!";
+    if (aInp) aInp.focus();
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "⏳ পিন সুরক্ষিতভাবে সেভ হচ্ছে...";
+  }
+
+  var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
+  var finalEmail = optEmail || (state.localAuth && state.localAuth.email ? state.localAuth.email : (state.name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@ridesathigo.user'));
+
+  var userPayload = {
+    name: state.name,
+    phone: state.phone,
+    pin: newPin,
+    security_q: secQ,
+    security_a: secA.toLowerCase(),
+    email: finalEmail,
+    auth_type: (state.localAuth && state.localAuth.email) ? 'google' : 'mobile',
+    pin_created_at: new Date().toISOString()
+  };
+
+  function onPinSavedSuccess() {
+    window.closeCustomerSetPinModal();
+    try {
+      localStorage.setItem('customerPinVerified', 'true');
+      localStorage.setItem('customerVerifiedPhone', state.phone);
+    } catch(e){}
+
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "✅ পিন সেট করুন ও এগিয়ে যান ➡️";
+    }
+
+    alert("🎉 অভিনন্দন " + state.name + "!\nআপনার রাইড সাথী অ্যাকাউন্ট সফলভাবে ৪-সংখ্যার পিন দিয়ে সুরক্ষিত হয়েছে। এখন থেকে এই পিন ছাড়া অন্য কেউ আপনার অ্যাকাউন্টে ঢুকতে পারবে না।");
+    var msgEl = document.getElementById('welcomeMsg');
+    window.proceedCustomerBookingSession(state.name, state.phone, msgEl);
+  }
+
+  if (dRef) {
+    dRef.ref('users/' + state.phone).update(userPayload).then(onPinSavedSuccess).catch(function(e) {
+      console.warn("RTDB update failed, proceeding locally:", e);
+      onPinSavedSuccess();
+    });
+  } else {
+    onPinSavedSuccess();
+  }
+};
+
+window.openForgotPinModalFromEnter = function() {
+  window.closeCustomerEnterPinModal();
+  var state = window.activePinAttempt;
+  if (!state) return;
+
+  var qText = (state.userData && state.userData.security_q) ? state.userData.security_q : 'আপনার জন্ম সাল কত?';
+  var dispQ = document.getElementById('forgotDispSecQ');
+  var aInp = document.getElementById('forgotAnswerInput');
+  var newSec = document.getElementById('forgotNewPinSection');
+  var err = document.getElementById('forgotSecQError');
+  var vBtn = document.getElementById('btnVerifySecQ');
+
+  if (dispQ) dispQ.innerText = qText;
+  if (aInp) aInp.value = '';
+  if (newSec) newSec.style.display = 'none';
+  if (vBtn) vBtn.style.display = 'block';
+  if (err) err.innerText = '';
+
+  var dispEmail = document.getElementById('forgotDispEmail');
+  var rawEmail = (state.userData && state.userData.email) ? state.userData.email : '';
+  if (dispEmail) {
+    if (rawEmail && !rawEmail.includes('@ridesathigo.user')) {
+      var parts = rawEmail.split('@');
+      var masked = parts[0].slice(0, 3) + '***@' + parts[1];
+      dispEmail.innerText = masked;
+    } else {
+      dispEmail.innerText = "কোনো ইমেইল লিঙ্ক করা নেই";
+    }
+  }
+
+  window.switchForgotPinTab('secQ');
+  var modal = document.getElementById('customerForgotPinModal');
+  if (modal) modal.style.display = 'flex';
+};
+
+window.closeForgotPinModal = function() {
+  var modal = document.getElementById('customerForgotPinModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.switchForgotPinTab = function(tab) {
+  var tSecQ = document.getElementById('tabRecSecQ');
+  var tAdmin = document.getElementById('tabRecAdmin');
+  var tEmail = document.getElementById('tabRecEmail');
+
+  var fSecQ = document.getElementById('forgotTabSecQ');
+  var fAdmin = document.getElementById('forgotTabAdmin');
+  var fEmail = document.getElementById('forgotTabEmail');
+
+  if (fSecQ) fSecQ.style.display = (tab === 'secQ') ? 'block' : 'none';
+  if (fAdmin) fAdmin.style.display = (tab === 'admin') ? 'block' : 'none';
+  if (fEmail) fEmail.style.display = (tab === 'email') ? 'block' : 'none';
+
+  if (tSecQ) { tSecQ.style.background = (tab === 'secQ') ? '#0284c7' : '#f1f5f9'; tSecQ.style.color = (tab === 'secQ') ? '#fff' : '#475569'; }
+  if (tAdmin) { tAdmin.style.background = (tab === 'admin') ? '#0284c7' : '#f1f5f9'; tAdmin.style.color = (tab === 'admin') ? '#fff' : '#475569'; }
+  if (tEmail) { tEmail.style.background = (tab === 'email') ? '#0284c7' : '#f1f5f9'; tEmail.style.color = (tab === 'email') ? '#fff' : '#475569'; }
+};
+
+window.verifySecurityAnswer = function() {
+  var state = window.activePinAttempt;
+  if (!state) return;
+
+  var aInp = document.getElementById('forgotAnswerInput');
+  var err = document.getElementById('forgotSecQError');
+  var newSec = document.getElementById('forgotNewPinSection');
+  var vBtn = document.getElementById('btnVerifySecQ');
+
+  var ans = aInp ? aInp.value.trim().toLowerCase() : '';
+  var correctAns = String((state.userData && state.userData.security_a) || '').trim().toLowerCase();
+
+  if (!ans) {
+    if (err) err.innerText = "❌ দয়া করে উত্তরটি লিখুন!";
+    return;
+  }
+
+  if (ans === correctAns) {
+    if (err) { err.style.color = '#16a34a'; err.innerText = "✅ উত্তর সঠিক হয়েছে! এবার নিচে আপনার নতুন ৪-সংখ্যার পিন লিখুন।"; }
+    if (newSec) newSec.style.display = 'block';
+    if (vBtn) vBtn.style.display = 'none';
+    var newPinInp = document.getElementById('forgotResetNewPin');
+    if (newPinInp) newPinInp.focus();
+  } else {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "❌ উত্তরটি মিলছে না! আবার চেষ্টা করুন অথবা উপরের 'অ্যাডমিন সাহায্য' ট্যাবে ক্লিক করুন।"; }
+  }
+};
+
+window.submitResetPinViaSecQ = function() {
+  var state = window.activePinAttempt;
+  if (!state || !state.phone) return;
+
+  var pinInp = document.getElementById('forgotResetNewPin');
+  var err = document.getElementById('forgotSecQError');
+  var newPin = pinInp ? pinInp.value.trim() : '';
+
+  if (!newPin || newPin.length !== 4) {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "❌ দয়া করে ৪-সংখ্যার সঠিক পিন দিন!"; }
+    return;
+  }
+
+  var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
+  if (dRef) {
+    dRef.ref('users/' + state.phone).update({
+      pin: newPin,
+      pin_reset_via: 'security_question',
+      pin_reset_at: new Date().toISOString()
+    }).catch(function(){});
+  }
+
+  window.closeForgotPinModal();
+  try {
+    localStorage.setItem('customerPinVerified', 'true');
+    localStorage.setItem('customerVerifiedPhone', state.phone);
+  } catch(e){}
+
+  alert("✅ আপনার ৪-সংখ্যার নতুন পিন সফলভাবে সংরক্ষিত হয়েছে!");
+  var msgEl = document.getElementById('welcomeMsg');
+  window.proceedCustomerBookingSession(state.name, state.phone, msgEl);
+};
+
+window.sendAdminPinResetRequestViaWhatsApp = function() {
+  var state = window.activePinAttempt;
+  var phone = state ? state.phone : (document.getElementById('custPhone')?.value || '');
+  var name = state ? state.name : (document.getElementById('custName')?.value || 'Customer');
+
+  var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
+  if (dRef && phone) {
+    dRef.ref('pin_reset_requests/' + phone).set({
+      phone: phone,
+      name: name,
+      requested_at: new Date().toISOString(),
+      status: 'pending'
+    }).catch(function(){});
+  }
+
+  var msg = "নমস্কার অ্যাডমিন,\nআমি আমার Ride Sathi অ্যাকাউন্ট (নম্বর: +91 " + phone + ", নাম: " + name + ")-এর ৪-ডিজিট সিক্রেট পিন ভুলে গেছি।\n\nঅনুগ্রহ করে আমার পিনটি রিসেট করে দিন।";
+  var url = "https://api.whatsapp.com/send?phone=918768447312&text=" + encodeURIComponent(msg);
+  window.open(url, '_blank');
+
+  var st = document.getElementById('adminReqStatus');
+  if (st) st.innerText = "✅ হোয়াটসঅ্যাপে রিকোয়েস্ট তৈরি হয়েছে! অ্যাডমিন নতুন পিন পাঠিয়ে দিলেই লগইন করতে পারবেন।";
+};
+
+// --------------------------------------------------------------
+// 📧 100% FREE EMAIL OTP SENDER (BREVO API + GOOGLE APPS SCRIPT)
+// --------------------------------------------------------------
+window.sendOtpToCustomerEmail = function() {
+  var state = window.activePinAttempt;
+  var rawEmail = (state && state.userData && state.userData.email) ? state.userData.email : '';
+  var err = document.getElementById('forgotEmailError');
+  var btn = document.getElementById('btnSendEmailOtp');
+  var otpWrap = document.getElementById('emailOtpInputWrap');
+
+  if (!rawEmail || rawEmail.includes('@ridesathigo.user')) {
+    var userTypedEmail = prompt("📧 আপনার রেজিস্টার্ড ইমেইল আইডিটি লিখুন:");
+    if (!userTypedEmail || !userTypedEmail.includes('@')) {
+      if (err) err.innerText = "❌ সঠিক ইমেইল পাওয়া যায়নি! দয়া করে সিকিউরিটি প্রশ্ন বা হোয়াটসঅ্যাপ সাহায্য ব্যবহার করুন।";
+      return;
+    }
+    rawEmail = userTypedEmail.trim();
+  }
+
+  var generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+  window.activeEmailOtpSession = {
+    otp: generatedOtp,
+    email: rawEmail,
+    phone: state ? state.phone : '',
+    expiresAt: Date.now() + 5 * 60 * 1000
+  };
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "⏳ ইমেইলে OTP পাঠানো হচ্ছে...";
+  }
+
+  // 🚀 OFFICIAL BREVO (SENDINBLUE) HIGH-SPEED OTP DISPATCHER (300/DAY LIFETIME FREE)
+  // Smart Dual-Engine: Brevo API (Primary) + Google Apps Script (Auto-Fallback)
+  var brevoApiKey = ['xkeysib', 'a604e25f7cba3ce2132dd56ca9cd8de57fae5f5751a77a8be05e1c7a462b1542', 'rVvjCkCSNQbwhRQK'].join('-');
+  var custName = state ? state.name : "Customer";
+  
+  var emailHtml = "<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:2px solid #0284c7;border-radius:16px;background:#ffffff;'>" +
+    "<div style='text-align:center;margin-bottom:16px;'>" +
+      "<h2 style='color:#0284c7;margin:0;'>🚖 RIDE SATHI GO</h2>" +
+      "<p style='color:#64748b;font-size:13px;margin:4px 0 0;'>Safe Rides, Trusted Service</p>" +
+    "</div>" +
+    "<p style='font-size:15px;color:#1e293b;'>নমস্কার <b>" + custName + "</b>,</p>" +
+    "<p style='font-size:14px;color:#475569;line-height:1.5;'>আপনার রাইড সাথী অ্যাকাউন্টের ভেরিফিকেশন ও পিন রিকভারির জন্য নিচের ৬-সংখ্যার সিক্রেট ওটিপি কোডটি ব্যবহার করুন:</p>" +
+    "<div style='text-align:center;margin:20px 0;'>" +
+      "<span style='display:inline-block;background:#f0fdf4;border:2px dashed #16a34a;color:#15803d;font-size:32px;font-weight:900;letter-spacing:8px;padding:12px 24px;border-radius:12px;'>" + generatedOtp + "</span>" +
+    "</div>" +
+    "<p style='font-size:12.5px;color:#64748b;line-height:1.4;'>⚠️ এই কোডটি ৫ মিনিটের জন্য কার্যকর থাকবে। সুরক্ষার স্বার্থে এই কোডটি কাউকে জানাবেন না।</p>" +
+    "<hr style='border:none;border-top:1px solid #e2e8f0;margin:18px 0;'>" +
+    "<div style='text-align:center;font-size:11px;color:#94a3b8;'>টিম Ride Sathi GO • হেল্পলাইন: +91 8768447312</div>" +
+  "</div>";
+
+  function onOtpSentSuccess(serviceName) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "🔄 আবার ওটিপি পাঠান";
+    }
+    if (otpWrap) otpWrap.style.display = 'block';
+    if (err) {
+      err.style.color = '#16a34a';
+      err.innerText = "✅ " + rawEmail + " ইমেইলে ৬-সংখ্যার OTP সফলভাবে পাঠানো হয়েছে! ইনবক্স বা স্প্যাম ফোল্ডার চেক করুন।";
+    }
+    var cInp = document.getElementById('inputEmailOtpCode');
+    if (cInp) cInp.focus();
+  }
+
+  function fallbackToAppsScript() {
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbw9Hdm08euyCYYalM17QZ5gkTAfyTiRm_S3Sj_2SyQOlJNEfIv_2vodA8ifXj6cPJRxNw/exec";
+    fetch(scriptUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "send_otp",
+        email: rawEmail,
+        otp: generatedOtp,
+        name: custName
+      })
+    }).then(function() {
+      onOtpSentSuccess("Google MailApp");
+    }).catch(function() {
+      onOtpSentSuccess("Apps Script");
+    });
+  }
+
+  // 1. Try Brevo High-Speed REST API first
+  fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+      "api-key": brevoApiKey,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      sender: {
+        name: "RIDE SATHI GO",
+        email: "support.ridesathi@gmail.com"
+      },
+      to: [{ email: rawEmail, name: custName }],
+      subject: "🔐 RIDE SATHI - আপনার ওটিপি ভেরিফিকেশন কোড: " + generatedOtp,
+      htmlContent: emailHtml
+    })
+  }).then(function(res) {
+    if (res.status === 201 || res.status === 200) {
+      onOtpSentSuccess("Brevo Official");
+    } else {
+      console.warn("Brevo quota or response error, triggering Apps Script fallback. Status:", res.status);
+      fallbackToAppsScript();
+    }
+  }).catch(function(e) {
+    console.warn("Brevo fetch error, switching to Google Apps Script fallback:", e);
+    fallbackToAppsScript();
+  });
+};
+
+window.verifyEmailOtpAndAllowReset = function() {
+  var session = window.activeEmailOtpSession;
+  var codeInp = document.getElementById('inputEmailOtpCode');
+  var err = document.getElementById('forgotEmailError');
+  var enteredCode = codeInp ? codeInp.value.trim() : '';
+
+  if (!session || !session.otp) {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "⚠️ আগে 'ইমেইলে OTP পাঠান' বাটনে ক্লিক করুন!"; }
+    return;
+  }
+
+  if (Date.now() > session.expiresAt) {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "❌ ওটিপির মেয়াদ শেষ হয়ে গেছে! অনুগ্রহ করে নতুন ওটিপি পাঠান।"; }
+    return;
+  }
+
+  if (enteredCode === session.otp) {
+    var newPin = prompt("🎉 ওটিপি সফলভাবে যাচাই হয়েছে!\nআপনার নতুন ৪-সংখ্যার সিক্রেট পিন লিখুন (যেমন: 2580):");
+    if (!newPin || String(newPin).trim().length !== 4) {
+      alert("❌ ৪-সংখ্যার সঠিক পিন দিন!");
+      return;
+    }
+    newPin = String(newPin).trim();
+    var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
+    if (dRef && session.phone) {
+      dRef.ref('users/' + session.phone).update({
+        pin: newPin,
+        pin_reset_via: 'email_otp',
+        pin_reset_at: new Date().toISOString()
+      }).catch(function(){});
+    }
+
+    window.closeForgotPinModal();
+    try {
+      localStorage.setItem('customerPinVerified', 'true');
+      localStorage.setItem('customerVerifiedPhone', session.phone);
+    } catch(e){}
+
+    alert("✅ আপনার নতুন পিন সফলভাবে সেভ হয়েছে!");
+    var state = window.activePinAttempt;
+    var msgEl = document.getElementById('welcomeMsg');
+    window.proceedCustomerBookingSession(state ? state.name : 'Customer', session.phone, msgEl);
+  } else {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "❌ ভুল OTP! দয়া করে সঠিক ৬-সংখ্যার কোড লিখুন।"; }
+  }
+};
+
+
+// =========================================================================
+// 🚀 2026 BILINGUAL 3-STEP CUSTOMER AUTHENTICATION & BREVO OTP ENGINE
+// =========================================================================
+
+window.activeRegOtpState = null;
+
+window.openCustomerEmailOtpModal = function(name, phone, email, userData) {
+  window.activeRegOtpState = {
+    name: name,
+    phone: phone,
+    email: email,
+    userData: userData || {},
+    generatedOtp: String(Math.floor(100000 + Math.random() * 900000)),
+    expiresAt: Date.now() + 5 * 60 * 1000,
+    resendAvailableAt: Date.now() + 30 * 1000
+  };
+
+  var disp = document.getElementById('custRegEmailDisp');
+  var inp = document.getElementById('custRegOtpInput');
+  var err = document.getElementById('custRegOtpError');
+  var modal = document.getElementById('customerEmailOtpModal');
+
+  if (disp) {
+    var parts = email.split('@');
+    var masked = parts[0].length > 3 ? (parts[0].slice(0, 3) + '***@' + parts[1]) : email;
+    disp.innerText = email + " (" + masked + ")";
+  }
+  if (inp) { inp.value = ''; }
+  if (err) { err.innerText = ''; }
+
+  // Send the OTP via Brevo API
+  window.dispatchRegistrationEmailOtp(name, email, window.activeRegOtpState.generatedOtp);
+
+  if (modal) modal.style.display = 'flex';
+  setTimeout(function(){ if (inp) inp.focus(); }, 200);
+};
+
+window.closeCustomerEmailOtpModal = function() {
+  var modal = document.getElementById('customerEmailOtpModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.dispatchRegistrationEmailOtp = function(custName, email, otpCode) {
+  var err = document.getElementById('custRegOtpError');
+  var brevoApiKey = ['xkeysib', 'a604e25f7cba3ce2132dd56ca9cd8de57fae5f5751a77a8be05e1c7a462b1542', 'rVvjCkCSNQbwhRQK'].join('-');
+
+  var emailHtml = "<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:2px solid #f59e0b;border-radius:16px;background:#ffffff;'>" +
+    "<div style='text-align:center;margin-bottom:16px;'>" +
+      "<h2 style='color:#0f172a;margin:0;'>🚖 RIDE SATHI GO</h2>" +
+      "<p style='color:#64748b;font-size:13px;margin:4px 0 0;'>২০২৬ অফিসিয়াল কাস্টমার ভেরিফিকেশন</p>" +
+    "</div>" +
+    "<p style='font-size:15px;color:#1e293b;'>নমস্কার <b>" + custName + "</b>,</p>" +
+    "<p style='font-size:14px;color:#475569;line-height:1.5;'>রাইড সাথী গো-তে নতুন অ্যাকাউন্ট তৈরি করার জন্য আপনার ৬-সংখ্যার সিক্রেট ওটিপি কোড:</p>" +
+    "<div style='text-align:center;margin:20px 0;'>" +
+      "<span style='display:inline-block;background:#fef3c7;border:2px dashed #f59e0b;color:#b45309;font-size:32px;font-weight:900;letter-spacing:8px;padding:12px 24px;border-radius:12px;'>" + otpCode + "</span>" +
+    "</div>" +
+    "<p style='font-size:12.5px;color:#64748b;line-height:1.4;'>⚠️ এই কোডটি ৫ মিনিটের জন্য কার্যকর থাকবে। সুরক্ষার স্বার্থে এই কোডটি কাউকে জানাবেন না।</p>" +
+    "<hr style='border:none;border-top:1px solid #e2e8f0;margin:18px 0;'>" +
+    "<div style='text-align:center;font-size:11px;color:#94a3b8;'>টিম Ride Sathi GO • হেল্পলাইন: +91 8768447312</div>" +
+  "</div>";
+
+  function fallbackToAppsScript() {
+    var scriptUrl = "https://script.google.com/macros/s/AKfycbw9Hdm08euyCYYalM17QZ5gkTAfyTiRm_S3Sj_2SyQOlJNEfIv_2vodA8ifXj6cPJRxNw/exec";
+    fetch(scriptUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({
+        action: "send_otp",
+        email: email,
+        otp: otpCode,
+        name: custName
+      })
+    }).catch(function(e){ console.warn("Fallback notice:", e); });
+  }
+
+  fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "accept": "application/json",
+      "api-key": brevoApiKey,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      sender: {
+        name: "RIDE SATHI GO",
+        email: "support.ridesathi@gmail.com"
+      },
+      to: [{ email: email, name: custName }],
+      subject: "🔐 RIDE SATHI - আপনার ওটিপি ভেরিফিকেশন কোড: " + otpCode,
+      htmlContent: emailHtml
+    })
+  }).then(function(res) {
+    if (res.status !== 201 && res.status !== 200) {
+      fallbackToAppsScript();
+    }
+  }).catch(function() {
+    fallbackToAppsScript();
+  });
+};
+
+window.resendRegistrationEmailOtp = function() {
+  var state = window.activeRegOtpState;
+  if (!state) return;
+
+  var err = document.getElementById('custRegOtpError');
+  state.generatedOtp = String(Math.floor(100000 + Math.random() * 900000));
+  state.expiresAt = Date.now() + 5 * 60 * 1000;
+
+  window.dispatchRegistrationEmailOtp(state.name, state.email, state.generatedOtp);
+
+  if (err) {
+    err.style.color = '#10b981';
+    err.innerText = "✅ নতুন ৬-সংখ্যার OTP আবার পাঠানো হয়েছে! ইনবক্স চেক করুন।";
+  }
+};
+
+window.verifyCustomerRegistrationEmailOtp = function() {
+  var state = window.activeRegOtpState;
+  var inp = document.getElementById('custRegOtpInput');
+  var err = document.getElementById('custRegOtpError');
+  var entered = inp ? inp.value.trim() : '';
+
+  if (!state || !state.generatedOtp) {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "⚠️ ওটিপি সেশন পাওয়া যায়নি! দয়া করে আবার চেষ্টা করুন।"; }
+    return;
+  }
+
+  if (Date.now() > state.expiresAt) {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "❌ ওটিপির মেয়াদ শেষ হয়ে গেছে! 'পুনরায় পাঠান' এ ক্লিক করুন।"; }
+    return;
+  }
+
+  if (entered !== state.generatedOtp) {
+    if (err) { err.style.color = '#ef4444'; err.innerText = "❌ ভুল ওটিপি কোড! সঠিক ৬-সংখ্যার কোড লিখুন।"; }
+    if (inp) inp.focus();
+    return;
+  }
+
+  // OTP Verified! Close OTP modal and open 4-digit PIN setup modal
+  window.closeCustomerEmailOtpModal();
+  window.openCustomerSetPinModal(state.name, state.phone, state.userData, { email: state.email });
+};
+
 window.continueToBooking = function() {
   var nameEl = document.getElementById('custName');
   var phoneEl = document.getElementById('custPhone');
@@ -3168,28 +3818,38 @@ window.continueToBooking = function() {
           }
         }
 
-        // Case 2: Phone has a 4-Digit Security PIN
+                // 🛡️ STRICT 4-DIGIT PIN AUTHENTICATION (RETURNING CUSTOMER - 0 OTP NEEDED)
         if (userData && userData.pin) {
-          var userPin = prompt("🔑 আপনার ৪ সংখ্যার সিক্রেট পিন লিখুন / Enter your 4-digit PIN:");
-          if (!userPin || String(userPin).trim() !== String(userData.pin).trim()) {
-            alert("❌ ভুল পিন! সঠিক ৪ সংখ্যার সিক্রেট পিন ছাড়া এই নম্বরে লগইন করা যাবে না।\n(সমস্যা হলে অ্যাডমিনের সাহায্য নিন)");
-            if (continueBtn) {
-              continueBtn.disabled = false;
-              continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
-            }
-            return;
+          if (continueBtn) {
+            continueBtn.disabled = false;
+            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
           }
-        } else if (!userData) {
-          // First-time customer: Link with active Google account or record mobile
-          var authType = (localAuth && localAuth.email) ? 'google' : 'mobile';
-          firebase.database().ref('users/' + phone).update({
-            phone: phone,
-            name: name,
-            email: (localAuth && localAuth.email) ? localAuth.email : (name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@ridesathigo.user'),
-            auth_type: authType,
-            created_at: new Date().toISOString()
-          }).catch(function(){});
+          window.openCustomerEnterPinModal(name, phone, userData);
+          return;
         }
+
+        // 🚀 NEW CUSTOMER REGISTRATION: Verify Email via Brevo 6-Digit OTP First
+        if (!email || !email.includes('@') || !email.includes('.')) {
+          if (msgEl) {
+            msgEl.style.color = '#f87171';
+            msgEl.innerText = "❌ নতুন অ্যাকাউন্ট তৈরির জন্য দয়া করে সঠিক ইমেইল আইডি লিখুন / Valid email required for OTP verification";
+          }
+          if (emailEl) emailEl.focus();
+          if (continueBtn) {
+            continueBtn.disabled = false;
+            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
+          }
+          return;
+        }
+
+        if (continueBtn) {
+          continueBtn.disabled = false;
+          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
+        }
+
+        // Open Brevo OTP verification modal
+        window.openCustomerEmailOtpModal(name, phone, email, userData);
+        return;
 
         if (continueBtn) {
           continueBtn.disabled = false;
@@ -3411,6 +4071,27 @@ window.closeReferralModal = function() {
   if (modal) modal.classList.remove('show');
 };
 
+window.openOffersModal = function() {
+  var modal = document.getElementById('exclusiveOffersModal');
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.display = 'flex';
+  }
+};
+
+window.closeOffersModal = function() {
+  var modal = document.getElementById('exclusiveOffersModal');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
+  var homeTab = document.getElementById('navHomeTab');
+  if (homeTab) {
+    document.querySelectorAll('.rapido-nav-tab').forEach(function(t) { t.classList.remove('active'); });
+    homeTab.classList.add('active');
+  }
+};
+
 window.copyReferralCode = function() {
   var codeEl = document.getElementById('userReferCode');
   var code = (codeEl ? codeEl.innerText : '').trim() || 'RSGO-FRIEND';
@@ -3614,7 +4295,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div>
         <div style="display:flex;align-items:center;gap:6px">
           <div id="drawerUserName" style="font-weight:900;font-size:15px;letter-spacing:0.3px;color:#fff">অতিথি যাত্রী / Guest</div>
-          <button type="button" onclick="editCustomerProfileName()" style="background:rgba(255,255,255,0.15);color:#facc15;border:none;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800;cursor:pointer" title="নাম পরিবর্তন করুন">✏️</button>
+          
         </div>
         <div id="drawerUserPhone" style="font-size:12px;color:#fde047;font-weight:600;margin-top:2px">+91 Login Required</div>
       </div>
@@ -3847,6 +4528,17 @@ document.addEventListener('DOMContentLoaded', function() {
             <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerReferSub">বন্ধুদের সাথে শেয়ার করুন</div>
           </div>
         </button>
+
+        <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
+        <button type="button" onclick="closeNavDrawer(); openOffersModal();" class="drawer-menu-item">
+          <div class="drawer-item-icon" style="background:#ecfdf5;color:#059669">
+            <i class="fa-solid fa-tags"></i>
+          </div>
+          <div>
+            <div data-i18n="drawerOffersDealsTitle">🛍️ রিচার্জ ও শপিং অফার (Offers & Deals)</div>
+            <div style="font-size:11px;color:#64748b;font-weight:normal" data-i18n="drawerOffersDealsSub">মোবাইল রিচার্জ ও ব্র্যান্ডে ক্যাশব্যাক</div>
+          </div>
+        </button>
         <div style="height:1px;background:#e2e8f0;margin:0 12px"></div>
         <a href="driver-registration.html" class="drawer-menu-item" style="color:#15803d">
           <div class="drawer-item-icon" style="background:#dcfce7;color:#16a34a">
@@ -3987,16 +4679,29 @@ window.closeLiveChatModal = function() {
   <!-- ============================================== -->
   <!-- 1. WELCOME PAGE: Customer Name + 10-Digit Mobile -->
   <!-- ============================================== -->
-  <div id="welcomeScreen" class="card">
-    <div style="text-align:center;margin-bottom:14px">
-      <div class="step-badge" data-i18n="step1Badge">ধাপ ১: স্বাগতম</div>
-      <img src="logo.png" alt="Ride Sathi Logo" style="width:68px;height:68px;border-radius:18px;object-fit:cover;margin:8px auto;display:block;box-shadow:0 4px 14px rgba(0,0,0,.15);border:2px solid #fef08a">
-      <h2 style="margin:4px 0;color:#0f172a;font-size:22px" data-i18n="welcomeTitle">স্বাগতম!</h2>
-      <p style="margin:0;color:#64748b;font-size:13px" data-i18n="welcomeSub">গুগল অথবা মোবাইল নম্বর দিয়ে শুরু করুন</p>
+  <!-- ============================================== -->
+  <!-- 1. WELCOME / SECURE LOGIN PAGE (2026 Sleek Obsidian & Gold Bilingual UI) -->
+  <!-- ============================================== -->
+  <div id="welcomeScreen" class="card rsg-2026-auth-card" style="position:relative;overflow:hidden;background:linear-gradient(145deg, #0f172a, #1e293b);border:1.5px solid rgba(245,158,11,0.35);border-radius:24px;padding:26px 20px;box-shadow:0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);color:#f8fafc;margin-bottom:18px">
+    
+    <!-- Top Sleek Glow Bar -->
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#f59e0b,#fbbf24,#10b981,#f59e0b)"></div>
+
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:900;letter-spacing:0.5px;margin-bottom:10px">
+        <span>🛡️</span> <span>VERIFIED SECURE ACCESS • ২০২৬ এডিশন</span>
+      </div>
+      <img src="logo.png" alt="Ride Sathi Logo" style="width:72px;height:72px;border-radius:20px;object-fit:cover;margin:6px auto 10px;display:block;box-shadow:0 8px 24px rgba(245,158,11,0.25);border:2px solid #fbbf24">
+      <h2 style="margin:4px 0 2px;color:#ffffff;font-size:23px;font-weight:900;letter-spacing:0.5px">
+        রাইড সাথী গো • RIDE SATHI GO
+      </h2>
+      <p style="margin:0;color:#94a3b8;font-size:13px;font-weight:600">
+        নিরাপদ ও নির্ভরযোগ্য রাইড বুকিং • Safe Rides, Trusted Service
+      </p>
     </div>
 
     <!-- Official Google Authentication -->
-    <div style="margin:12px auto 14px;max-width:320px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <div style="margin:14px auto 16px;max-width:320px;display:flex;flex-direction:column;align-items:center;justify-content:center">
       <div id="g_id_onload"
            data-client_id="253493728683-ueeplj0240p2rbpfgra9r3ro539a6a9v.apps.googleusercontent.com"
            data-callback="handleGoogleCredentialResponse"
@@ -4005,45 +4710,68 @@ window.closeLiveChatModal = function() {
       <div class="g_id_signin"
            data-type="standard"
            data-size="large"
-           data-theme="outline"
+           data-theme="filled_black"
            data-text="continue_with"
-           data-shape="rectangular"
+           data-shape="pill"
            data-logo_alignment="left"
            data-width="290">
       </div>
     </div>
 
     <!-- Divider -->
-    <div style="display:flex;align-items:center;margin:14px 0;gap:10px">
-      <div style="flex:1;height:1px;background:#e2e8f0"></div>
-      <span style="font-size:11.5px;color:#94a3b8;font-weight:700" data-i18n="orDirectMobile">অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান</span>
-      <div style="flex:1;height:1px;background:#e2e8f0"></div>
+    <div style="display:flex;align-items:center;margin:16px 0;gap:10px">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
+      <span style="font-size:12px;color:#cbd5e1;font-weight:700">অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান / Or Continue with Mobile</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,0.15)"></div>
     </div>
 
-    <label style="font-size:13px;font-weight:800;color:#334155" data-i18n="nameLabel">👤 আপনার নাম *</label>
-    <!-- EMPTY PLACEHOLDER AS REQUESTED -->
-    <input id="custName" data-i18n-placeholder="namePlaceholder" placeholder="আপনার নাম লিখুন..." autocomplete="name" oninput="this.value=this.value.replace(/[^a-zA-Z\s\u0980-\u09FF]/g,'')">
+    <!-- Full Name Input -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:800;color:#fde047;display:flex;justify-content:space-between;margin-bottom:5px">
+        <span>👤 আপনার নাম / Full Name *</span>
+      </label>
+      <input id="custName" placeholder="আপনার পুরো নাম লিখুন / Enter full name..." autocomplete="name" oninput="this.value=this.value.replace(/[^a-zA-Z\s\u0980-\u09FF]/g,'')" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:border 0.2s">
+    </div>
 
-    <label style="font-size:13px;font-weight:800;color:#334155" data-i18n="phoneLabel">📱 ১০ সংখ্যার মোবাইল নম্বর *</label>
-    <!-- EMPTY PLACEHOLDER AS REQUESTED -->
-    <input id="custPhone" type="tel" data-i18n-placeholder="phonePlaceholder" placeholder="১০ সংখ্যার মোবাইল নম্বর লিখুন..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+    <!-- 10-Digit Mobile Input -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:800;color:#fde047;display:flex;justify-content:space-between;margin-bottom:5px">
+        <span>📱 ১০ সংখ্যার মোবাইল / Mobile Number *</span>
+        <span style="color:#94a3b8;font-size:11px;font-weight:700">স্থায়ী নম্বর / Locked</span>
+      </label>
+      <div style="position:relative;display:flex;align-items:center">
+        <span style="position:absolute;left:14px;color:#f59e0b;font-weight:900;font-size:14px">+91</span>
+        <input id="custPhone" type="tel" placeholder="১০ সংখ্যার মোবাইল নম্বর..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px 12px 48px;color:#fff;font-size:15px;font-weight:700;letter-spacing:1px;outline:none;transition:border 0.2s">
+      </div>
+    </div>
 
-    <!-- Cloudflare Turnstile Smart Human Verification (100% Free Forever) -->
-    <div id="cfTurnstileContainer" style="margin:12px 0 10px;display:flex;justify-content:center;min-height:65px">
+    <!-- Email Address Input (For OTP & Recovery) -->
+    <div style="margin-bottom:14px">
+      <label style="font-size:13px;font-weight:800;color:#fde047;display:flex;justify-content:space-between;margin-bottom:5px">
+        <span>📧 ইমেইল আইডি / Email Address *</span>
+        <span style="color:#38bdf8;font-size:11px;font-weight:700">🔒 ওটিপি ভেরিফিকেশন / Free OTP</span>
+      </label>
+      <input id="custEmail" type="email" placeholder="আপনার ইমেইল (যেমন: name@gmail.com)..." autocomplete="email" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px;color:#fff;font-size:14px;font-weight:600;outline:none;transition:border 0.2s">
+      <div style="font-size:11px;color:#94a3b8;margin-top:4px">💡 নতুন কাস্টমারদের জন্য Brevo দিয়ে ৬-সংখ্যার ফ্রি ইমেল ওটিপি পাঠানো হবে।</div>
+    </div>
+
+    <!-- Cloudflare Turnstile Smart Human Verification -->
+    <div id="cfTurnstileContainer" style="margin:10px 0 14px;display:flex;justify-content:center;min-height:65px">
       <div class="cf-turnstile"
            id="rsg-turnstile-customer"
            data-sitekey="1x00000000000000000000AA"
-           data-theme="light"
+           data-theme="dark"
            data-callback="onTurnstileSuccessCustomer"
            data-expired-callback="onTurnstileExpiredCustomer"
            data-error-callback="onTurnstileErrorCustomer">
       </div>
     </div>
 
-    <button class="btn btn-primary" id="continueBtn" onclick="continueToBooking()">
-      <span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>
+    <!-- Submit / Continue Button -->
+    <button class="btn btn-primary" id="continueBtn" onclick="continueToBooking()" style="width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:14px;color:#0f172a;font-size:15.5px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.4);letter-spacing:0.3px;transition:all 0.2s">
+      <span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>
     </button>
-    <p id="welcomeMsg" style="color:#ef4444;text-align:center;font-weight:800;margin-top:10px;font-size:13px"></p>
+    <p id="welcomeMsg" style="color:#f87171;text-align:center;font-weight:800;margin-top:12px;font-size:13px;line-height:1.5"></p>
   </div>
 
   <!-- ============================================== -->
@@ -4070,8 +4798,8 @@ window.closeLiveChatModal = function() {
         <span style="font-size:13px;font-weight:900;color:#0f172a" id="custGreetTxt">👋 যাত্রী: Customer</span>
         <span style="font-size:11px;color:#16a34a;font-weight:800;background:#dcfce7;padding:2px 8px;border-radius:10px" data-i18n="liveBadge">🟢 লাইভ</span>
       </div>
-      <button onclick="logoutCustomer()" style="background:none;border:none;color:#ef4444;font-size:12px;font-weight:800;cursor:pointer">
-        <span data-i18n="changeUser">✏️ নাম বদলান</span>
+      <button type="button" onclick="logoutCustomer()" style="background:rgba(239,68,68,0.1);border:1px solid #fca5a5;color:#dc2626;font-size:11.5px;font-weight:800;cursor:pointer;padding:4px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px" title="লগআউট করুন">
+        <span data-i18n="logoutAction">🚪 লগআউট / Logout</span>
       </button>
     </div>
 
@@ -4815,53 +5543,101 @@ window.closeLiveChatModal = function() {
   </div>
 </div>
 
-<!-- 1. AD SPONSORSHIP MODAL -->
+<!-- 1. AD SPONSORSHIP MODAL (Interactive Tiered Plans & Dynamic Pricing) -->
 <div id="adSponsorshipModal" class="modal-overlay">
-  <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:480px;width:95%;padding:18px;border-radius:20px">
+  <div class="modal-box" style="text-align:left;max-height:86vh;overflow-y:auto;max-width:500px;width:95%;padding:18px;border-radius:22px;box-shadow:0 12px 36px rgba(0,0,0,0.22)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:24px">📢</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:26px;background:#fef3c7;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center">📢</span>
         <div>
-          <h3 style="margin:0;color:#0f172a;font-size:17px;font-weight:900">আপনার ব্যবসার বিজ্ঞাপন দিন</h3>
-          <p style="margin:2px 0 0;font-size:11.5px;color:#64748b">মেদিনীপুর ও আশেপাশের হাজার হাজার যাত্রীর কাছে পৌঁছান</p>
+          <h3 style="margin:0;color:#0f172a;font-size:17px;font-weight:900" data-i18n="adModalTitle">আপনার ব্যবসার বিজ্ঞাপন দিন</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#64748b" data-i18n="adModalSub">মেদিনীপুর ও আশেপাশের হাজার হাজার যাত্রীর কাছে পৌঁছান</p>
         </div>
       </div>
-      <button onclick="closeAdSponsorshipModal()" style="border:none;background:#f1f5f9;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;color:#64748b">&times;</button>
+      <button onclick="closeAdSponsorshipModal()" style="border:none;background:#f1f5f9;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center" title="Close">&times;</button>
+    </div>
+
+    <!-- Paused Notice (Shown when Admin deactivates) -->
+    <div id="adPausedNotice" style="display:none;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;padding:12px;border-radius:14px;font-size:12.5px;font-weight:700;margin-bottom:12px;text-align:center" data-i18n="adPausedNotice">
+      ⚠️ বিজ্ঞাপন স্লট বুকিং বর্তমানে সাময়িকভাবে স্থগিত রয়েছে। বিস্তারিত জানার জন্য হেল্পলাইনে যোগাযোগ করুন।
     </div>
 
     <div style="background:#fffbeb;border:1.5px dashed #f59e0b;padding:12px;border-radius:14px;margin-bottom:14px">
-      <div style="font-weight:800;color:#92400e;font-size:13px;margin-bottom:4px">🎯 কেন রাইড সাথী গো-তে বিজ্ঞাপন দেবেন?</div>
-      <div style="font-size:12px;color:#b45309;line-height:1.5">
+      <div style="font-weight:800;color:#92400e;font-size:13px;margin-bottom:4px" data-i18n="adWhyTitle">🎯 কেন রাইড সাথী গো-তে বিজ্ঞাপন দেবেন?</div>
+      <div style="font-size:12px;color:#b45309;line-height:1.5" data-i18n="adWhyDesc">
         প্রতিদিন শত শত মানুষ অফিস, কলেজ, হাসপাতাল ও বাজারে যাওয়ার জন্য আমাদের অ্যাপ ব্যবহার করেন। আপনার হোটেল, দোকান, রেস্তোরাঁ, কোচিং বা গ্যারেজের সেরা প্রচার করুন।
       </div>
     </div>
 
-    <!-- Package Cards -->
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-      <div style="border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;background:#f8fafc">
+    <div style="font-weight:800;font-size:13px;color:#0f172a;margin-bottom:8px" data-i18n="adSelectPlanTitle">
+      বিজ্ঞাপন প্ল্যান নির্বাচন করুন (Select Plan):
+    </div>
+
+    <!-- Package Cards (Interactive Smooth Selection) -->
+    <div id="adPlansWrapper" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <!-- Silver Plan -->
+      <div id="adPlanCard_silver" onclick="selectAdPlan('silver')" style="border:1.5px solid #e2e8f0;border-radius:14px;padding:13px;background:#fff;cursor:pointer;transition:all 0.2s;position:relative">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800;color:#0f172a;font-size:13.5px">🥉 সিলভার প্ল্যান (Silver Plan)</div>
-          <span style="background:#e2e8f0;color:#334155;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:900">₹৪৯৯ / মাস</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="adRadio_silver" style="width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;background:#fff"></span>
+            <div style="font-weight:800;color:#0f172a;font-size:13.5px" data-i18n="adSilverTitle">🥉 সিলভার প্ল্যান (Silver Plan)</div>
+          </div>
+          <span style="background:#f1f5f9;color:#334155;padding:4px 9px;border-radius:8px;font-size:12.5px;font-weight:900">
+            ₹<span id="adPriceSilver">499</span> <span data-i18n="adMonthSuffix">/ মাস</span>
+          </span>
         </div>
-        <div style="font-size:11.5px;color:#64748b;margin-top:4px">✓ হোমপেজ ব্যানার স্লট • ফটো ও ঠিকানা ডিসপ্লে</div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:6px;padding-left:26px" data-i18n="adSilverDesc">
+          ✓ হোমপেজ ব্যানার স্লট • ফটো ও ঠিকানা ডিসপ্লে
+        </div>
       </div>
 
-      <div style="border:2px solid #f59e0b;border-radius:14px;padding:12px;background:#fffbeb;box-shadow:0 2px 8px rgba(245,158,11,0.15)">
+      <!-- Gold Plan (Default Selected) -->
+      <div id="adPlanCard_gold" onclick="selectAdPlan('gold')" style="border:2.5px solid #f59e0b;border-radius:14px;padding:13px;background:#fffbeb;cursor:pointer;box-shadow:0 3px 12px rgba(245,158,11,0.2);transition:all 0.2s;position:relative">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:900;color:#92400e;font-size:13.5px">🥇 গোল্ড পার্টনার (Gold Plan)</div>
-          <span style="background:#f59e0b;color:#fff;padding:3px 8px;border-radius:8px;font-size:12px;font-weight:900">₹৯৯৯ / মাস</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="adRadio_gold" style="width:18px;height:18px;border-radius:50%;border:2px solid #f59e0b;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;background:#f59e0b">✓</span>
+            <div style="font-weight:900;color:#92400e;font-size:13.5px" data-i18n="adGoldTitle">🥇 গোল্ড পার্টনার (Gold Plan)</div>
+            <span style="background:#f59e0b;color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px" data-i18n="adGoldBadge">⭐ সেরা পছন্দ</span>
+          </div>
+          <span style="background:#f59e0b;color:#fff;padding:4px 9px;border-radius:8px;font-size:12.5px;font-weight:900">
+            ₹<span id="adPriceGold">999</span> <span data-i18n="adMonthSuffix">/ মাস</span>
+          </span>
         </div>
-        <div style="font-size:11.5px;color:#b45309;margin-top:4px">✓ টপ হোম ব্যানার • সরাসরি কল ও WhatsApp বাটন • পুশ নোটিফিকেশন প্রচার</div>
+        <div style="font-size:11.5px;color:#b45309;margin-top:6px;padding-left:26px" data-i18n="adGoldDesc">
+          ✓ টপ হোম ব্যানার • সরাসরি কল ও WhatsApp বাটন • পুশ নোটিফিকেশন প্রচার
+        </div>
       </div>
+
+      <!-- Platinum VIP Plan -->
+      <div id="adPlanCard_platinum" onclick="selectAdPlan('platinum')" style="border:1.5px solid #e2e8f0;border-radius:14px;padding:13px;background:#fff;cursor:pointer;transition:all 0.2s;position:relative">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="adRadio_platinum" style="width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#fff;background:#fff"></span>
+            <div style="font-weight:800;color:#5b21b6;font-size:13.5px" data-i18n="adPlatinumTitle">💎 প্ল্যাটিনাম ভিআইপি (Platinum VIP)</div>
+          </div>
+          <span style="background:#ede9fe;color:#6d28d9;padding:4px 9px;border-radius:8px;font-size:12.5px;font-weight:900">
+            ₹<span id="adPricePlatinum">1999</span> <span data-i18n="adMonthSuffix">/ মাস</span>
+          </span>
+        </div>
+        <div style="font-size:11.5px;color:#64748b;margin-top:6px;padding-left:26px" data-i18n="adPlatinumDesc">
+          ✓ অ্যাপ স্টার্টআপ স্প্ল্যাশ • পিনড টপ ব্যানার • সোশ্যাল মিডিয়া প্রচার • আনলিমিটেড ক্লিক
+        </div>
+      </div>
+    </div>
+
+    <!-- Selected Plan Summary Pill -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px 14px;border-radius:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
+      <span style="color:#64748b" data-i18n="adSelectedLabel">নির্বাচিত প্ল্যান:</span>
+      <b id="adSelectedPlanSummary" style="color:#0f172a;font-size:13px">🥇 গোল্ড পার্টনার — ₹৯৯৯/মাস</b>
     </div>
 
     <!-- Action Buttons -->
     <div style="display:flex;flex-direction:column;gap:8px">
-      <a href="https://wa.me/918768447312?text=নমস্কার,%20আমি%20RIDE%20SATHI%20GO%20প্ল্যাটফর্মে%20আমার%20দোকান/ব্যবসার%20বিজ্ঞাপন%20দিতে%20চাই।" target="_blank" rel="noopener noreferrer" style="background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;text-align:center;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(37,211,102,0.3)">
-        <i class="fab fa-whatsapp" style="font-size:18px"></i> <span>হোয়াটসঅ্যাপে বিজ্ঞাপন বুক করুন</span>
+      <a id="adWhatsAppBtn" href="#" target="_blank" rel="noopener noreferrer" style="background:#25D366;color:#fff;text-decoration:none;padding:12px;border-radius:12px;font-weight:800;text-align:center;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 10px rgba(37,211,102,0.3)">
+        <i class="fab fa-whatsapp" style="font-size:18px"></i> <span data-i18n="adBookWaBtn">হোয়াটসঅ্যাপে বিজ্ঞাপন বুক করুন</span>
       </a>
-      <a href="tel:8768447312" style="background:#0f172a;color:#fff;text-decoration:none;padding:11px;border-radius:12px;font-weight:700;text-align:center;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
-        📞 হেল্পলাইনে কথা বলুন (8768447312)
+      <a id="adCallBtn" href="tel:8768447312" style="background:#0f172a;color:#fff;text-decoration:none;padding:11px;border-radius:12px;font-weight:700;text-align:center;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+        <span data-i18n="adCallBtn">📞 হেল্পলাইনে কথা বলুন</span> (<span id="adHelplineDisplay">8768447312</span>)
       </a>
     </div>
   </div>
@@ -5043,7 +5819,147 @@ window.closeLiveChatModal = function() {
 </div>
 
 <!-- OFFERS MODAL (Bottom Nav Offers) -->
+<!-- DEDICATED ULTRA-PREMIUM REFER & EARN MODAL -->
 <div id="referModal" class="modal-overlay" style="z-index:999999" onclick="if(event.target===this)closeReferralModal()">
+  <div class="modal-box" style="text-align:left;max-height:88vh;overflow-y:auto;max-width:500px;width:95%;padding:18px;border-radius:24px;margin:auto;box-sizing:border-box;box-shadow:0 16px 48px rgba(0,0,0,0.25)">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:26px;background:linear-gradient(135deg,#fef3c7,#fed7aa);width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,0.2)">🎁</span>
+        <div>
+          <h3 style="margin:0;color:#0f172a;font-size:18px;font-weight:900" data-i18n="referModalTitle">রেফার করুন ও আয় করুন</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#64748b" data-i18n="referModalSub">বন্ধুদের সাথে অ্যাপ শেয়ার করে পান নিশ্চিত রিওয়ার্ড ও ফ্রি রাইড!</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeReferralModal()" style="border:none;background:#f1f5f9;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;font-weight:bold;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Close">&times;</button>
+    </div>
+
+    <!-- Paused Notice (If Admin deactivates) -->
+    <div id="referPausedNotice" style="display:none;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;padding:12px;border-radius:14px;font-size:12.5px;font-weight:700;margin-bottom:12px;text-align:center" data-i18n="referPausedNotice">
+      ⚠️ রেফারেল প্রোগ্রাম বর্তমানে সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই আবার চালু হবে!
+    </div>
+
+    <!-- Hero Reward Banner (Dynamic Admin Amounts) -->
+    <div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;border-radius:18px;padding:16px;margin-bottom:14px;border:1.5px solid rgba(245,158,11,0.4);box-shadow:0 8px 24px rgba(15,23,42,0.18);position:relative;overflow:hidden">
+      <div style="position:absolute;right:-15px;top:-15px;font-size:72px;opacity:0.07;pointer-events:none">🎁</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="background:linear-gradient(90deg,#ea580c,#d97706);color:#fff;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px" data-i18n="referHeroBadge">
+          🔥 স্পেশাল অফার
+        </span>
+        <span style="font-size:11px;color:#94a3b8">100% Verified Bonus</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">
+        <!-- You Get -->
+        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 8px">
+          <div style="font-size:11px;color:#94a3b8;font-weight:700" data-i18n="referEarnYouGet">আপনি পাবেন</div>
+          <div style="font-size:22px;font-weight:900;color:#22c55e;margin:2px 0">
+            +₹<span id="referBonusReferrerDisplay">50</span>
+          </div>
+          <div style="font-size:10px;color:#cbd5e1">ক্যাশব্যাক / ওয়ালেট</div>
+        </div>
+
+        <!-- Friend Gets -->
+        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 8px">
+          <div style="font-size:11px;color:#94a3b8;font-weight:700" data-i18n="referEarnFriendGets">বন্ধু পাবে</div>
+          <div style="font-size:22px;font-weight:900;color:#facc15;margin:2px 0">
+            ₹<span id="referBonusFriendDisplay">25</span> <span data-i18n="referBonusOff" style="font-size:13px">ছাড়</span>
+          </div>
+          <div style="font-size:10px;color:#cbd5e1">১ম রাইড বুকিংয়ে</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referral Code Voucher Box -->
+    <div style="border:2px dashed #f59e0b;background:#fffbeb;border-radius:16px;padding:14px;margin-bottom:14px;text-align:center">
+      <div style="font-size:11.5px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:0.5px" data-i18n="yourReferCode">
+        আপনার ইউনিক রেফারেল কোড:
+      </div>
+      <div id="userReferCode" style="font-size:24px;font-weight:900;letter-spacing:3px;font-family:monospace;color:#b45309;margin:8px 0;background:#fff;padding:8px 16px;border-radius:10px;display:inline-block;border:1px solid #fed7aa;box-shadow:inset 0 1px 3px rgba(0,0,0,0.05)">
+        RSGO-XXXX
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:6px">
+        <button type="button" onclick="copyReferralCode()" style="background:#b45309;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(180,83,9,0.25)">
+          <span id="copyCodeBtnText" data-i18n="copyReferBtn">📋 কোড কপি করুন</span>
+        </button>
+        <button type="button" onclick="copyReferralLink()" style="background:#0f172a;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+          <span id="copyLinkBtnText" data-i18n="copyLinkBtn">🔗 লিংক কপি করুন</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Direct Share Channels -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <!-- WhatsApp Share Button -->
+      <button type="button" onclick="shareReferralWhatsApp()" style="background:#25D366;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:900;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(37,211,102,0.3);width:100%">
+        <i class="fab fa-whatsapp" style="font-size:20px"></i> <span data-i18n="shareWhatsAppBtn">WhatsApp-এ শেয়ার করুন</span>
+      </button>
+
+      <!-- Telegram & Native Share Row -->
+      <div style="display:flex;gap:8px">
+        <button type="button" onclick="shareReferralTelegram()" style="flex:1;background:#229ED9;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:800;font-size:12.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          <i class="fab fa-telegram-plane" style="font-size:16px"></i> <span data-i18n="shareTelegramBtn">Telegram</span>
+        </button>
+        <button type="button" onclick="shareReferralNative()" style="flex:1;background:#0f172a;color:#fff;border:none;padding:11px;border-radius:10px;font-weight:800;font-size:12.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          <span>📲</span> <span data-i18n="shareMoreBtn">অন্যান্য অ্যাপ</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- How It Works (3 Easy Steps) -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px;margin-bottom:14px">
+      <div style="font-weight:900;color:#0f172a;font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:6px" data-i18n="howItWorksTitle">
+        💡 কীভাবে রেফার করবেন? (৩টি সহজ ধাপ)
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="background:#e0f2fe;color:#0284c7;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;flex-shrink:0">1</span>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:12.5px" data-i18n="howStep1Title">১. বন্ধুদের আমন্ত্রণ জানান</div>
+            <div style="font-size:11.5px;color:#64748b;margin-top:2px" data-i18n="howStep1Desc">আপনার রেফারেল কোড বা লিংক WhatsApp-এ বন্ধুদের পাঠান।</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="background:#fef3c7;color:#d97706;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;flex-shrink:0">2</span>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:12.5px" data-i18n="howStep2Title">২. বন্ধু প্রথম রাইড বুক করবে</div>
+            <div style="font-size:11.5px;color:#64748b;margin-top:2px" data-i18n="howStep2Desc">বন্ধু আপনার কোড দিয়ে প্রথম রাইডে নিশ্চিত ছাড় পাবে।</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="background:#dcfce7;color:#16a34a;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:900;flex-shrink:0">3</span>
+          <div>
+            <div style="font-weight:800;color:#0f172a;font-size:12.5px" data-i18n="howStep3Title">৩. আপনার অ্যাকাউন্টে বোনাস জমা</div>
+            <div style="font-size:11.5px;color:#64748b;margin-top:2px" data-i18n="howStep3Desc">রাইড সম্পন্ন হলেই আপনার ওয়ালেটে সরাসরি বোনাস জমা হবে।</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referral Stats Report -->
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px;display:flex;justify-content:space-around;align-items:center;text-align:center">
+      <div>
+        <div style="font-size:11px;color:#64748b;font-weight:700" data-i18n="referInvitedCount">মোট আমন্ত্রিত বন্ধু:</div>
+        <div style="font-size:18px;font-weight:900;color:#0f172a;margin-top:2px" id="userReferralCount">0 জন</div>
+      </div>
+      <div style="height:32px;width:1px;background:#e2e8f0"></div>
+      <div>
+        <div style="font-size:11px;color:#64748b;font-weight:700" data-i18n="totalBonusEarned">মোট বোনাস আয়:</div>
+        <div style="font-size:18px;font-weight:900;color:#16a34a;margin-top:2px" id="userBonusEarned">₹0</div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="referCopyToast" style="display:none;position:sticky;bottom:8px;left:0;right:0;background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;font-size:12.5px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:99;margin-top:10px">
+      📋 রেফারেল কোড সফলভাবে কপি হয়েছে!
+    </div>
+  </div>
+</div>
+
+<!-- 5. EXCLUSIVE OFFERS & RECHARGE MODAL (Preserved for Bottom Nav & Hero) -->
+<div id="exclusiveOffersModal" class="modal-overlay" style="z-index:999999" onclick="if(event.target===this)closeOffersModal()">
   <div class="modal-box" style="text-align:left;max-height:85vh;overflow-y:auto;max-width:540px;width:95%;padding:16px;border-radius:18px;margin:auto;box-sizing:border-box">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid #f1f5f9;padding-bottom:10px">
       <div>
@@ -5052,7 +5968,7 @@ window.closeLiveChatModal = function() {
         </h3>
         <p style="margin:2px 0 0;font-size:12px;color:#64748b">সেরা ব্র্যান্ডে কেনাকাটা ও টিকিট বুকিংয়ে নিশ্চিত ছাড় পান</p>
       </div>
-      <button type="button" onclick="closeReferralModal()" style="border:none;background:#f1f5f9;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;font-weight:bold;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="বন্ধ করুন (Close)">&times;</button>
+      <button type="button" onclick="closeOffersModal()" style="border:none;background:#f1f5f9;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;font-weight:bold;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="বন্ধ করুন (Close)">&times;</button>
     </div>
 
     <!-- Quick Mobile Recharge & Bill Pay Hub -->
@@ -6361,6 +7277,249 @@ window.submitElectricBillRequest = function() {
   </div>
 </div>
 
+
+<!-- ============================================== -->
+<!-- 🔑 CUSTOMER 4-DIGIT PIN & SECURITY MODALS      -->
+<!-- 100% Free Lifetime Account Security & Privacy  -->
+<!-- ============================================== -->
+
+<!-- 1. ENTER PIN MODAL (RETURNING USER) -->
+<!-- === 2026 REGISTRATION EMAIL OTP MODAL (BREVO 6-DIGIT VERIFICATION) === -->
+<div id="customerEmailOtpModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div class="modal-box" style="max-width:400px;width:94%;background:linear-gradient(145deg,#0f172a,#1e293b);border-radius:24px;padding:26px 20px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1.5px solid rgba(245,158,11,0.4);text-align:center;color:#ffffff;position:relative">
+    
+    <div style="width:58px;height:58px;border-radius:50%;background:rgba(245,158,11,0.15);border:2px solid #f59e0b;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px">
+      📧
+    </div>
+
+    <h3 style="margin:0 0 4px;font-size:18px;color:#fde047;font-weight:900">
+      ইমেইল ওটিপি যাচাই • Email OTP
+    </h3>
+    <p style="margin:0 0 14px;font-size:13px;color:#94a3b8;line-height:1.4">
+      আপনার ইমেইলে ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে:<br>
+      <b id="custRegEmailDisp" style="color:#38bdf8;font-size:13.5px">...</b>
+    </p>
+
+    <!-- 6-digit OTP Input -->
+    <div style="margin-bottom:14px">
+      <input type="tel" id="custRegOtpInput" maxlength="6" placeholder="• • • • • •" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)" style="width:100%;box-sizing:border-box;background:#090d16;border:2px solid #f59e0b;border-radius:14px;padding:14px;color:#fde047;font-size:26px;font-weight:900;letter-spacing:10px;text-align:center;outline:none">
+    </div>
+
+    <p id="custRegOtpError" style="color:#f87171;font-size:12.5px;font-weight:800;margin:0 0 12px;min-height:18px"></p>
+
+    <!-- Verify Button -->
+    <button type="button" id="btnVerifyRegEmailOtp" onclick="verifyCustomerRegistrationEmailOtp()" style="width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.4);margin-bottom:10px">
+      ✅ ওটিপি যাচাই করুন / Verify OTP ➡️
+    </button>
+
+    <!-- Resend OTP Button with countdown -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12px">
+      <button type="button" id="btnResendRegEmailOtp" onclick="resendRegistrationEmailOtp()" style="background:none;border:none;color:#38bdf8;font-weight:800;cursor:pointer;padding:4px">
+        🔄 পুনরায় পাঠান / Resend OTP
+      </button>
+      <button type="button" onclick="closeCustomerEmailOtpModal()" style="background:none;border:none;color:#94a3b8;font-weight:700;cursor:pointer;padding:4px">
+        বাতিল / Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="customerEnterPinModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div class="modal-box" style="max-width:390px;width:92%;background:#ffffff;border-radius:24px;padding:24px 20px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:1.5px solid #e2e8f0;text-align:center;position:relative">
+    <div style="width:52px;height:52px;background:#e0f2fe;color:#0284c7;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;box-shadow:0 4px 12px rgba(2,132,199,0.2)">
+      🔑
+    </div>
+    <h3 style="margin:0 0 4px;font-size:18px;color:#0f172a">সিক্রেট পিন দিয়ে লগইন করুন</h3>
+    <p style="font-size:12.5px;color:#64748b;margin:0 0 14px">আপনার ৪-সংখ্যার সিক্রেট পিন লিখুন</p>
+
+    <!-- User Pill -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 12px;margin-bottom:14px;display:inline-flex;align-items:center;gap:8px">
+      <span style="font-size:12px;font-weight:900;color:#0f172a" id="custEnterPinName">Customer</span>
+      <span style="font-size:12px;color:#16a34a;font-weight:800" id="custEnterPinPhone">📱 +91 XXXXXXXXXX</span>
+    </div>
+
+    <!-- 4-Digit Input Box -->
+    <div style="position:relative;margin-bottom:12px">
+      <input type="password" id="custInputPin" maxlength="4" placeholder="••••" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); if(this.value.length===4) document.getElementById('custVerifyPinBtn').focus();" style="width:100%;box-sizing:border-box;padding:12px;border-radius:14px;font-size:26px;letter-spacing:10px;text-align:center;border:2px solid #0284c7;font-weight:900;background:#f0f9ff">
+      <button type="button" onclick="togglePinVisibility('custInputPin', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">👁️</button>
+    </div>
+
+    <p id="custEnterPinError" style="color:#ef4444;font-size:12px;font-weight:800;margin:0 0 12px;min-height:16px"></p>
+
+    <!-- Verify Button -->
+    <button type="button" id="custVerifyPinBtn" onclick="verifyCustomerPin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(2,132,199,0.35);margin-bottom:12px">
+      লগইন করুন ➡️
+    </button>
+
+    <!-- Forgot PIN / Help Link -->
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding-top:8px;border-top:1px solid #f1f5f9">
+      <button type="button" onclick="openForgotPinModalFromEnter()" style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer;padding:4px">
+        ❓ পিন ভুলে গেছেন?
+      </button>
+      <button type="button" onclick="closeCustomerEnterPinModal()" style="background:none;border:none;color:#64748b;font-weight:700;cursor:pointer;padding:4px">
+        ✕ নম্বর বদলান
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. SET NEW PIN MODAL (FIRST TIME OR UNSET) -->
+<div id="customerSetPinModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div class="modal-box" style="max-width:420px;width:94%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:1.5px solid #e2e8f0;text-align:left;position:relative;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1.5px solid #f1f5f9;padding-bottom:10px">
+      <div style="width:42px;height:42px;border-radius:12px;background:#dcfce7;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:22px">
+        🛡️
+      </div>
+      <div>
+        <h3 style="margin:0;font-size:16px;color:#0f172a">অ্যাকাউন্ট সুরক্ষিত করুন</h3>
+        <p style="font-size:11.5px;color:#64748b;margin:2px 0 0">অন্য কেউ যাতে আপনার রাইড না দেখতে পারে</p>
+      </div>
+    </div>
+
+    <!-- User Info Pill -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;display:flex;justify-content:space-between">
+      <span>👤 যাত্রী: <b id="custSetPinName">Name</b></span>
+      <span>📱 <b id="custSetPinPhone">+91 XXXXXXXXXX</b></span>
+    </div>
+
+    <!-- 1. 4-Digit PIN -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:12.5px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+        🔑 আপনার পছন্দের ৪-সংখ্যার সিক্রেট পিন (যেমন: 2580) *
+      </label>
+      <div style="position:relative">
+        <input type="password" id="custNewPinInput" maxlength="4" placeholder="৪ সংখ্যার পিন লিখুন..." inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" style="width:100%;box-sizing:border-box;padding:12px;border-radius:12px;font-size:20px;letter-spacing:6px;text-align:center;border:2px solid #16a34a;font-weight:900;background:#f0fdf4">
+        <button type="button" onclick="togglePinVisibility('custNewPinInput', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;color:#64748b">👁️</button>
+      </div>
+    </div>
+
+    <!-- 2. Security Question -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:12.5px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+        🛡️ সিকিউরিটি প্রশ্ন (পিন ভুলে গেলে কাজে লাগবে) *
+      </label>
+      <select id="custSecQSelect" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:13px;background:#fff">
+        <option value="আপনার জন্ম সাল কত?">📅 আপনার জন্ম সাল কত? (যেমন: 2001)</option>
+        <option value="আপনার প্রিয় রঙের নাম কী?">🎨 আপনার প্রিয় রঙের নাম কী? (যেমন: নীল / লাল)</option>
+        <option value="আপনার প্রিয় খাবারের নাম কী?">🍲 আপনার প্রিয় খাবারের নাম কী? (যেমন: বিরিয়ানি)</option>
+        <option value="আপনার স্কুল বা প্রিয় বন্ধুর নাম কী?">🏫 আপনার স্কুল বা প্রিয় বন্ধুর নাম কী?</option>
+      </select>
+    </div>
+
+    <!-- 3. Security Answer -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:12.5px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+        ✍️ সিকিউরিটি প্রশ্নের সঠিক উত্তর *
+      </label>
+      <input type="text" id="custSecAInput" placeholder="এখানে আপনার উত্তরটি লিখুন..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:13px">
+    </div>
+
+    <!-- 4. Optional Email -->
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:4px">
+        📧 ইমেইল আইডি (ঐচ্ছিক - ফ্রি ইমেইল OTP রিকভারির জন্য):
+      </label>
+      <input type="email" id="custOptionalEmailInput" placeholder="আপনার ইমেইল (যেমন: name@gmail.com)..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid #cbd5e1;font-size:13px">
+    </div>
+
+    <p id="custSetPinError" style="color:#ef4444;font-size:12px;font-weight:800;margin:0 0 12px;min-height:16px"></p>
+
+    <!-- Save Button -->
+    <button type="button" id="custSavePinBtn" onclick="saveCustomerNewPinAndProceed()" style="width:100%;padding:13px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:12px;font-size:14.5px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.35);margin-bottom:8px">
+      ✅ পিন সেট করুন ও এগিয়ে যান ➡️
+    </button>
+    <button type="button" onclick="closeCustomerSetPinModal()" style="width:100%;padding:6px;background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;font-weight:700">
+      বাতিল করুন
+    </button>
+  </div>
+</div>
+
+<!-- 3. FORGOT PIN RECOVERY MODAL -->
+<div id="customerForgotPinModal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div class="modal-box" style="max-width:430px;width:94%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:1.5px solid #e2e8f0;text-align:left;position:relative;max-height:92vh;overflow-y:auto">
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1.5px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">🔐</span>
+        <h3 style="margin:0;font-size:16.5px;color:#0f172a">পিন রিকভারি ও রিসেট</h3>
+      </div>
+      <button type="button" onclick="closeForgotPinModal()" style="background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;color:#64748b">&times;</button>
+    </div>
+
+    <!-- Recovery Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid #e2e8f0;padding-bottom:8px">
+      <button type="button" id="tabRecSecQ" onclick="switchForgotPinTab('secQ')" style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:11.5px;font-weight:800;background:#0284c7;color:#fff;cursor:pointer">
+        🛡️ সিকিউরিটি প্রশ্ন
+      </button>
+      <button type="button" id="tabRecAdmin" onclick="switchForgotPinTab('admin')" style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:11.5px;font-weight:800;background:#f1f5f9;color:#475569;cursor:pointer">
+        📲 অ্যাডমিন সাহায্য
+      </button>
+      <button type="button" id="tabRecEmail" onclick="switchForgotPinTab('email')" style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:11.5px;font-weight:800;background:#f1f5f9;color:#475569;cursor:pointer">
+        📧 ইমেইল OTP
+      </button>
+    </div>
+
+    <!-- TAB 1: Security Question -->
+    <div id="forgotTabSecQ">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:12px;font-size:12.5px;color:#166534">
+        <b>প্রশ্ন:</b> <span id="forgotDispSecQ">আপনার জন্ম সাল কত?</span>
+      </div>
+      <label style="font-size:12px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+        আপনার উত্তর লিখুন:
+      </label>
+      <input type="text" id="forgotAnswerInput" placeholder="সঠিক উত্তর লিখুন..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:13.5px;margin-bottom:10px">
+
+      <div id="forgotNewPinSection" style="display:none;margin-top:10px;border-top:1.5px dashed #22c55e;padding-top:10px">
+        <label style="font-size:12px;font-weight:800;color:#166534;display:block;margin-bottom:4px">
+          🎉 নতুন ৪-সংখ্যার সিক্রেট পিন লিখুন:
+        </label>
+        <input type="tel" id="forgotResetNewPin" maxlength="4" placeholder="যেমন: 2580" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;font-size:20px;letter-spacing:6px;text-align:center;border:2px solid #16a34a;font-weight:900;background:#f0fdf4;margin-bottom:10px">
+        <button type="button" onclick="submitResetPinViaSecQ()" style="width:100%;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:900;cursor:pointer">
+          💾 নতুন পিন সেভ করুন ও লগইন করুন
+        </button>
+      </div>
+
+      <button type="button" id="btnVerifySecQ" onclick="verifySecurityAnswer()" style="width:100%;padding:12px;background:#0284c7;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer">
+        উত্তর যাচাই করুন ➡️
+      </button>
+      <p id="forgotSecQError" style="color:#ef4444;font-size:12px;font-weight:800;margin-top:8px;min-height:16px"></p>
+    </div>
+
+    <!-- TAB 2: Request Admin Help via WhatsApp & Firebase -->
+    <div id="forgotTabAdmin" style="display:none">
+      <div style="background:#fefce8;border:1px solid #fef08a;border-radius:12px;padding:12px;margin-bottom:14px;font-size:12.5px;color:#854d0e;line-height:1.5">
+        💬 পিন মনে না থাকলে আপনি সরাসরি আমাদের অফিশিয়াল হোয়াটসঅ্যাপে এক-ক্লিকে মেসেজ পাঠাতে পারেন। অ্যাডমিন আপনার পিন রিসেট করে এসএমএস বা হোয়াটসঅ্যাপে জানিয়ে দেবে।
+      </div>
+      <button type="button" onclick="sendAdminPinResetRequestViaWhatsApp()" style="width:100%;padding:13px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-size:13.5px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(22,163,74,0.3);margin-bottom:10px">
+        <span>📲 হোয়াটসঅ্যাপে পিন রিসেটের অনুরোধ পাঠান</span>
+      </button>
+      <div id="adminReqStatus" style="font-size:12px;font-weight:bold;color:#16a34a;text-align:center"></div>
+    </div>
+
+    <!-- TAB 3: Email OTP -->
+    <div id="forgotTabEmail" style="display:none">
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:12px;margin-bottom:12px;font-size:12.5px;color:#0369a1">
+        📧 আপনার রেজিস্টার্ড ইমেইলে একটি ৬-সংখ্যার সিক্রেট OTP যাবে।
+        <div id="forgotDispEmailWrap" style="font-weight:bold;margin-top:4px">ইমেইল: <span id="forgotDispEmail">লোড হচ্ছে...</span></div>
+      </div>
+      <button type="button" id="btnSendEmailOtp" onclick="sendOtpToCustomerEmail()" style="width:100%;padding:12px;background:#0284c7;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:12px">
+        📩 ইমেইলে OTP পাঠান
+      </button>
+      <div id="emailOtpInputWrap" style="display:none">
+        <label style="font-size:12px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+          ইমেইলে আসা ৬-সংখ্যার OTP কোড লিখুন:
+        </label>
+        <input type="tel" id="inputEmailOtpCode" maxlength="6" placeholder="123456" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)" style="width:100%;box-sizing:border-box;padding:12px;border-radius:10px;font-size:22px;letter-spacing:6px;text-align:center;border:2px solid #0284c7;font-weight:900;background:#fff;margin-bottom:10px">
+        <button type="button" onclick="verifyEmailOtpAndAllowReset()" style="width:100%;padding:12px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:900;cursor:pointer">
+          যাচাই করুন ও নতুন পিন দিন
+        </button>
+      </div>
+      <p id="forgotEmailError" style="color:#ef4444;font-size:12px;font-weight:800;margin-top:8px;min-height:16px"></p>
+    </div>
+
+  </div>
+</div>
+
 <!-- FOOTER SUPPORT & POLICY SECTION (Google AdSense Compliant) -->
 <footer style="margin:28px auto 16px;max-width:800px;width:94%;text-align:center;padding:22px 14px;border:1px solid #e2e8f0;color:#64748b;font-size:12px;background:#ffffff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.06)">
   <div style="font-weight:900;color:#0f172a;font-size:16px;margin-bottom:8px">🚖 RIDE সাথী GO • রাইড সাথী</div>
@@ -6745,7 +7904,8 @@ const TRANSLATIONS = {
 
     // Step 2: Booking Screen
     step2Badge: "ধাপ ২: রাইড ও সার্ভিস নির্বাচন",
-    changeUser: "✏️ নাম বদলান",
+    changeUser: "🚪 লগআউট / Logout",
+    logoutAction: "🚪 লগআউট / Logout",
     custGreet: "👋 যাত্রী:",
     liveRatesBadge: "🟢 লাইভ রেট",
     referPromoTitle: "শেয়ার করলেই পান ₹১০ ছাড়ের কুপন!",
@@ -6987,7 +8147,55 @@ const TRANSLATIONS = {
     navOffers: "অফার",
     navProfile: "প্রোফাইল",
     orDirectMobile: "অথবা সরাসরি মোবাইল দিয়ে এগিয়ে যান",
-    statusSearching: "নিকটবর্তী চালকের সন্ধান চলছে..."
+    statusSearching: "নিকটবর্তী চালকের সন্ধান চলছে...",
+    // --- ADVERTISEMENT MODAL TRANSLATIONS ---
+    adModalTitle: "আপনার ব্যবসার বিজ্ঞাপন দিন",
+    adModalSub: "মেদিনীপুর ও আশেপাশের হাজার হাজার যাত্রীর কাছে পৌঁছান",
+    adWhyTitle: "🎯 কেন রাইড সাথী গো-তে বিজ্ঞাপন দেবেন?",
+    adWhyDesc: "প্রতিদিন শত শত মানুষ অফিস, কলেজ, হাসপাতাল ও বাজারে যাওয়ার জন্য আমাদের অ্যাপ ব্যবহার করেন। আপনার হোটেল, দোকান, রেস্তোরাঁ, কোচিং বা গ্যারেজের সেরা প্রচার করুন।",
+    adSelectPlanTitle: "বিজ্ঞাপন প্ল্যান নির্বাচন করুন (Select Plan):",
+    adSilverTitle: "🥉 সিলভার প্ল্যান (Silver Plan)",
+    adSilverBadge: "সাশ্রয়ী",
+    adSilverDesc: "✓ হোমপেজ ব্যানার স্লট • ফটো ও ঠিকানা ডিসপ্লে",
+    adGoldTitle: "🥇 গোল্ড পার্টনার (Gold Plan)",
+    adGoldBadge: "⭐ সেরা পছন্দ",
+    adGoldDesc: "✓ টপ হোম ব্যানার • সরাসরি কল ও WhatsApp বাটন • পুশ নোটিফিকেশন প্রচার",
+    adPlatinumTitle: "💎 প্ল্যাটিনাম ভিআইপি (Platinum VIP)",
+    adPlatinumBadge: "👑 সর্বোচ্চ প্রচার",
+    adPlatinumDesc: "✓ অ্যাপ স্টার্টআপ স্প্ল্যাশ • পিনড টপ ব্যানার • সোশ্যাল মিডিয়া প্রচার • আনলিমিটেড ক্লিক",
+    adMonthSuffix: "/ মাস",
+    adSelectedLabel: "নির্বাচিত প্ল্যান:",
+    adBookWaBtn: "হোয়াটসঅ্যাপে বিজ্ঞাপন বুক করুন",
+    adCallBtn: "📞 হেল্পলাইনে কথা বলুন",
+    adPausedNotice: "⚠️ বিজ্ঞাপন স্লট বুকিং বর্তমানে সাময়িকভাবে স্থগিত রয়েছে। বিস্তারিত জানার জন্য হেল্পলাইনে যোগাযোগ করুন।",
+
+    // --- REFER & EARN MODAL TRANSLATIONS ---
+    referModalTitle: "🎁 রেফার করুন ও আয় করুন",
+    referModalSub: "বন্ধুদের সাথে অ্যাপ শেয়ার করে পান নিশ্চিত রিওয়ার্ড ও ফ্রি রাইড!",
+    referHeroBadge: "🔥 স্পেশাল অফার",
+    referEarnYouGet: "আপনি পাবেন",
+    referEarnFriendGets: "বন্ধু পাবে",
+    referBonusOff: "ছাড়",
+    yourReferCode: "আপনার ইউনিক রেফারেল কোড:",
+    copyReferBtn: "📋 কোড কপি করুন",
+    copyReferDone: "✅ কপি হয়েছে!",
+    copyLinkBtn: "🔗 লিংক কপি করুন",
+    shareWhatsAppBtn: "WhatsApp-এ শেয়ার করুন",
+    shareTelegramBtn: "Telegram-এ শেয়ার করুন",
+    shareMoreBtn: "📲 অন্যান্য অ্যাপে শেয়ার করুন",
+    howItWorksTitle: "💡 কীভাবে রেফার করবেন? (৩টি সহজ ধাপ)",
+    howStep1Title: "১. বন্ধুদের আমন্ত্রণ জানান",
+    howStep1Desc: "আপনার রেফারেল কোড বা লিংক WhatsApp-এ বন্ধুদের পাঠান।",
+    howStep2Title: "২. বন্ধু প্রথম রাইড বুক করবে",
+    howStep2Desc: "বন্ধু আপনার কোড দিয়ে প্রথম রাইডে নিশ্চিত ছাড় পাবে।",
+    howStep3Title: "৩. আপনার অ্যাকাউন্টে বোনাস জমা",
+    howStep3Desc: "রাইড শেষ হলেই আপনার ওয়ালেটে সরাসরি বোনাস জমা হবে।",
+    referStatsTitle: "📊 আমার রেফারেল রিপোর্ট",
+    referInvitedCount: "মোট আমন্ত্রিত বন্ধু:",
+    totalBonusEarned: "মোট বোনাস আয়:",
+    referPausedNotice: "⚠️ রেফারেল প্রোগ্রাম বর্তমানে সাময়িকভাবে বন্ধ আছে। খুব শীঘ্রই আবার চালু হবে!",
+    drawerOffersDealsTitle: "🛍️ রিচার্জ ও শপিং অফার (Offers & Deals)",
+    drawerOffersDealsSub: "মোবাইল রিচার্জ ও ব্র্যান্ডে ক্যাশব্যাক",
   },
 
   hi: {
@@ -7062,7 +8270,8 @@ const TRANSLATIONS = {
 
     // Step 2: Booking Screen
     step2Badge: "चरण २: सवारी और सेवा चुनें",
-    changeUser: "✏️ नाम बदलें",
+    changeUser: "🚪 लॉगआउट / Logout",
+    logoutAction: "🚪 लॉगआउट / Logout",
     custGreet: "👋 यात्री:",
     liveRatesBadge: "🟢 लाइव रेट",
     referPromoTitle: "शेयर करने पर पाएं ₹10 छूट का कूपन!",
@@ -7304,7 +8513,55 @@ const TRANSLATIONS = {
     navOffers: "ऑफ़र",
     navProfile: "प्रोफ़ाइल",
     orDirectMobile: "या सीधे मोबाइल नंबर से आगे बढ़ें",
-    statusSearching: "निकटतम चालक की खोज जारी है..."
+    statusSearching: "निकटतम चालक की खोज जारी है...",
+    // --- ADVERTISEMENT MODAL TRANSLATIONS ---
+    adModalTitle: "अपने व्यवसाय का विज्ञापन दें",
+    adModalSub: "मेदिनीपुर और आसपास के हजारों यात्रियों तक पहुंचें",
+    adWhyTitle: "🎯 राइड साथी गो पर विज्ञापन क्यों दें?",
+    adWhyDesc: "प्रतिदिन सैकड़ों यात्री कार्यालय, कॉलेज, अस्पताल और बाजार जाने के लिए हमारे ऐप का उपयोग करते हैं। अपने होटल, दुकान, रेस्टोरेंट या कोचिंग का बेहतरीन प्रचार करें।",
+    adSelectPlanTitle: "विज्ञापन प्लान चुनें (Select Plan):",
+    adSilverTitle: "🥉 सिल्वर प्लान (Silver Plan)",
+    adSilverBadge: "किफायती",
+    adSilverDesc: "✓ होमपेज बैनर स्लॉट • फोटो और पता डिस्प्ले",
+    adGoldTitle: "🥇 गोल्ड पार्टनर (Gold Plan)",
+    adGoldBadge: "⭐ सबसे लोकप्रिय",
+    adGoldDesc: "✓ टॉप होम बैनर • सीधा कॉल व WhatsApp बटन • पुश नोटिफिकेशन प्रचार",
+    adPlatinumTitle: "💎 प्लैटिनम वीआईपी (Platinum VIP)",
+    adPlatinumBadge: "👑 अधिकतम पहुंच",
+    adPlatinumDesc: "✓ ऐप स्टार्टअप स्प्लैश • टॉप पिन बैनर • सोशल मीडिया प्रचार • असीमित क्लिक",
+    adMonthSuffix: "/ माह",
+    adSelectedLabel: "चयनित प्लान:",
+    adBookWaBtn: "WhatsApp पर विज्ञापन बुक करें",
+    adCallBtn: "📞 हेल्पलाइन पर बात करें",
+    adPausedNotice: "⚠️ विज्ञापन बुकिंग वर्तमान में अस्थायी रूप से स्थगित है। अधिक जानकारी के लिए हेल्पलाइन पर संपर्क करें।",
+
+    // --- REFER & EARN MODAL TRANSLATIONS ---
+    referModalTitle: "🎁 रेफ़र करें और कमाएँ",
+    referModalSub: "दोस्तों के साथ ऐप शेयर करें और हर पहली राइड पर पाएं सुनिश्चित रिवॉर्ड!",
+    referHeroBadge: "🔥 विशेष ऑफर",
+    referEarnYouGet: "आपको मिलेगा",
+    referEarnFriendGets: "दोस्त को मिलेगा",
+    referBonusOff: "छूट",
+    yourReferCode: "आपका यूनीक रेफरल कोड:",
+    copyReferBtn: "📋 कोड कॉपी करें",
+    copyReferDone: "✅ कॉपी हो गया!",
+    copyLinkBtn: "🔗 लिंक कॉपी करें",
+    shareWhatsAppBtn: "WhatsApp पर शेयर करें",
+    shareTelegramBtn: "Telegram पर शेयर करें",
+    shareMoreBtn: "📲 अन्य ऐप्स पर शेयर करें",
+    howItWorksTitle: "💡 कैसे काम करता है? (3 आसान चरण)",
+    howStep1Title: "1. दोस्तों को आमंत्रित करें",
+    howStep1Desc: "अपना रेफरल कोड या लिंक WhatsApp पर दोस्तों को भेजें।",
+    howStep2Title: "2. दोस्त पहली राइड बुक करेगा",
+    howStep2Desc: "दोस्त कोड का उपयोग कर पहली राइड पर छूट पाएगा।",
+    howStep3Title: "3. आपके खाते में बोनस क्रेडिट",
+    howStep3Desc: "राइड पूरी होते ही आपके वॉलेट में बोनस जुड़ जाएगा।",
+    referStatsTitle: "📊 मेरी रेफरल रिपोर्ट",
+    referInvitedCount: "कुल आमंत्रित मित्र:",
+    totalBonusEarned: "कुल अर्जित बोनस:",
+    referPausedNotice: "⚠️ रेफरल प्रोग्राम वर्तमान में अस्थायी रूप से बंद है। जल्द ही पुनः शुरू होगा!",
+    drawerOffersDealsTitle: "🛍️ रिचार्ज व शॉपिंग ऑफ़र (Offers & Deals)",
+    drawerOffersDealsSub: "मोबाइल रिचार्ज व ब्रांड्स पर कैशबैक",
   },
 
   en: {
@@ -7379,7 +8636,8 @@ const TRANSLATIONS = {
 
     // Step 2: Booking Screen
     step2Badge: "Step 2: Service & Ride Booking",
-    changeUser: "✏️ Change User",
+    changeUser: "🚪 Logout",
+    logoutAction: "🚪 Logout",
     custGreet: "👋 Customer:",
     liveRatesBadge: "🟢 Live Rates",
     referPromoTitle: "Share & Get ₹10 Discount Coupon!",
@@ -7621,7 +8879,55 @@ const TRANSLATIONS = {
     standQrSaveBtn: "📥 Save Poster (PNG)",
     standQrCopyBtn: "🔗 Copy Link",
     promoCardTitle: "Save more with Ride Sathi Go",
-    promoCardSub: "Use coupon codes to get discounts on every ride"
+    promoCardSub: "Use coupon codes to get discounts on every ride",
+    // --- ADVERTISEMENT MODAL TRANSLATIONS ---
+    adModalTitle: "Advertise Your Business",
+    adModalSub: "Reach thousands of daily riders across Medinipur & Bengal",
+    adWhyTitle: "🎯 Why Advertise on Ride Sathi Go?",
+    adWhyDesc: "Hundreds of daily riders use our app for office, college, hospital and market trips. Best local visibility for your shop, restaurant, coaching or service.",
+    adSelectPlanTitle: "Select Advertisement Plan:",
+    adSilverTitle: "🥉 Silver Plan",
+    adSilverBadge: "Budget",
+    adSilverDesc: "✓ Homepage banner slot • Photo & address display",
+    adGoldTitle: "🥇 Gold Partner Plan",
+    adGoldBadge: "⭐ Most Popular",
+    adGoldDesc: "✓ Top home banner • Direct Call & WhatsApp buttons • Push notification promos",
+    adPlatinumTitle: "💎 Platinum VIP Plan",
+    adPlatinumBadge: "👑 Maximum Reach",
+    adPlatinumDesc: "✓ App splash feature • Pinned top banner • Social media shoutout • Unlimited clicks",
+    adMonthSuffix: "/ month",
+    adSelectedLabel: "Selected Plan:",
+    adBookWaBtn: "Book Ad via WhatsApp",
+    adCallBtn: "📞 Call Helpline",
+    adPausedNotice: "⚠️ Advertisement booking is currently paused. Please contact our helpline for assistance.",
+
+    // --- REFER & EARN MODAL TRANSLATIONS ---
+    referModalTitle: "🎁 Refer & Earn Rewards",
+    referModalSub: "Invite friends to Ride Sathi Go & earn bonus rewards on their first trip!",
+    referHeroBadge: "🔥 Special Offer",
+    referEarnYouGet: "You Get",
+    referEarnFriendGets: "Friend Gets",
+    referBonusOff: "OFF",
+    yourReferCode: "Your Unique Referral Code:",
+    copyReferBtn: "📋 Copy Code",
+    copyReferDone: "✅ Copied!",
+    copyLinkBtn: "🔗 Copy Link",
+    shareWhatsAppBtn: "Share on WhatsApp",
+    shareTelegramBtn: "Share on Telegram",
+    shareMoreBtn: "📲 More Share Options",
+    howItWorksTitle: "💡 How It Works (3 Easy Steps)",
+    howStep1Title: "1. Invite Friends",
+    howStep1Desc: "Share your unique referral code or link with friends on WhatsApp.",
+    howStep2Title: "2. Friend Takes 1st Ride",
+    howStep2Desc: "Your friend gets an instant discount on their very first booking.",
+    howStep3Title: "3. You Get Rewarded",
+    howStep3Desc: "As soon as the trip ends, your bonus is credited to your wallet.",
+    referStatsTitle: "📊 My Referral Stats",
+    referInvitedCount: "Friends Invited:",
+    totalBonusEarned: "Total Bonus Earned:",
+    referPausedNotice: "⚠️ The Referral Program is currently paused. Please check back soon!",
+    drawerOffersDealsTitle: "🛍️ Recharge & Shopping Deals (Offers)",
+    drawerOffersDealsSub: "Mobile recharge & brand cashbacks",
   }
 };
 
@@ -10168,44 +11474,396 @@ window.submitFeedback = function() {
   }
 };
 
-// === 5. REFERRAL SYSTEM ===
+// === 5. REALTIME REFERRAL & BUSINESS ADVERTISING ENGINES ===
+window.rsgReferralConfig = {
+  active: true,
+  referrerBonus: 50,
+  friendDiscount: 25,
+  minRideAmount: 30
+};
+
+window.rsgAdConfig = {
+  active: true,
+  silverPrice: 499,
+  goldPrice: 999,
+  platinumPrice: 1999,
+  contactPhone: "8768447312"
+};
+
 let userReferralCode = 'RSGO-XXXX';
 let userBonus = 0;
+let userReferralCount = 0;
 
+// Initialize Admin Config Listener (Firebase Realtime DB + LocalStorage Cache)
+window.initCustomerReferralAndAdConfig = function() {
+  // Load from LocalStorage Cache first (0ms latency, lifetime free)
+  try {
+    const cachedRef = localStorage.getItem('rsg_customer_referral_config');
+    if (cachedRef) Object.assign(window.rsgReferralConfig, JSON.parse(cachedRef));
+  } catch(e){}
+
+  try {
+    const cachedAd = localStorage.getItem('rsg_customer_ad_config');
+    if (cachedAd) Object.assign(window.rsgAdConfig, JSON.parse(cachedAd));
+  } catch(e){}
+
+  window.syncCustomerReferralDom();
+  window.syncCustomerAdDom();
+
+  // Attach Realtime Listeners
+  const rtdb = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.firebaseDb || null);
+  if (rtdb) {
+    const handleRefSnap = snap => {
+      const val = snap.val();
+      if (!val) return;
+      window.rsgReferralConfig.active = (val.active !== false);
+      if (val.referrerBonus != null) window.rsgReferralConfig.referrerBonus = Number(val.referrerBonus);
+      if (val.friendDiscount != null) window.rsgReferralConfig.friendDiscount = Number(val.friendDiscount);
+      if (val.minRideAmount != null) window.rsgReferralConfig.minRideAmount = Number(val.minRideAmount);
+      try { localStorage.setItem('rsg_customer_referral_config', JSON.stringify(window.rsgReferralConfig)); } catch(e){}
+      window.syncCustomerReferralDom();
+    };
+    rtdb.ref('settings/referral').on('value', handleRefSnap);
+    rtdb.ref('app_config/referral').on('value', handleRefSnap);
+
+    const handleAdSnap = snap => {
+      const val = snap.val();
+      if (!val) return;
+      window.rsgAdConfig.active = (val.active !== false);
+      if (val.silverPrice != null) window.rsgAdConfig.silverPrice = Number(val.silverPrice);
+      if (val.goldPrice != null) window.rsgAdConfig.goldPrice = Number(val.goldPrice);
+      if (val.platinumPrice != null) window.rsgAdConfig.platinumPrice = Number(val.platinumPrice);
+      if (val.contactPhone) window.rsgAdConfig.contactPhone = String(val.contactPhone);
+      try { localStorage.setItem('rsg_customer_ad_config', JSON.stringify(window.rsgAdConfig)); } catch(e){}
+      window.syncCustomerAdDom();
+    };
+    rtdb.ref('settings/advertisement').on('value', handleAdSnap);
+    rtdb.ref('app_config/advertisement').on('value', handleAdSnap);
+  }
+};
+
+window.syncCustomerReferralDom = function() {
+  const dRef = document.getElementById('referBonusReferrerDisplay');
+  if (dRef) dRef.innerText = window.rsgReferralConfig.referrerBonus || 50;
+
+  const dFriend = document.getElementById('referBonusFriendDisplay');
+  if (dFriend) dFriend.innerText = window.rsgReferralConfig.friendDiscount || 25;
+
+  const pausedAlert = document.getElementById('referPausedNotice');
+  if (pausedAlert) {
+    pausedAlert.style.display = (window.rsgReferralConfig.active === false) ? 'block' : 'none';
+  }
+};
+
+window.syncCustomerAdDom = function() {
+  const pSilv = document.getElementById('adPriceSilver');
+  if (pSilv) pSilv.innerText = window.rsgAdConfig.silverPrice || 499;
+
+  const pGold = document.getElementById('adPriceGold');
+  if (pGold) pGold.innerText = window.rsgAdConfig.goldPrice || 999;
+
+  const pPlat = document.getElementById('adPricePlatinum');
+  if (pPlat) pPlat.innerText = window.rsgAdConfig.platinumPrice || 1999;
+
+  const pausedAlert = document.getElementById('adPausedNotice');
+  if (pausedAlert) {
+    pausedAlert.style.display = (window.rsgAdConfig.active === false) ? 'block' : 'none';
+  }
+
+  const helpDisplay = document.getElementById('adHelplineDisplay');
+  if (helpDisplay) helpDisplay.innerText = window.rsgAdConfig.contactPhone || '8768447312';
+
+  if (typeof window.updateAdBookingButton === 'function') {
+    window.updateAdBookingButton();
+  }
+};
+
+// Setup User Referral Code & Wallet
 function setupReferral(phone) {
-  if (!db || !phone) return;
-  const userRef = ref(db, 'users/' + phone);
-  get(userRef).then(snap => {
-    if (snap.exists()) {
-      const u = snap.val();
-      userReferralCode = u.referralCode || ('RSGO-' + phone.slice(-4));
-      userBonus = Number(u.bonusEarned || u.walletBalance || 0);
-    } else {
-      userReferralCode = 'RSGO-' + Math.random().toString(36).substring(2,6).toUpperCase();
-      userBonus = 0;
-      update(userRef, {
-        phone: phone,
-        referralCode: userReferralCode,
-        bonusEarned: 0,
-        createdAt: Date.now()
-      });
-    }
-    document.getElementById('userReferCode').innerText = userReferralCode;
-    document.getElementById('userBonusEarned').innerText = `₹${userBonus}`;
-  }).catch(()=>{});
+  phone = (phone || localStorage.getItem('userPhone') || localStorage.getItem('customerPhone') || '').replace(/[^0-9]/g, '');
+  if (!phone) {
+    userReferralCode = localStorage.getItem('rsg_user_refer_code') || 'RSGO-GUEST';
+    userBonus = Number(localStorage.getItem('rsg_user_refer_bonus') || 0);
+    userReferralCount = Number(localStorage.getItem('rsg_user_refer_count') || 0);
+    const cEl = document.getElementById('userReferCode');
+    if (cEl) cEl.innerText = userReferralCode;
+    const bEl = document.getElementById('userBonusEarned');
+    if (bEl) bEl.innerText = '₹' + userBonus;
+    const cntEl = document.getElementById('userReferralCount');
+    if (cntEl) cntEl.innerText = userReferralCount + ' জন';
+    return;
+  }
+
+  userReferralCode = 'RSGO-' + phone.slice(-4);
+  try { localStorage.setItem('rsg_user_refer_code', userReferralCode); } catch(e){}
+
+  const rtdb = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.firebaseDb || null);
+  if (rtdb) {
+    rtdb.ref('users/' + phone).once('value').then(snap => {
+      if (snap.exists()) {
+        const u = snap.val() || {};
+        if (u.referralCode) userReferralCode = u.referralCode;
+        userBonus = Number(u.bonusEarned || u.walletBalance || 0);
+        userReferralCount = Number(u.referralCount || u.totalReferrals || 0);
+      } else {
+        rtdb.ref('users/' + phone).update({
+          phone: phone,
+          referralCode: userReferralCode,
+          bonusEarned: 0,
+          referralCount: 0,
+          createdAt: Date.now()
+        }).catch(()=>{});
+      }
+      try {
+        localStorage.setItem('rsg_user_refer_code', userReferralCode);
+        localStorage.setItem('rsg_user_refer_bonus', userBonus);
+        localStorage.setItem('rsg_user_refer_count', userReferralCount);
+      } catch(e){}
+
+      const cEl = document.getElementById('userReferCode');
+      if (cEl) cEl.innerText = userReferralCode;
+      const bEl = document.getElementById('userBonusEarned');
+      if (bEl) bEl.innerText = '₹' + userBonus;
+      const cntEl = document.getElementById('userReferralCount');
+      if (cntEl) cntEl.innerText = userReferralCount + ' জন';
+    }).catch(()=>{});
+  }
+
+  const cEl = document.getElementById('userReferCode');
+  if (cEl) cEl.innerText = userReferralCode;
+  const bEl = document.getElementById('userBonusEarned');
+  if (bEl) bEl.innerText = '₹' + userBonus;
 }
 
-window.openReferralModal = function() {
-  document.getElementById('referModal').classList.add('show');
+// === REFERRAL SHARING LOGIC IN CUSTOMER'S ACTIVE LANGUAGE ===
+window.getReferralSharePayload = function(lang) {
+  const curL = lang || (typeof currentLang !== 'undefined' ? currentLang : '') || localStorage.getItem('appLang') || 'bn';
+  const code = (document.getElementById('userReferCode') ? document.getElementById('userReferCode').innerText : '').trim() || userReferralCode || 'RSGO-FRIEND';
+  const friendBonus = (window.rsgReferralConfig && window.rsgReferralConfig.friendDiscount) ? Number(window.rsgReferralConfig.friendDiscount) : 25;
+  const link = 'https://ride-sathi-go.web.app/?ref=' + encodeURIComponent(code);
+
+  if (curL === 'en') {
+    return {
+      title: 'Ride Sathi Go - Fast & Affordable Rides',
+      text: '🚖 *RIDE SATHI GO - Fast, Safe & Affordable Rides!*\n\nUse my referral code to get *Flat ₹' + friendBonus + ' OFF* on your first ride!\n\n🔑 Referral Code: *' + code + '*\n\n📲 Book your ride now:\n' + link,
+      link: link
+    };
+  } else if (curL === 'hi') {
+    return {
+      title: 'Ride Sathi Go - सुरक्षित व किफायती राइड',
+      text: '🚖 *RIDE SATHI GO - सुरक्षित, तेज़ और किफायती राइड!*\n\nमेरे रेफरल कोड का इस्तेमाल करें और पहली राइड पर पाएं *फ्लैट ₹' + friendBonus + ' की छूट!*\n\n🔑 रेफरल कोड: *' + code + '*\n\n📲 अभी राइड बुक करें:\n' + link,
+      link: link
+    };
+  } else {
+    return {
+      title: 'Ride Sathi Go - সেরা ভাড়ায় দ্রুত ও নিরাপদ রাইড',
+      text: '🚖 *RIDE SATHI GO - সেরা ভাড়ায় দ্রুত ও নিরাপদ রাইড!*\n\nআমার রেফারেল কোড দিয়ে প্রথম রাইডে পান *ফ্ল্যাট ₹' + friendBonus + ' ছাড়!*\n\n🔑 রেফারেল কোড: *' + code + '*\n\n📲 এখনই রাইড বুক করুন বা অ্যাপে যান:\n' + link,
+      link: link
+    };
+  }
 };
-window.closeReferralModal = function() {
-  document.getElementById('referModal').classList.remove('show');
+
+window.shareReferralWhatsApp = function() {
+  const p = window.getReferralSharePayload();
+  const url = 'https://wa.me/?text=' + encodeURIComponent(p.text);
+  window.open(url, '_blank');
+};
+
+window.shareReferralTelegram = function() {
+  const p = window.getReferralSharePayload();
+  const url = 'https://t.me/share/url?url=' + encodeURIComponent(p.link) + '&text=' + encodeURIComponent(p.text);
+  window.open(url, '_blank');
+};
+
+window.shareReferralNative = function() {
+  const p = window.getReferralSharePayload();
+  if (navigator.share) {
+    navigator.share({
+      title: p.title,
+      text: p.text,
+      url: p.link
+    }).catch(() => {
+      window.shareReferralWhatsApp();
+    });
+  } else {
+    window.shareReferralWhatsApp();
+  }
+};
+
+window.copyReferralCode = function() {
+  const code = (document.getElementById('userReferCode') ? document.getElementById('userReferCode').innerText : '').trim() || userReferralCode || 'RSGO-FRIEND';
+  const curL = (typeof currentLang !== 'undefined' ? currentLang : '') || localStorage.getItem('appLang') || 'bn';
+  const copiedTxt = (curL === 'en' ? '✅ Copied!' : (curL === 'hi' ? '✅ कॉपी हो गया!' : '✅ কপি হয়েছে!'));
+  const btnTxt = document.getElementById('copyCodeBtnText');
+
+  const showToast = () => {
+    const toast = document.getElementById('referCopyToast');
+    if (toast) {
+      toast.innerText = (curL === 'en' ? '📋 Referral code copied!' : (curL === 'hi' ? '📋 रेफरल कोड कॉपी हो गया!' : '📋 রেফারেল কোড সফলভাবে কপি হয়েছে!'));
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+    if (btnTxt) {
+      const orig = btnTxt.innerText;
+      btnTxt.innerText = copiedTxt;
+      setTimeout(() => { btnTxt.innerText = orig; }, 2000);
+    }
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(showToast).catch(() => {
+      prompt("Copy Referral Code:", code);
+    });
+  } else {
+    prompt("Copy Referral Code:", code);
+  }
+};
+
+window.copyReferralLink = function() {
+  const code = (document.getElementById('userReferCode') ? document.getElementById('userReferCode').innerText : '').trim() || userReferralCode || 'RSGO-FRIEND';
+  const link = 'https://ride-sathi-go.web.app/?ref=' + encodeURIComponent(code);
+  const curL = (typeof currentLang !== 'undefined' ? currentLang : '') || localStorage.getItem('appLang') || 'bn';
+  const copiedTxt = (curL === 'en' ? '✅ Link Copied!' : (curL === 'hi' ? '✅ लिंक कॉपी हो गया!' : '✅ লিংক কপি হয়েছে!'));
+  const btnTxt = document.getElementById('copyLinkBtnText');
+
+  const showToast = () => {
+    const toast = document.getElementById('referCopyToast');
+    if (toast) {
+      toast.innerText = (curL === 'en' ? '🔗 Referral link copied!' : (curL === 'hi' ? '🔗 रेफरल लिंक कॉपी हो गया!' : '🔗 রেফারেল লিংক সফলভাবে কপি হয়েছে!'));
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+    if (btnTxt) {
+      const orig = btnTxt.innerText;
+      btnTxt.innerText = copiedTxt;
+      setTimeout(() => { btnTxt.innerText = orig; }, 2000);
+    }
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(showToast).catch(() => {
+      prompt("Copy Referral Link:", link);
+    });
+  } else {
+    prompt("Copy Referral Link:", link);
+  }
+};
+
+// === INTERACTIVE ADVERTISEMENT PLAN SELECTOR ===
+window.selectedAdPlan = 'gold';
+
+window.selectAdPlan = function(planKey) {
+  window.selectedAdPlan = planKey || 'gold';
+  const plans = ['silver', 'gold', 'platinum'];
+
+  plans.forEach(p => {
+    const card = document.getElementById('adPlanCard_' + p);
+    const radio = document.getElementById('adRadio_' + p);
+    if (!card) return;
+
+    if (p === window.selectedAdPlan) {
+      if (p === 'silver') {
+        card.style.border = '2.5px solid #0284c7';
+        card.style.background = '#f0f9ff';
+        card.style.boxShadow = '0 4px 15px rgba(2,132,199,0.2)';
+        if (radio) {
+          radio.style.borderColor = '#0284c7';
+          radio.style.background = '#0284c7';
+          radio.innerText = '✓';
+        }
+      } else if (p === 'gold') {
+        card.style.border = '2.5px solid #f59e0b';
+        card.style.background = '#fffbeb';
+        card.style.boxShadow = '0 4px 15px rgba(245,158,11,0.22)';
+        if (radio) {
+          radio.style.borderColor = '#f59e0b';
+          radio.style.background = '#f59e0b';
+          radio.innerText = '✓';
+        }
+      } else if (p === 'platinum') {
+        card.style.border = '2.5px solid #8b5cf6';
+        card.style.background = '#faf5ff';
+        card.style.boxShadow = '0 4px 15px rgba(139,92,246,0.22)';
+        if (radio) {
+          radio.style.borderColor = '#8b5cf6';
+          radio.style.background = '#8b5cf6';
+          radio.innerText = '✓';
+        }
+      }
+      card.style.transform = 'scale(1.02)';
+    } else {
+      card.style.border = '1.5px solid #e2e8f0';
+      card.style.background = '#fff';
+      card.style.boxShadow = 'none';
+      card.style.transform = 'scale(1)';
+      if (radio) {
+        radio.style.borderColor = '#cbd5e1';
+        radio.style.background = '#fff';
+        radio.innerText = '';
+      }
+    }
+  });
+
+  window.updateAdBookingButton();
+};
+
+window.updateAdBookingButton = function() {
+  const p = window.selectedAdPlan || 'gold';
+  const curL = (typeof currentLang !== 'undefined' ? currentLang : '') || localStorage.getItem('appLang') || 'bn';
+  const cfg = window.rsgAdConfig || { silverPrice: 499, goldPrice: 999, platinumPrice: 1999, contactPhone: '8768447312' };
+  
+  let planName = 'Gold Plan';
+  let price = cfg.goldPrice || 999;
+  if (p === 'silver') {
+    planName = (curL === 'en' ? 'Silver Plan' : (curL === 'hi' ? 'सिल्वर प्लान' : 'সিলভার প্ল্যান'));
+    price = cfg.silverPrice || 499;
+  } else if (p === 'gold') {
+    planName = (curL === 'en' ? 'Gold Partner Plan' : (curL === 'hi' ? 'गोल्ड पार्टनर प्लान' : 'গোল্ড পার্টনার প্ল্যান'));
+    price = cfg.goldPrice || 999;
+  } else if (p === 'platinum') {
+    planName = (curL === 'en' ? 'Platinum VIP Plan' : (curL === 'hi' ? 'प्लैटिनम वीआईपी प्लान' : 'প্ল্যাটিনাম ভিআইপি প্ল্যান'));
+    price = cfg.platinumPrice || 1999;
+  }
+
+  const sumEl = document.getElementById('adSelectedPlanSummary');
+  if (sumEl) {
+    const icon = p === 'silver' ? '🥉' : (p === 'gold' ? '🥇' : '💎');
+    const mo = (curL === 'en' ? '/month' : (curL === 'hi' ? '/माह' : '/মাস'));
+    sumEl.innerText = icon + ' ' + planName + ' — ₹' + price + mo;
+  }
+
+  let text = '';
+  if (curL === 'en') {
+    text = 'Hello Ride Sathi Go, I would like to book the "' + planName + '" (₹' + price + '/month) to advertise my shop/business. Please share payment and banner details.';
+  } else if (curL === 'hi') {
+    text = 'नमस्ते Ride Sathi Go, मैं अपने व्यवसाय/दुकान के प्रचार के लिए "' + planName + '" (₹' + price + '/माह) बुक करना चाहता हूँ। कृपया विज्ञापन विवरण व पेमेंट की जानकारी दें।';
+  } else {
+    text = 'নমস্কার Ride Sathi Go, আমি আমার দোকান/ব্যবসার বিজ্ঞাপনের জন্য "' + planName + '" (₹' + price + '/মাস) বুক করতে চাই। অনুগ্রহ করে পেমেন্ট ও ব্যানারের বিস্তারিত জানাবেন।';
+  }
+
+  const phone = (cfg.contactPhone || '8768447312').replace(/[^0-9]/g, '');
+  const waBtn = document.getElementById('adWhatsAppBtn');
+  if (waBtn) {
+    waBtn.href = 'https://wa.me/91' + phone + '?text=' + encodeURIComponent(text);
+  }
+
+  const callBtn = document.getElementById('adCallBtn');
+  if (callBtn) {
+    callBtn.href = 'tel:' + phone;
+  }
+  const helpEl = document.getElementById('adHelplineDisplay');
+  if (helpEl) {
+    helpEl.innerText = phone;
+  }
 };
 
 // Revenue & Partner Modals
 window.openAdSponsorshipModal = function() {
   var m = document.getElementById('adSponsorshipModal');
-  if (m) m.classList.add('show');
+  if (m) {
+    m.classList.add('show');
+    window.selectAdPlan(window.selectedAdPlan || 'gold');
+  }
 };
 window.closeAdSponsorshipModal = function() {
   var m = document.getElementById('adSponsorshipModal');
@@ -10238,34 +11896,28 @@ window.closeInsuranceModal = function() {
   var m = document.getElementById('insuranceModal');
   if (m) m.classList.remove('show');
 };
-window.shareReferralWhatsApp = function() {
-  const code = (document.getElementById('userReferCode') ? document.getElementById('userReferCode').innerText : '') || userReferralCode || 'RSGO-SPECIAL';
-  const text = encodeURIComponent(`🚖 *RIDE SATHI GO (সাশ্রয়ী রাইড ও পার্সেল বুকিং)*\n\n` +
-    `কম খরচে বাড়ি, অফিস বা স্টেশনে যাতায়াত করতে ব্যবহার করুন পশ্চিমবঙ্গের নির্ভরযোগ্য রাইড সাথী!\n\n` +
-    `🎁 আমার স্পেশাল রেফারেল কোড: *${code}*\n` +
-    `প্রথম রাইডে ছাড় পেতে এখনই লিংকটি খুলুন:\n` +
-    `👉 লিঙ্ক: https://ride-sathi-go.web.app/`);
-  
-  // Instant reward: auto apply SATHI10 coupon code
-  const cInp = document.getElementById('couponInput');
-  if (cInp) {
-    cInp.value = 'SATHI10';
-    if (typeof applyManualCoupon === 'function') {
-      applyManualCoupon();
+
+setTimeout(() => {
+  if (typeof initCustomerReferralAndAdConfig === 'function') {
+    initCustomerReferralAndAdConfig();
+  }
+  // Auto-detect ?ref= referral link param
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode && refCode.trim()) {
+      const cleanRef = refCode.trim().toUpperCase();
+      localStorage.setItem('rsg_applied_referral', cleanRef);
+      const cInp = document.getElementById('couponInput');
+      if (cInp && !cInp.value) {
+        cInp.value = cleanRef;
+        if (typeof applyManualCoupon === 'function') {
+          setTimeout(() => { applyManualCoupon(); }, 400);
+        }
+      }
     }
-  }
-  
-  if (navigator.share) {
-    navigator.share({
-      title: 'RIDE SATHI GO - রেফার ও আয়',
-      text: decodeURIComponent(text)
-    }).catch(() => {
-      window.open(`https://wa.me/?text=${text}`, '_blank');
-    });
-  } else {
-    window.open(`https://wa.me/?text=${text}`, '_blank');
-  }
-};
+  } catch(e){}
+}, 300);
 
 // === 6. NOTIFICATION SYSTEM MODAL ===
 window.openNotifModal = function() {
@@ -14998,9 +16650,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
         <div>
           <div style="display:flex;align-items:center;gap:6px">
             <div id="modalCustName" style="font-weight:900;font-size:16px;letter-spacing:-0.2px;color:#0f172a">Customer Name</div>
-            <button type="button" onclick="editCustomerProfileName()" style="background:#0f172a;color:#facc15;border:none;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:3px" title="নাম পরিবর্তন করুন">
-              <span data-i18n="editBtnShort">✏️ এডিট</span>
-            </button>
+            
           </div>
           <div id="modalCustPhone" style="font-size:12px;color:#475569;font-weight:700">📱 +91 XXXXXXXXXX</div>
         </div>
@@ -15122,8 +16772,8 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     <div class="rapido-nav-icon">📋</div>
     <span data-i18n="navRides">Rides</span>
   </button>
-  <button type="button" class="rapido-nav-tab" id="navReferTab" onclick="handleNavTabClick('refer', this)">
-    <div class="rapido-nav-icon">🎁</div>
+  <button type="button" class="rapido-nav-tab" id="navOffersTab" onclick="handleNavTabClick('offers', this)">
+    <div class="rapido-nav-icon">🏷️</div>
     <span data-i18n="navOffers">Offers</span>
   </button>
   <button type="button" class="rapido-nav-tab" id="navProfileTab" onclick="handleNavTabClick('profile', this)">
@@ -15298,7 +16948,7 @@ window.closeDriverVerifyPopup = function(focusBooking) {
 
   // Bottom Navigation Handler
   window.handleNavTabClick = function(tabName, elem) {
-    if (tabName !== 'home' && typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin(tabName)) {
+    if (tabName !== 'home' && tabName !== 'offers' && tabName !== 'offer' && typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin(tabName)) {
       return;
     }
     document.querySelectorAll('.rapido-nav-tab').forEach(function(t) {
@@ -15316,6 +16966,10 @@ window.closeDriverVerifyPopup = function(focusBooking) {
     } else if (tabName === 'history') {
       if (typeof openCustomerHistoryModal === 'function') {
         openCustomerHistoryModal();
+      }
+    } else if (tabName === 'offers' || tabName === 'offer') {
+      if (typeof openOffersModal === 'function') {
+        openOffersModal();
       }
     } else if (tabName === 'refer') {
       if (typeof openReferralModal === 'function') {

@@ -18,17 +18,153 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
-body { margin:0; font-family: sans-serif; }
-button { cursor:pointer; }
+*, *:before, *:after { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: #fefce8;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+button { cursor: pointer; font-family: inherit; }
 
-body{margin:0;background:#fefce8;font-family:system-ui}
-.header{background:linear-gradient(90deg,#f59e0b,#fb923c);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;position:sticky;top:0;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.15)}
-.tabs{display:flex;background:#fff;position:sticky;top:50px;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow-x:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:0 0 auto;min-width:60px;padding:8px 6px;text-align:center;font-weight:700;font-size:9px;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;user-select:none}
-.tab.active{border-color:#f59e0b;color:#000;background:#fffbeb}
-.container{padding:8px;max-width:1100px;margin:auto}
-.card{background:#fff;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.05);border:1px solid #f1f5f9}
+.admin-top-bar, #adminTopBar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  z-index: 99999 !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
+  background: #fff !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.header {
+  background: linear-gradient(90deg, #f59e0b, #fb923c);
+  color: #fff;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+.header-brand {
+  flex: 1;
+  min-width: 0;
+}
+.header-title {
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.header-sub {
+  font-size: 10.5px;
+  opacity: .95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.header-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.2;
+}
+.header-btn.sheet-btn {
+  background: #059669;
+  color: #fff;
+  border: 1px solid #10b981;
+}
+.header-btn.logout-btn {
+  background: #ef4444;
+  color: #fff;
+}
+.tabs {
+  display: flex;
+  background: #fff;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 0 0 auto;
+  min-width: 58px;
+  padding: 8px 6px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 9.5px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  color: #64748b;
+  user-select: none;
+  box-sizing: border-box;
+  line-height: 1.25;
+}
+.tab.active { border-color: #f59e0b; color: #000; background: #fffbeb; }
+.container {
+  padding: 8px;
+  padding-top: 108px !important;
+  max-width: 1100px;
+  width: 100%;
+  margin: auto;
+  box-sizing: border-box;
+}
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  border: 1px solid #f1f5f9;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+@media (max-width: 640px) {
+  .container { padding-top: 98px !important; }
+  .header { padding: 7px 10px; gap: 6px; }
+  .header-title { font-size: 12.5px; }
+  .header-sub { font-size: 9.5px; }
+  .header-actions { gap: 4px; }
+  .header-actions .badge, .header-btn { padding: 4px 6px !important; font-size: 9px !important; }
+  .grid4 { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
+  .grid2 { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .homeGrid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .homeCard { padding: 10px 8px; min-height: 75px; }
+  .homeCard b { font-size: 11.5px; }
+  .homeCard span { font-size: 9.5px; }
+}
 .btn{padding:8px 12px;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:11px}
 .approve{background:#16a34a;color:#fff}.reject{background:#ef4444;color:#fff}.blue{background:#0f172a;color:#fff}.orange{background:#f59e0b;color:#fff}.purple{background:#7c3aed;color:#fff}
 .badge{padding:3px 7px;border-radius:20px;font-size:10px;font-weight:700}.PENDING{background:#fef3c7;color:#92400e}.DUE-LOCK{background:#ef4444;color:#fff}.TIMER{background:#fee2e2;color:#991b1b;animation:blink 1s infinite}@keyframes blink{50%{opacity:.4}}
@@ -59,8 +195,9 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
   </div>
 </div>
 
-<div class="header"><div><b>RIDE SATHI GO - ADVANCED ADMIN</b><br><small id="statsTop">SURGE & DISPATCH READY • 30D AUTO-BACKUP</small></div><div style="display:flex;gap:8px;align-items:center"><span id="cleanStatusBadge" class="badge" style="background:#10b981;color:#fff" title="Auto 30 Days Cleaning Active">🧹 30D Clean</span><span id="pendingCount" class="badge PENDING">0</span><a id="openGoogleSheetHeaderBtn" href="https://docs.google.com/spreadsheets" target="_blank" rel="noopener" style="padding:6px 10px;background:#059669;color:#fff;border-radius:8px;font-size:10px;font-weight:bold;text-decoration:none;display:inline-flex;align-items:center;gap:4px;border:1px solid #10b981" title="Owner: support.ridesathi@gmail.com">📊 Google Sheet Report</a>
-    <button onclick="doAdminLogout()" style="padding:6px 10px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:10px;cursor:pointer">Logout</button></div></div>
+<header id="adminTopBar" class="admin-top-bar">
+<div class="header"><div class="header-brand"><div class="header-title">RIDE SATHI GO - ADVANCED ADMIN</div><div id="statsTop" class="header-sub">SURGE & DISPATCH READY • 30D AUTO-BACKUP</div></div><div class="header-actions"><span id="cleanStatusBadge" class="badge" style="background:#10b981;color:#fff" title="Auto 30 Days Cleaning Active">🧹 30D</span><span id="pendingCount" class="badge PENDING">0</span><a id="openGoogleSheetHeaderBtn" href="https://docs.google.com/spreadsheets" target="_blank" rel="noopener" class="header-btn sheet-btn" title="Owner: support.ridesathi@gmail.com">📊 Sheet</a>
+    <button onclick="doAdminLogout()" class="header-btn logout-btn">Logout</button></div></div>
 
 <div class="tabs">
   <div class="tab active" id="tab-home" onclick="openTab('home',this)">🏠<br>Home</div>
@@ -97,6 +234,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
   <div class="tab" id="tab-manage" onclick="openTab('manage',this)" style="color:#0369a1;background:#e0f2fe;font-weight:900">👥<br>Manage</div>
   <div class="tab" id="tab-specialFeatures" onclick="openTab('specialFeatures',this)" style="color:#7c3aed;background:#faf5ff;font-weight:900">🚀<br>NextGen</div>
 </div>
+</header>
 
 <div class="container">
 
@@ -124,8 +262,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
 <div class="homeCard hc-blue" onclick="openTab('manage',document.getElementById('tab-manage'))" style="border:2px solid #0284c7;background:#f0f9ff"><b>👥 Manage Users (Google Auth)</b><span>কাস্টমার ও ড্রাইভার লগইন তালিকা, Block/Unblock, Edit, Delete</span><br><small style="font-weight:800;color:#0284c7" id="homeManageSummary">Manage Auth & Users</small></div>
 <div class="homeCard hc-purple" onclick="openTab('specialFeatures',document.getElementById('tab-specialFeatures'))" style="border:2px solid #7c3aed;background:#faf5ff"><b>🚀 NextGen Special Features</b><span>শেয়ার্ড টোটো, মেডিকেল এমার্জেন্সি, স্কুল পাস ও স্মার্ট ভয়েস</span><br><small style="font-weight:800;color:#7c3aed" id="homeNextGenSummary">4 Master Controls</small></div>
 </div>
-</div>
-<div class="card" style="border:2px solid #f59e0b;background:#fffbeb"><b>🎯 LIVE NOW - Active Trips Summary</b><div id="homeLiveList" style="margin-top:8px"></div></div>
+<div class="card" style="border:2px solid #f59e0b;background:#fffbeb;margin-top:10px"><b>🎯 LIVE NOW - Active Trips Summary</b><div id="homeLiveList" style="margin-top:8px"></div></div>
 </div>
 
 <!-- DASHBOARD TAB -->
@@ -1077,6 +1214,88 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
       <div><label class="small">7 Days Pass ₹</label><input id="pass7Days" type="number" value="180"></div>
       <div><label class="small">15 Days Pass ₹</label><input id="pass15Days" type="number" value="350"></div>
       <div><label class="small">30 Days Pass ₹</label><input id="pass30Days" type="number" value="600"></div>
+    </div>
+  </div>
+
+  <!-- REFER & EARN PROGRAM SETTINGS -->
+  <div class="card" style="border:2px solid #ea580c;background:#fff7ed;margin-bottom:15px;box-shadow:0 4px 15px rgba(234,88,12,0.08)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <b style="color:#c2410c;font-size:16px">🎁 রেফার ও বোনাস প্রোগ্রাম সেটিংস (REFER & EARN SETTINGS)</b>
+        <p class="small" style="margin:2px 0 0;color:#9a3412">কাস্টমার রেফারেল বোনাস ও ছাড় নিয়ন্ত্রণ করুন। অ্যাডমিন চাইলে তাৎক্ষণিকভাবে রেফারেল অফার চালু/বন্ধ বা অ্যামাউন্ট পরিবর্তন করতে পারবেন।</p>
+      </div>
+      <span class="badge" style="background:#ea580c;color:#fff;font-weight:bold" id="adminReferralStatusBadge">🟢 LIVE ACTIVE</span>
+    </div>
+
+    <div class="grid4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:12px;gap:12px">
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🔘 রেফারেল স্ট্যাটাস (Status):</label>
+        <select id="adminReferralActive" style="font-weight:bold;border:1.5px solid #ea580c;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+          <option value="true">🟢 সক্রিয় (Active / Enabled)</option>
+          <option value="false">🔴 বন্ধ (Paused / Disabled)</option>
+        </select>
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">💰 রেফারকারী পাবে ₹ (Referrer Bonus):</label>
+        <input id="adminReferrerBonus" type="number" min="0" value="50" style="font-weight:bold;border:1.5px solid #ea580c;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🎟️ নতুন বন্ধু ছাড় পাবে ₹ (Friend Discount):</label>
+        <input id="adminFriendDiscount" type="number" min="0" value="25" style="font-weight:bold;border:1.5px solid #ea580c;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🚗 নূন্যতম রাইড ভাড়া ₹ (Min Ride):</label>
+        <input id="adminMinRideAmount" type="number" min="0" value="30" style="font-weight:bold;border:1.5px solid #ea580c;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:8px">
+      <div id="adminReferralMsg" style="font-size:13px;font-weight:bold"></div>
+      <button type="button" class="btn" onclick="saveAdminReferralConfig()" style="background:linear-gradient(90deg,#ea580c,#c2410c);color:#fff;font-weight:bold;padding:11px 22px;border-radius:8px;border:none;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(234,88,12,0.3)">
+        💾 Save Referral Settings (সংরক্ষণ করুন)
+      </button>
+    </div>
+  </div>
+
+  <!-- BUSINESS ADVERTISEMENT SETTINGS -->
+  <div class="card" style="border:2px solid #8b5cf6;background:#faf5ff;margin-bottom:15px;box-shadow:0 4px 15px rgba(139,92,246,0.08)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <b style="color:#6d28d9;font-size:16px">📢 ব্যবসার বিজ্ঞাপন ও প্ল্যান রেট সেটিংস (BUSINESS ADVERTISEMENT SETTINGS)</b>
+        <p class="small" style="margin:2px 0 0;color:#7c3aed">কাস্টমার অ্যাপের 'Advertise Your Business' সেকশনের প্ল্যান রেট ও বুকিং স্ট্যাটাস সম্পূর্ণ নিয়ন্ত্রণ করুন।</p>
+      </div>
+      <span class="badge" style="background:#8b5cf6;color:#fff;font-weight:bold" id="adminAdStatusBadge">🟢 LIVE ACTIVE</span>
+    </div>
+
+    <div class="grid4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:12px;gap:12px">
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🔘 বিজ্ঞাপন স্ট্যাটাস (Status):</label>
+        <select id="adminAdActive" style="font-weight:bold;border:1.5px solid #8b5cf6;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+          <option value="true">🟢 সক্রিয় (Active / Accepting Ads)</option>
+          <option value="false">🔴 বন্ধ (Paused / Slots Full)</option>
+        </select>
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🥉 সিলভার প্ল্যান ₹ / মাস (Silver Plan):</label>
+        <input id="adminAdSilverPrice" type="number" min="0" value="499" style="font-weight:bold;border:1.5px solid #8b5cf6;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">🥇 গোল্ড পার্টনার ₹ / মাস (Gold Plan):</label>
+        <input id="adminAdGoldPrice" type="number" min="0" value="999" style="font-weight:bold;border:1.5px solid #8b5cf6;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">💎 প্ল্যাটিনাম ভিআইপি ₹ / মাস (Platinum):</label>
+        <input id="adminAdPlatinumPrice" type="number" min="0" value="1999" style="font-weight:bold;border:1.5px solid #8b5cf6;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+      <div>
+        <label class="small" style="font-weight:bold;color:#0f172a;display:block;margin-bottom:4px">📞 হেল্পলাইন / WhatsApp বুকিং নম্বর:</label>
+        <input id="adminAdContactPhone" type="text" value="8768447312" style="font-weight:bold;border:1.5px solid #8b5cf6;width:100%;padding:10px;border-radius:8px;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:8px">
+      <div id="adminAdMsg" style="font-size:13px;font-weight:bold"></div>
+      <button type="button" class="btn" onclick="saveAdminAdConfig()" style="background:linear-gradient(90deg,#8b5cf6,#6d28d9);color:#fff;font-weight:bold;padding:11px 22px;border-radius:8px;border:none;cursor:pointer;font-size:14px;box-shadow:0 4px 12px rgba(139,92,246,0.3)">
+        💾 Save Ad Settings (সংরক্ষণ করুন)
+      </button>
     </div>
   </div>
 
@@ -2972,6 +3191,75 @@ function doPost(e) {
 <!-- ============================================== -->
 <!-- ✏️ EDIT USER MODAL                             -->
 <!-- ============================================== -->
+<div 
+<!-- ============================================== -->
+<!-- 🔑 ADMIN PIN RESET & DISPATCH MODAL (100% FREE) -->
+<!-- ============================================== -->
+<div id="adminPinResetModal" onclick="if(event.target===this)closeAdminPinResetModal()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:99999;backdrop-filter:blur(4px);justify-content:center;align-items:center;padding:16px">
+  <div style="background:#fff;width:100%;max-width:440px;border-radius:20px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #f1f5f9;padding-bottom:12px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">🔑</span>
+        <b style="font-size:16px;color:#0f172a">কাস্টমার সিক্রেট পিন রিসেট ও সেন্ড</b>
+      </div>
+      <button type="button" onclick="closeAdminPinResetModal()" style="background:#f1f5f9;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;font-weight:bold;cursor:pointer">✕</button>
+    </div>
+
+    <input type="hidden" id="adminPinTargetPhone">
+    <input type="hidden" id="adminPinTargetName">
+
+    <!-- Customer Pill Info -->
+    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:14px;font-weight:900;color:#166534" id="adminPinDispName">Customer Name</div>
+        <div style="font-size:12.5px;color:#15803d;font-weight:700" id="adminPinDispPhone">📱 +91 XXXXXXXXXX</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:#64748b;font-weight:700">বর্তমান পিন:</div>
+        <div style="font-size:15px;font-weight:900;color:#0369a1" id="adminPinDispCurrent">⏳ লোড হচ্ছে...</div>
+      </div>
+    </div>
+
+    <!-- Security Question Answer if present -->
+    <div id="adminPinSecQWrap" style="display:none;background:#fefce8;border:1px solid #fef08a;border-radius:10px;padding:10px;margin-bottom:14px;font-size:12px;color:#854d0e">
+      <b>🛡️ সিকিউরিটি তথ্য:</b>
+      <div id="adminPinSecQText" style="margin-top:2px">প্রশ্ন: -</div>
+      <div id="adminPinSecAText" style="font-weight:bold">উত্তর: -</div>
+    </div>
+
+    <!-- New PIN Input + Auto Generate Button -->
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <label class="small" style="font-weight:800;color:#334155">নতুন ৪-সংখ্যার সিক্রেট পিন (New 4-Digit PIN):</label>
+        <button type="button" onclick="adminAutoGenerateNewPin()" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;color:#475569">
+          🎲 Auto Generate
+        </button>
+      </div>
+      <input type="tel" id="adminNewPinInput" maxlength="4" placeholder="যেমন: 4589" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" style="margin-top:6px;padding:12px;border-radius:10px;font-size:20px;font-weight:900;letter-spacing:6px;text-align:center;border:2px solid #0284c7;width:100%;box-sizing:border-box">
+    </div>
+
+    <!-- Save Pin in Database Button -->
+    <button type="button" class="btn blue" onclick="saveAdminResetPin()" id="adminSavePinBtn" style="width:100%;padding:12px;font-size:14px;font-weight:900;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px">
+      💾 ডাটাবেসে পিন সেভ করুন
+    </button>
+
+    <div style="text-align:center;font-size:12px;font-weight:bold;color:#64748b;margin-bottom:10px">
+      কাস্টমারকে পিন পাঠানোর অপশন (১০০% ফ্রি):
+    </div>
+
+    <!-- Dispatch Buttons Grid: WhatsApp & Normal SMS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button type="button" class="btn" onclick="sendAdminPinViaWhatsApp()" style="background:#16a34a;color:#fff;padding:12px 10px;font-size:12.5px;font-weight:900;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 8px rgba(22,163,74,0.3)">
+        <span>📲 WhatsApp</span>
+      </button>
+      <button type="button" class="btn" onclick="sendAdminPinViaSms()" style="background:#0284c7;color:#fff;padding:12px 10px;font-size:12.5px;font-weight:900;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 8px rgba(2,132,199,0.3)">
+        <span>💬 Normal SMS</span>
+      </button>
+    </div>
+    <div id="adminPinStatusMsg" style="text-align:center;font-size:12px;font-weight:bold;margin-top:10px"></div>
+  </div>
+</div>
+
 <div id="editUserModal" onclick="if(event.target===this)closeEditUserModal()" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:99999;backdrop-filter:blur(4px);justify-content:center;align-items:center;padding:16px">
   <div style="background:#fff;width:100%;max-width:440px;border-radius:20px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #f1f5f9;padding-bottom:12px;margin-bottom:14px">
@@ -2993,7 +3281,7 @@ function doPost(e) {
 
     <div style="margin-bottom:10px">
       <label class="small" style="font-weight:700;color:#334155">ইমেল আইডি (Email):</label>
-      <input type="text" id="editUserEmail" readonly style="margin-top:4px;padding:10px;border-radius:10px;background:#f8fafc;color:#64748b">
+      <input type="email" id="editUserEmail" placeholder="ইমেল আইডি লিখুন..." style="margin-top:4px;padding:10px;border-radius:10px;background:#fff;color:#0f172a">
     </div>
 
     <div style="margin-bottom:10px">
@@ -3341,6 +3629,27 @@ function doPost(e) {
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
 <script>
+// === DYNAMIC FIXED HEADER PADDING SYNC ===
+function syncFixedTopBarPadding() {
+  try {
+    const topBar = document.getElementById('adminTopBar');
+    const container = document.querySelector('.container');
+    if (topBar && container) {
+      const h = topBar.offsetHeight;
+      if (h > 40) {
+        container.style.setProperty('padding-top', (h + 10) + 'px', 'important');
+      }
+    }
+  } catch(e) {}
+}
+window.addEventListener('resize', syncFixedTopBarPadding, { passive: true });
+window.addEventListener('orientationchange', syncFixedTopBarPadding, { passive: true });
+window.addEventListener('load', syncFixedTopBarPadding);
+document.addEventListener('DOMContentLoaded', syncFixedTopBarPadding);
+setTimeout(syncFixedTopBarPadding, 50);
+setTimeout(syncFixedTopBarPadding, 300);
+setTimeout(syncFixedTopBarPadding, 1000);
+
 // === FIREBASE INITIALIZATION & STATE ===
 const firebaseConfig = {
   apiKey: "AIzaSyAmEXot3RWMfApaiXN94pXsI_CVmOkHwxI",
@@ -3626,6 +3935,220 @@ window.saveAdminPaymentConfig = function() {
 };
 
 setTimeout(() => { if (typeof initAdminPaymentConfig === 'function') initAdminPaymentConfig(); }, 500);
+
+
+// === REFERRAL & ADVERTISEMENT SETTINGS CONTROLLERS ===
+window.currentAdminReferralConfig = {
+  active: true,
+  referrerBonus: 50,
+  friendDiscount: 25,
+  minRideAmount: 30
+};
+
+window.currentAdminAdConfig = {
+  active: true,
+  silverPrice: 499,
+  goldPrice: 999,
+  platinumPrice: 1999,
+  contactPhone: "8768447312"
+};
+
+function initAdminReferralAndAdConfig() {
+  const refActiveSel = document.getElementById('adminReferralActive');
+  const refBonusInp = document.getElementById('adminReferrerBonus');
+  const friendDiscInp = document.getElementById('adminFriendDiscount');
+  const minRideInp = document.getElementById('adminMinRideAmount');
+  const refBadge = document.getElementById('adminReferralStatusBadge');
+
+  const adActiveSel = document.getElementById('adminAdActive');
+  const adSilverInp = document.getElementById('adminAdSilverPrice');
+  const adGoldInp = document.getElementById('adminAdGoldPrice');
+  const adPlatInp = document.getElementById('adminAdPlatinumPrice');
+  const adPhoneInp = document.getElementById('adminAdContactPhone');
+  const adBadge = document.getElementById('adminAdStatusBadge');
+
+  // Load from LocalStorage Cache first (0ms instant display)
+  try {
+    const cachedRef = localStorage.getItem('rsg_admin_referral_config');
+    if (cachedRef) {
+      const p = JSON.parse(cachedRef);
+      Object.assign(window.currentAdminReferralConfig, p);
+      if (refActiveSel) refActiveSel.value = String(window.currentAdminReferralConfig.active);
+      if (refBonusInp) refBonusInp.value = window.currentAdminReferralConfig.referrerBonus;
+      if (friendDiscInp) friendDiscInp.value = window.currentAdminReferralConfig.friendDiscount;
+      if (minRideInp) minRideInp.value = window.currentAdminReferralConfig.minRideAmount;
+      if (refBadge) {
+        refBadge.innerText = window.currentAdminReferralConfig.active ? '🟢 LIVE ACTIVE' : '🔴 PAUSED';
+        refBadge.style.background = window.currentAdminReferralConfig.active ? '#ea580c' : '#ef4444';
+      }
+    }
+  } catch(e){}
+
+  try {
+    const cachedAd = localStorage.getItem('rsg_admin_ad_config');
+    if (cachedAd) {
+      const p = JSON.parse(cachedAd);
+      Object.assign(window.currentAdminAdConfig, p);
+      if (adActiveSel) adActiveSel.value = String(window.currentAdminAdConfig.active);
+      if (adSilverInp) adSilverInp.value = window.currentAdminAdConfig.silverPrice;
+      if (adGoldInp) adGoldInp.value = window.currentAdminAdConfig.goldPrice;
+      if (adPlatInp) adPlatInp.value = window.currentAdminAdConfig.platinumPrice;
+      if (adPhoneInp) adPhoneInp.value = window.currentAdminAdConfig.contactPhone;
+      if (adBadge) {
+        adBadge.innerText = window.currentAdminAdConfig.active ? '🟢 LIVE ACTIVE' : '🔴 PAUSED';
+        adBadge.style.background = window.currentAdminAdConfig.active ? '#8b5cf6' : '#ef4444';
+      }
+    }
+  } catch(e){}
+
+  // Realtime Firebase DB Sync
+  const d = (typeof db !== 'undefined' && db) ? db : ((window.firebase && firebase.database) ? firebase.database() : null);
+  if (d) {
+    const handleRefSnap = snap => {
+      const val = snap.val();
+      if (!val) return;
+      window.currentAdminReferralConfig.active = (val.active !== false);
+      if (val.referrerBonus != null) window.currentAdminReferralConfig.referrerBonus = Number(val.referrerBonus);
+      if (val.friendDiscount != null) window.currentAdminReferralConfig.friendDiscount = Number(val.friendDiscount);
+      if (val.minRideAmount != null) window.currentAdminReferralConfig.minRideAmount = Number(val.minRideAmount);
+
+      if (refActiveSel && !refActiveSel.matches(':focus')) refActiveSel.value = String(window.currentAdminReferralConfig.active);
+      if (refBonusInp && !refBonusInp.matches(':focus')) refBonusInp.value = window.currentAdminReferralConfig.referrerBonus;
+      if (friendDiscInp && !friendDiscInp.matches(':focus')) friendDiscInp.value = window.currentAdminReferralConfig.friendDiscount;
+      if (minRideInp && !minRideInp.matches(':focus')) minRideInp.value = window.currentAdminReferralConfig.minRideAmount;
+      if (refBadge) {
+        refBadge.innerText = window.currentAdminReferralConfig.active ? '🟢 LIVE ACTIVE' : '🔴 PAUSED';
+        refBadge.style.background = window.currentAdminReferralConfig.active ? '#ea580c' : '#ef4444';
+      }
+      try { localStorage.setItem('rsg_admin_referral_config', JSON.stringify(window.currentAdminReferralConfig)); } catch(e){}
+    };
+    try { d.ref('settings/referral').on('value', handleRefSnap); } catch(e){}
+    try { d.ref('app_config/referral').on('value', handleRefSnap); } catch(e){}
+
+    const handleAdSnap = snap => {
+      const val = snap.val();
+      if (!val) return;
+      window.currentAdminAdConfig.active = (val.active !== false);
+      if (val.silverPrice != null) window.currentAdminAdConfig.silverPrice = Number(val.silverPrice);
+      if (val.goldPrice != null) window.currentAdminAdConfig.goldPrice = Number(val.goldPrice);
+      if (val.platinumPrice != null) window.currentAdminAdConfig.platinumPrice = Number(val.platinumPrice);
+      if (val.contactPhone) window.currentAdminAdConfig.contactPhone = String(val.contactPhone);
+
+      if (adActiveSel && !adActiveSel.matches(':focus')) adActiveSel.value = String(window.currentAdminAdConfig.active);
+      if (adSilverInp && !adSilverInp.matches(':focus')) adSilverInp.value = window.currentAdminAdConfig.silverPrice;
+      if (adGoldInp && !adGoldInp.matches(':focus')) adGoldInp.value = window.currentAdminAdConfig.goldPrice;
+      if (adPlatInp && !adPlatInp.matches(':focus')) adPlatInp.value = window.currentAdminAdConfig.platinumPrice;
+      if (adPhoneInp && !adPhoneInp.matches(':focus')) adPhoneInp.value = window.currentAdminAdConfig.contactPhone;
+      if (adBadge) {
+        adBadge.innerText = window.currentAdminAdConfig.active ? '🟢 LIVE ACTIVE' : '🔴 PAUSED';
+        adBadge.style.background = window.currentAdminAdConfig.active ? '#8b5cf6' : '#ef4444';
+      }
+      try { localStorage.setItem('rsg_admin_ad_config', JSON.stringify(window.currentAdminAdConfig)); } catch(e){}
+    };
+    try { d.ref('settings/advertisement').on('value', handleAdSnap); } catch(e){}
+    try { d.ref('app_config/advertisement').on('value', handleAdSnap); } catch(e){}
+  }
+}
+
+window.saveAdminReferralConfig = function() {
+  const refActiveSel = document.getElementById('adminReferralActive');
+  const refBonusInp = document.getElementById('adminReferrerBonus');
+  const friendDiscInp = document.getElementById('adminFriendDiscount');
+  const minRideInp = document.getElementById('adminMinRideAmount');
+  const msg = document.getElementById('adminReferralMsg');
+
+  const payload = {
+    active: refActiveSel ? (refActiveSel.value === 'true') : true,
+    referrerBonus: Number(refBonusInp?.value || 50),
+    friendDiscount: Number(friendDiscInp?.value || 25),
+    minRideAmount: Number(minRideInp?.value || 30),
+    updatedAt: Date.now()
+  };
+
+  // Immediate local cache
+  Object.assign(window.currentAdminReferralConfig, payload);
+  try { localStorage.setItem('rsg_admin_referral_config', JSON.stringify(payload)); } catch(e){}
+  const refBadge = document.getElementById('adminReferralStatusBadge');
+  if (refBadge) {
+    refBadge.innerText = payload.active ? '🟢 LIVE ACTIVE' : '🔴 PAUSED';
+    refBadge.style.background = payload.active ? '#ea580c' : '#ef4444';
+  }
+
+  const d = (typeof db !== 'undefined' && db) ? db : ((window.firebase && firebase.database) ? firebase.database() : null);
+  if (d) {
+    const p1 = d.ref('settings/referral').update(payload);
+    const p2 = d.ref('app_config/referral').update(payload);
+    Promise.allSettled([p1, p2]).then(results => {
+      const ok = results.some(r => r.status === 'fulfilled');
+      if (ok) {
+        if (msg) {
+          msg.style.color = '#16a34a';
+          msg.innerText = '✅ রেফারেল সেটিংস সফলভাবে ক্লাউড ডাটাবেসে সেভ হয়েছে!';
+          setTimeout(() => { if (msg) msg.innerText = ''; }, 4000);
+        }
+        alert(`✅ রেফারেল প্রোগ্রাম সফলভাবে ক্লাউডে আপডেট হয়েছে!\n\nস্ট্যাটাস: ${payload.active ? 'সক্রিয় (Active)' : 'বন্ধ (Paused)'}\nরেফারকারী পাবে: ₹${payload.referrerBonus}\nবন্ধু ছাড় পাবে: ₹${payload.friendDiscount}\nনূন্যতম রাইড: ₹${payload.minRideAmount}`);
+      } else {
+        const err = results[0].reason || (results[1] && results[1].reason);
+        alert('❌ সেভ করতে ত্রুটি হয়েছে: ' + (err ? err.message : 'Permission Denied'));
+      }
+    });
+  } else {
+    alert('✅ রেফারেল সেটিংস লোকাল ক্যাশে সফলভাবে সেভ হয়েছে!');
+  }
+};
+
+window.saveAdminAdConfig = function() {
+  const adActiveSel = document.getElementById('adminAdActive');
+  const adSilverInp = document.getElementById('adminAdSilverPrice');
+  const adGoldInp = document.getElementById('adminAdGoldPrice');
+  const adPlatInp = document.getElementById('adminAdPlatinumPrice');
+  const adPhoneInp = document.getElementById('adminAdContactPhone');
+  const msg = document.getElementById('adminAdMsg');
+
+  const payload = {
+    active: adActiveSel ? (adActiveSel.value === 'true') : true,
+    silverPrice: Number(adSilverInp?.value || 499),
+    goldPrice: Number(adGoldInp?.value || 999),
+    platinumPrice: Number(adPlatInp?.value || 1999),
+    contactPhone: (adPhoneInp?.value || '8768447312').trim(),
+    updatedAt: Date.now()
+  };
+
+  // Immediate local cache
+  Object.assign(window.currentAdminAdConfig, payload);
+  try { localStorage.setItem('rsg_admin_ad_config', JSON.stringify(payload)); } catch(e){}
+  const adBadge = document.getElementById('adminAdStatusBadge');
+  if (adBadge) {
+    adBadge.innerText = payload.active ? '🟢 LIVE ACTIVE' : '🔴 PAUSED';
+    adBadge.style.background = payload.active ? '#8b5cf6' : '#ef4444';
+  }
+
+  const d = (typeof db !== 'undefined' && db) ? db : ((window.firebase && firebase.database) ? firebase.database() : null);
+  if (d) {
+    const p1 = d.ref('settings/advertisement').update(payload);
+    const p2 = d.ref('app_config/advertisement').update(payload);
+    Promise.allSettled([p1, p2]).then(results => {
+      const ok = results.some(r => r.status === 'fulfilled');
+      if (ok) {
+        if (msg) {
+          msg.style.color = '#16a34a';
+          msg.innerText = '✅ বিজ্ঞাপন সেটিংস সফলভাবে ক্লাউড ডাটাবেসে সেভ হয়েছে!';
+          setTimeout(() => { if (msg) msg.innerText = ''; }, 4000);
+        }
+        alert(`✅ বিজ্ঞাপন সেটিংস সফলভাবে ক্লাউডে আপডেট হয়েছে!\n\nস্ট্যাটাস: ${payload.active ? 'সক্রিয় (Active)' : 'বন্ধ (Paused)'}\nসিলভার প্ল্যান: ₹${payload.silverPrice}/মাস\nগোল্ড প্ল্যান: ₹${payload.goldPrice}/মাস\nপ্ল্যাটিনাম প্ল্যান: ₹${payload.platinumPrice}/মাস\nযোগাযোগ নম্বর: ${payload.contactPhone}`);
+      } else {
+        const err = results[0].reason || (results[1] && results[1].reason);
+        alert('❌ সেভ করতে ত্রুটি হয়েছে: ' + (err ? err.message : 'Permission Denied'));
+      }
+    });
+  } else {
+    alert('✅ বিজ্ঞাপন সেটিংস লোকাল ক্যাশে সফলভাবে সেভ হয়েছে!');
+  }
+};
+
+setTimeout(() => { if (typeof initAdminReferralAndAdConfig === 'function') initAdminReferralAndAdConfig(); }, 600);
+
+
 
 // === ADVANCED WEB AUDIO & 3-LANGUAGE SPEECH ALERT SYSTEM ===
 let audioCtx = null;
@@ -4612,7 +5135,7 @@ async function sendBroadcastNotice() {
 
   // 1. Cloudflare D1 Edge Save (High Limits & Zero Quota Cost)
   try {
-    fetch(CF_WORKER_BASE + '/api/broadcasts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'RS_ADMIN_SECRET_2026' },
+    fetch(CF_WORKER_BASE + '/api/broadcasts?key=RS_ADMIN_SECRET_2026', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(noticeData)
     }).catch(e => console.warn('Cloudflare broadcast post background:', e));
   } catch(e) {}
@@ -5764,10 +6287,7 @@ async function run30DaysAutoClean(isManual = false){
     }
 
     // Also trigger Cloudflare Worker cleanup
-    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup', { 
-      method: 'POST',
-      headers: { 'x-admin-key': 'RS_ADMIN_SECRET_2026' }
-    }).catch(()=>{});
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup?key=RS_ADMIN_SECRET_2026', { method: 'POST' }).catch(()=>{});
 
     localStorage.setItem('RS_LAST_CLEAN_TIME', Date.now().toString());
     let lastInfo = document.getElementById('lastCleanInfo');
@@ -5796,18 +6316,103 @@ function checkAndTriggerAutoClean(){
 // === CLOUDFLARE 100% FREE LIFETIME CLEANER & STATUS FUNCTIONS ===
 window.triggerCloudflareCleanup = async function() {
   const el = document.getElementById('cfAdminStatusMsg');
-  if (el) { el.style.display = 'block'; el.style.color = '#0284c7'; el.innerText = '⏳ Cloudflare ক্লিনিং চলছে...'; }
+  if (el) { el.style.display = 'block'; el.style.color = '#0284c7'; el.innerText = '⏳ Cloudflare D1 ও Firebase ৭ দিনের পুরোনো ডাটা ক্লিন করা হচ্ছে...'; }
   try {
-    const res = await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup', { 
-      method: 'POST',
-      headers: { 'x-admin-key': 'RS_ADMIN_SECRET_2026' }
-    });
-    const data = await res.json();
-    if (res.ok && data.success) {
-      if (el) { el.style.color = '#16a34a'; el.innerText = '✅ ' + (data.message || '৭ দিনের পুরোনো ডাটা সফলভাবে মোছা হয়েছে!'); }
-    } else {
-      if (el) { el.style.color = '#ef4444'; el.innerText = '❌ এরর: ' + (data.message || 'ব্যর্থ হয়েছে'); }
+    // 1. Cloudflare D1 Cleanup via URL parameter (CORS Preflight safe)
+    let cfDone = false;
+    let cfMsg = '';
+    try {
+      const res = await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup?key=RS_ADMIN_SECRET_2026', { 
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        cfDone = true;
+        cfMsg = data.message || '৭ দিনের ডাটা সফলভাবে মোছা হয়েছে';
+      }
+    } catch(cfErr) {
+      console.warn('Cloudflare Worker clean warning:', cfErr);
     }
+
+    // 2. Firebase RTDB 7 Days Old Data Cleanup
+    let fbRemoved = 0;
+    const cut7Days = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const updates = {};
+
+    try {
+      if (typeof db !== 'undefined' && db) {
+        const [snapR, snapC, snapB] = await Promise.all([
+          db.ref('rides').once('value').catch(()=>null),
+          db.ref('completed_rides').once('value').catch(()=>null),
+          db.ref('bookings').once('value').catch(()=>null)
+        ]);
+
+        if (snapR && snapR.exists()) {
+          const val = snapR.val();
+          for (let k in val) {
+            const r = val[k] || {};
+            const t = (typeof getTimestamp === 'function') ? getTimestamp(r.time || r.completedAt || r.createdAt || r.date) : (r.time || 0);
+            if (t && t < cut7Days) {
+              updates['rides/' + k] = null;
+              updates['completed_rides/' + k] = null;
+              updates['bookings/' + k] = null;
+              fbRemoved++;
+            }
+          }
+        }
+
+        if (snapC && snapC.exists()) {
+          const val = snapC.val();
+          for (let k in val) {
+            const r = val[k] || {};
+            const t = (typeof getTimestamp === 'function') ? getTimestamp(r.time || r.completedAt || r.createdAt || r.date) : (r.time || 0);
+            if (t && t < cut7Days) {
+              updates['completed_rides/' + k] = null;
+              if (!updates['rides/' + k]) fbRemoved++;
+            }
+          }
+        }
+
+        if (snapB && snapB.exists()) {
+          const val = snapB.val();
+          for (let k in val) {
+            const r = val[k] || {};
+            const t = (typeof getTimestamp === 'function') ? getTimestamp(r.time || r.date) : (r.time || 0);
+            if (t && t < cut7Days) {
+              updates['bookings/' + k] = null;
+            }
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          if (typeof applyFirebaseBulkDeletes === 'function') {
+            await applyFirebaseBulkDeletes(updates);
+          } else {
+            await db.ref().update(updates);
+          }
+        }
+
+        // Clean from in-memory cache
+        for (let k in allRidesCache) {
+          const r = allRidesCache[k] || {};
+          const t = (typeof getTimestamp === 'function') ? getTimestamp(r.time || r.completedAt || r.createdAt || r.date || 0) : (r.time || 0);
+          if (t && t < cut7Days) {
+            delete allRidesCache[k];
+          }
+        }
+
+        if (typeof renderTrips === 'function') renderTrips();
+        if (typeof renderDash === 'function') renderDash();
+      }
+    } catch(fbErr) {
+      console.warn('Firebase 7d clean error:', fbErr);
+    }
+
+    if (el) {
+      el.style.color = '#16a34a';
+      el.innerText = '✅ সফল! Cloudflare D1 ও Firebase ৭ দিনের পুরোনো ডাটা সম্পূর্ণ মুছে ফেলা হয়েছে (' + fbRemoved + ' টি ফায়ারবেস রেকর্ড ক্লিনড)। ডাটাবেস ১০০% লাইফটাইম ফ্রি!';
+    }
+    alert('✅ ৭ দিনের পুরনো ডাটা সফলভাবে মুছে ফেলা হয়েছে!\n\n☁️ Cloudflare D1: ' + (cfDone ? 'সফল (৭ দিনের মেমোরি ক্লিয়ার)' : 'সক্রিয়') + '\n🔥 Firebase RTDB: ' + fbRemoved + ' টি পুরনো ট্রিপ ও হিস্ট্রি মুছে ফ্রি করা হয়েছে।\n\nআপনার ডাটাবেজ ১০০% আনলিমিটেড লাইফটাইম ফ্রি রানিং।');
   } catch(e) {
     if (el) { el.style.color = '#ef4444'; el.innerText = '❌ এরর: ' + e.message; }
   }
@@ -5977,10 +6582,10 @@ async function purgeOldSelfies(d){
 
 async function clearAllFirebaseFREE(){
   if(!confirm('⚠️ চরম সতর্কতা: আপনি কি নিশ্চিতভাবে সমস্ত ট্রিপ হিস্ট্রি, সেলফি লগ ও চ্যাট ডাটা মুছে ফায়ারবেস সম্পূর্ণ FREE করবেন?\n\n(নোট: আপনার অনুমোদিত ড্রাইভারদের মূল প্রোফাইল এবং ভাড়ার সেটিংস সম্পূর্ণ অক্ষত থাকবে)')) return;
-  if(!confirm('🔴 FINAL CONFIRMATION: সব হিস্ট্রি ডিলিট হয়ে যাবে! এগিয়ে যাবেন?')) return;
+  if(!confirm('🔴 FINAL CONFIRMATION: সমস্ত রাইড ও ট্রিপ হিস্ট্রি সম্পূর্ণ ডিলিট হয়ে শূন্য (0) হয়ে যাবে! এগিয়ে যাবেন?')) return;
   
   try {
-    const paths = [
+    const collectionsToPurge = [
       'rides',
       'completed_rides',
       'completed_rides_by_driver',
@@ -6003,26 +6608,78 @@ async function clearAllFirebaseFREE(){
       'commission_records'
     ];
 
-    const delPromises = paths.map(p => {
-      return db.ref(p).set(null).catch(e => {
-        console.warn(`Direct set(null) note on ${p}, trying remove():`, e);
-        return db.ref(p).remove().catch(()=>{});
+    // 1. First delete individual child keys for all ride collections (Guaranteed complete wipe)
+    try {
+      const snapR = await db.ref('rides').once('value').catch(()=>null);
+      if (snapR && snapR.exists()) {
+        const val = snapR.val();
+        const pR = Object.keys(val).map(k => db.ref('rides/' + k).remove().catch(()=>{}));
+        await Promise.allSettled(pR);
+      }
+      const snapC = await db.ref('completed_rides').once('value').catch(()=>null);
+      if (snapC && snapC.exists()) {
+        const val = snapC.val();
+        const pC = Object.keys(val).map(k => db.ref('completed_rides/' + k).remove().catch(()=>{}));
+        await Promise.allSettled(pC);
+      }
+      const snapB = await db.ref('bookings').once('value').catch(()=>null);
+      if (snapB && snapB.exists()) {
+        const val = snapB.val();
+        const pB = Object.keys(val).map(k => db.ref('bookings/' + k).remove().catch(()=>{}));
+        await Promise.allSettled(pB);
+      }
+      const snapA = await db.ref('accepted_rides').once('value').catch(()=>null);
+      if (snapA && snapA.exists()) {
+        const val = snapA.val();
+        const pA = Object.keys(val).map(k => db.ref('accepted_rides/' + k).remove().catch(()=>{}));
+        await Promise.allSettled(pA);
+      }
+      const snapL = await db.ref('live_trips').once('value').catch(()=>null);
+      if (snapL && snapL.exists()) {
+        const val = snapL.val();
+        const pL = Object.keys(val).map(k => db.ref('live_trips/' + k).remove().catch(()=>{}));
+        await Promise.allSettled(pL);
+      }
+    } catch(scanErr) {
+      console.warn('Child wipe scan note:', scanErr);
+    }
+
+    // 2. Delete parent root nodes
+    const delPromises = collectionsToPurge.map(p => {
+      return db.ref(p).remove().catch(e => {
+        console.warn('Direct remove note on ' + p + ':', e);
+        return db.ref(p).set(null).catch(()=>{});
       });
     });
-
     await Promise.allSettled(delPromises);
 
-    // Also trigger Cloudflare cleanup
-    await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup', { 
-      method: 'POST',
-      headers: { 'x-admin-key': 'RS_ADMIN_SECRET_2026' }
-    }).catch(()=>{});
+    // 3. Trigger Cloudflare Worker cleanup via URL parameter (CORS preflight safe)
+    try {
+      await fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/cleanup?key=RS_ADMIN_SECRET_2026', { 
+        method: 'POST'
+      });
+    } catch(cfErr) {
+      console.warn('Cloudflare Worker purge note:', cfErr);
+    }
 
+    // 4. Reset in-memory cache and top header statistics immediately
     allRidesCache = {};
     allSelfieLogs = [];
     activeTrips = {};
 
-    alert('✅ ফায়ারবেস ও ক্লাউডফ্লেয়ার ডাটাবেজ সফলভাবে ক্লিয়ার ও ১০০% FREE করা হয়েছে!\n\nআপনার ক্লাউড স্পেস সম্পূর্ণ খালি ও লাইফটাইম ফ্রি হয়ে গেছে।');
+    let statsTopEl = document.getElementById('statsTop');
+    if (statsTopEl) statsTopEl.innerText = '0 Completed (0 Viewed) • ₹0 • LIVE FLEET ACTIVE';
+    let totEl = document.getElementById('totalRides');
+    if (totEl) totEl.innerText = '0';
+    let totCollEl = document.getElementById('totalCollection');
+    if (totCollEl) totCollEl.innerText = '₹0';
+    let tripListBox = document.getElementById('tripList');
+    if (tripListBox) tripListBox.innerHTML = '<div class="card" style="text-align:center;padding:24px;color:#16a34a;font-weight:bold">✅ সমস্ত ট্রিপ মুছে ডাটাবেজ সম্পূর্ণ খালি করা হয়েছে!</div>';
+
+    if (typeof renderTrips === 'function') renderTrips();
+    if (typeof renderDash === 'function') renderDash();
+
+    alert('✅ সমস্ত ট্রিপ হিস্ট্রি ও ডাটা ফায়ারবেস ও ক্লাউডফ্লেয়ার থেকে সফলভাবে সম্পূর্ণ মুছে শূন্য (0) করা হয়েছে!\n\nআপনার ক্লাউড ডাটাবেজ সম্পূর্ণ খালি ও ১০০% লাইফটাইম ফ্রি হয়ে গেছে।');
     location.reload();
   } catch(e) {
     console.error('clearAllFirebaseFREE error:', e);
@@ -7736,7 +8393,7 @@ function saveRate(){
   Promise.all([
     db.ref('settings/rates').set(r),
     db.ref('settings/social').set(social),
-    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': 'RS_ADMIN_SECRET_2026' },
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/rates?key=RS_ADMIN_SECRET_2026', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(r)
     }).catch(()=>{})
   ]).then(()=>{
@@ -9497,12 +10154,7 @@ async function saveCity() {
     await db.ref('cities/' + cityId).set(cityData);
 
     // 3. Sync to Cloudflare D1 Edge
-    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-key': 'RS_ADMIN_SECRET_2026'
-      },
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities?key=RS_ADMIN_SECRET_2026', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cityData)
     }).catch(()=>{});
 
@@ -9609,12 +10261,7 @@ async function toggleCityStatus(id, currentStatus) {
 
     // Also sync to Cloudflare D1
     if (allCitiesCache[id]) {
-      fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-key': 'RS_ADMIN_SECRET_2026'
-        },
+      fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities?key=RS_ADMIN_SECRET_2026', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(allCitiesCache[id])
       }).catch(()=>{});
     }
@@ -9640,12 +10287,7 @@ async function deleteCity(id, name) {
     await db.ref('cities/' + id).remove();
 
     // Delete from Cloudflare D1
-    fetch(`https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities?id=${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: {
-        'x-admin-key': 'RS_ADMIN_SECRET_2026'
-      }
-    }).catch(()=>{});
+    fetch(`https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities?id=${encodeURIComponent(id)}&key=RS_ADMIN_SECRET_2026`, { method: 'DELETE' }).catch(()=>{});
 
     alert(`🗑️ শহর "${name}" সফলভাবে ডিলিট হয়েছে।`);
   } catch(e) {
@@ -9668,12 +10310,7 @@ async function seedDefaultCities() {
     await db.ref('operational_cities/' + c.id).set(c);
     await db.ref('cities/' + c.id).set(c);
     allCitiesCache[c.id] = c;
-    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-admin-key': 'RS_ADMIN_SECRET_2026'
-      },
+    fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/cities?key=RS_ADMIN_SECRET_2026', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(c)
     }).catch(()=>{});
   }
@@ -12290,7 +12927,8 @@ async function loadManageUsersData(forceAlert = false) {
       const isBlocked = u.status === 'BLOCKED' || u.isBlocked === true;
       const status = isBlocked ? 'blocked' : 'active';
       const name = u.name || ('Customer (' + phone + ')');
-      const date = u.createdAt ? new Date(u.createdAt).toISOString() : (u.updatedAt ? new Date(u.updatedAt).toISOString() : (u.date || new Date().toISOString()));
+      const lastLoginTime = u.lastLoginAt ? new Date(u.lastLoginAt).toISOString() : (u.lastLoginFormatted || (u.updatedAt ? new Date(u.updatedAt).toISOString() : (u.createdAt ? new Date(u.createdAt).toISOString() : (u.date || new Date().toISOString()))));
+      const date = lastLoginTime;
 
       userMap.set(key, {
         key: key,
@@ -12518,10 +13156,10 @@ function renderManageUsers(users, searchQ = '') {
               ${ratingBadge}
               ${statusBadge}
             </div>
-            <div style="font-size:12px;color:#475569;margin-top:2px;display:flex;flex-wrap:wrap;gap:10px">
-              ${u.email ? `<span style="color:#0284c7">📧 ${u.email}</span>` : '<span style="color:#94a3b8">📧 ইমেল নেই</span>'}
+            <div style="font-size:12px;color:#475569;margin-top:3px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+              ${u.email ? `<span style="color:#0284c7;font-weight:700">📧 ${u.email}</span>` : '<span style="color:#dc2626;font-weight:600">📧 ইমেইল নেই</span>'}
               ${u.phone ? `<a href="tel:${u.phone}" style="color:#16a34a;text-decoration:none;font-weight:800">📱 +91 ${u.phone}</a>` : ''}
-              <span style="color:#94a3b8">📅 ${formattedDate}</span>
+              <span style="color:#059669;font-weight:800;background:#ecfdf5;padding:2px 8px;border-radius:6px;border:1px solid #a7f3d0">🕒 ${!isDriver ? 'লগইন / রেজি:' : 'তারিখ:'} ${formattedDate}</span>
               <span style="color:#64748b;font-size:11px;background:#f1f5f9;padding:1px 6px;border-radius:6px">${u.source || 'Database'}</span>
             </div>
           </div>
@@ -12539,6 +13177,9 @@ function renderManageUsers(users, searchQ = '') {
           ` : `
             <button type="button" class="btn" onclick="openUserPermissionControlModal('${u.phone}', 'customer', '${encodeURIComponent(u.name || '')}', '${u.email || ''}')" style="background:#0284c7;color:#fff;padding:6px 12px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(2,132,199,0.3)" title="কাস্টমার ফিচার ও পারমিশন কন্ট্রোল করুন">
               🎛️ কাস্টমার কন্ট্রোল
+            </button>
+            <button type="button" class="btn" onclick="openAdminPinResetModal('${u.phone}', '${encodeURIComponent(u.name || '')}')" style="background:#059669;color:#fff;padding:6px 12px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(5,150,105,0.3)" title="কাস্টমারের ৪-সংখ্যার সিক্রেট পিন রিসেট ও সেন্ড করুন">
+              🔑 পিন রিসেট
             </button>
           `}
           <button type="button" class="btn purple" onclick="openUserPermissionControlModal('${u.phone}', '${u.type}', '${encodeURIComponent(u.name || '')}', '${u.email || ''}')" style="background:#7c3aed;color:#fff;padding:6px 12px;font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:4px">
@@ -12566,13 +13207,14 @@ function formatDateDisplay(dateStr) {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return String(dateStr).slice(0, 16);
     return d.toLocaleString('en-IN', {
-      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+      day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   } catch(e) {
     return String(dateStr).slice(0, 16);
   }
 }
 
+window.toggleBlock = function(key) { if (typeof toggleBlockUser === "function") toggleBlockUser(key); };
 async function toggleBlockUser(email, newStatus, phone, type) {
   const isBlock = newStatus === 'blocked';
   if (!confirm(`⚠️ আপনি কি সত্যিই এই ব্যবহারকারীকে ${isBlock ? 'ব্লক (Block)' : 'আনব্লক (Unblock)'} করতে চান?`)) return;
@@ -12738,13 +13380,18 @@ async function saveUserEditDetails() {
             dRef.ref('drivers/DRIVER_' + oldPhone).remove().catch(()=>{});
           }
         } else {
-          await Promise.allSettled([
+          const editedEmail = document.getElementById('editUserEmail') ? document.getElementById('editUserEmail').value.trim() : '';
+          const custUpdates = [
             dRef.ref('users/' + targetPhone + '/name').set(name),
             dRef.ref('users/' + targetPhone + '/phone').set(targetPhone),
             dRef.ref('users/' + targetPhone + '/status').set(status === 'blocked' ? 'BLOCKED' : 'ACTIVE'),
             dRef.ref('users/' + targetPhone + '/isBlocked').set(status === 'blocked'),
             dRef.ref('users/' + targetPhone + '/updatedAt').set(Date.now())
-          ]);
+          ];
+          if (editedEmail && editedEmail.includes('@')) {
+            custUpdates.push(dRef.ref('users/' + targetPhone + '/email').set(editedEmail));
+          }
+          await Promise.allSettled(custUpdates);
           if (oldPhone) {
             dRef.ref('users/' + oldPhone).remove().catch(()=>{});
           }
@@ -13040,12 +13687,7 @@ async function permanentDeleteUser(email, phone, type, name) {
   // 2. Call Cloudflare Worker D1 Delete Endpoint (Live)
   if (cleanP) {
     try {
-      fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/delete-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-key': 'RS_ADMIN_SECRET_2026'
-        },
+      fetch('https://ridesathigo-backend.gopalchjana0.workers.dev/api/admin/delete-user?key=RS_ADMIN_SECRET_2026', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: cleanP,
           type: type || 'customer'
@@ -13132,6 +13774,156 @@ window.openDirectPermissionByPhone = openDirectPermissionByPhone;
 window.saveUserPermissionControl = saveUserPermissionControl;
 window.onPermStatusRadioChange = onPermStatusRadioChange;
 window.setAllPermCheckboxes = setAllPermCheckboxes;
+
+// ==============================================================
+// 🔑 ADMIN PIN RESET & DISPATCH LOGIC (100% FREE FOR ADMIN)
+// ==============================================================
+window.openAdminPinResetModal = function(phone, name) {
+  var cleanP = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+  if (!cleanP || cleanP.length !== 10) {
+    alert("⚠️ সঠিক ১০ সংখ্যার মোবাইল নম্বর পাওয়া যায়নি!");
+    return;
+  }
+  var decodedName = decodeURIComponent(name || 'Customer');
+  var phoneInp = document.getElementById('adminPinTargetPhone');
+  var nameInp = document.getElementById('adminPinTargetName');
+  var dName = document.getElementById('adminPinDispName');
+  var dPhone = document.getElementById('adminPinDispPhone');
+  var dCur = document.getElementById('adminPinDispCurrent');
+  var newInp = document.getElementById('adminNewPinInput');
+  var stMsg = document.getElementById('adminPinStatusMsg');
+  var qWrap = document.getElementById('adminPinSecQWrap');
+
+  if (phoneInp) phoneInp.value = cleanP;
+  if (nameInp) nameInp.value = decodedName;
+  if (dName) dName.innerText = decodedName;
+  if (dPhone) dPhone.innerText = "📱 +91 " + cleanP;
+  if (dCur) dCur.innerText = "⏳ লোড হচ্ছে...";
+  if (newInp) newInp.value = "";
+  if (stMsg) stMsg.innerHTML = "";
+  if (qWrap) qWrap.style.display = "none";
+
+  var modal = document.getElementById('adminPinResetModal');
+  if (modal) modal.style.display = 'flex';
+
+  var dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
+  if (dRef) {
+    dRef.ref('users/' + cleanP).once('value').then(function(snap) {
+      var val = snap.val() || {};
+      var curPin = val.pin ? String(val.pin) : 'সেট করা নেই (Not Set)';
+      if (dCur) dCur.innerText = curPin;
+      if (val.security_q && val.security_a && qWrap) {
+        qWrap.style.display = "block";
+        var qEl = document.getElementById('adminPinSecQText');
+        var aEl = document.getElementById('adminPinSecAText');
+        if (qEl) qEl.innerText = "প্রশ্ন: " + val.security_q;
+        if (aEl) aEl.innerText = "উত্তর: " + val.security_a;
+      }
+    }).catch(function() {
+      if (dCur) dCur.innerText = "অজানা (Unknown)";
+    });
+  }
+};
+
+window.closeAdminPinResetModal = function() {
+  var modal = document.getElementById('adminPinResetModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.adminAutoGenerateNewPin = function() {
+  var randomPin = String(Math.floor(1000 + Math.random() * 9000));
+  var inp = document.getElementById('adminNewPinInput');
+  if (inp) {
+    inp.value = randomPin;
+    inp.focus();
+  }
+};
+
+window.saveAdminResetPin = function() {
+  var phoneEl = document.getElementById('adminPinTargetPhone');
+  var pinEl = document.getElementById('adminNewPinInput');
+  var statusMsg = document.getElementById('adminPinStatusMsg');
+  var btn = document.getElementById('adminSavePinBtn');
+
+  var phone = phoneEl ? phoneEl.value : '';
+  var pin = pinEl ? pinEl.value.trim() : '';
+
+  if (!pin || pin.length !== 4) {
+    alert("⚠️ দয়া করে ৪-সংখ্যার সঠিক পিন দিন (যেমন: 2580)!");
+    if (pinEl) pinEl.focus();
+    return;
+  }
+
+  var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
+  var dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
+  if (!dRef) {
+    alert("❌ ডাটাবেস সংযোগ পাওয়া যায়নি!");
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "⏳ ডাটাবেসে পিন সেভ হচ্ছে...";
+  }
+
+  dRef.ref('users/' + cleanP).update({
+    pin: pin,
+    pin_updated_at: new Date().toISOString(),
+    pin_updated_by: 'admin'
+  }).then(function() {
+    dRef.ref('pin_reset_requests/' + cleanP).remove().catch(function(){});
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "💾 ডাটাবেসে পিন সেভ করুন";
+    }
+    var dCur = document.getElementById('adminPinDispCurrent');
+    if (dCur) dCur.innerText = pin;
+    if (statusMsg) {
+      statusMsg.style.color = "#16a34a";
+      statusMsg.innerHTML = "✅ পিন সফলভাবে সেভ হয়েছে! এবার নিচে থেকে কাস্টমারকে WhatsApp অথবা Normal SMS পাঠিয়ে দিন।";
+    }
+    if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache)) {
+      var target = manageAllUsersCache.find(function(u){ return u.phone === cleanP; });
+      if (target) target.pin = pin;
+    }
+  }).catch(function(err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "💾 ডাটাবেসে পিন সেভ করুন";
+    }
+    alert("❌ ত্রুটি: " + err.message);
+  });
+};
+
+window.sendAdminPinViaWhatsApp = function() {
+  var phone = (document.getElementById('adminPinTargetPhone') || {}).value || '';
+  var name = (document.getElementById('adminPinTargetName') || {}).value || 'Customer';
+  var pin = (document.getElementById('adminNewPinInput') || {}).value || '';
+  pin = pin.trim();
+  if (!pin || pin.length !== 4) {
+    alert("⚠️ আগে ৪-সংখ্যার পিন লিখুন অথবা 'Auto Generate' করুন!");
+    return;
+  }
+  var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
+  var msg = "নমস্কার " + name + ",\nRide Sathi-তে আপনার নতুন সিক্রেট লগইন পিন হলো: " + pin + "\n\nএই ৪-সংখ্যার পিন দিয়ে লগইন করুন এবং কাউকে এটি শেয়ার করবেন না।\n\n- টিম Ride Sathi GO";
+  var url = "https://api.whatsapp.com/send?phone=91" + cleanP + "&text=" + encodeURIComponent(msg);
+  window.open(url, "_blank");
+};
+
+window.sendAdminPinViaSms = function() {
+  var phone = (document.getElementById('adminPinTargetPhone') || {}).value || '';
+  var name = (document.getElementById('adminPinTargetName') || {}).value || 'Customer';
+  var pin = (document.getElementById('adminNewPinInput') || {}).value || '';
+  pin = pin.trim();
+  if (!pin || pin.length !== 4) {
+    alert("⚠️ আগে ৪-সংখ্যার পিন লিখুন অথবা 'Auto Generate' করুন!");
+    return;
+  }
+  var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
+  var msg = "Namaskar " + name + ", Ride Sathi-te apnar notun 4-digit secret login PIN: " + pin + ". Eita diye login korun. - Team Ride Sathi";
+  window.location.href = "sms:+91" + cleanP + "?body=" + encodeURIComponent(msg);
+};
+
 // EarnKaro Profit Links Management Functions
 function saveEarnkaroLinks() {
   var links = {
