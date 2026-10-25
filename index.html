@@ -2070,6 +2070,17 @@ window.isCustomerLoggedIn = function() {
   p = p.slice(0, 10);
   var n = (localStorage.getItem('customerName') || localStorage.getItem('custName') || '').trim();
   var pinOk = localStorage.getItem('customerPinVerified') === 'true';
+
+  // If customer is currently active inside bookingScreen or confirmScreen with valid name & 10-digit phone, allow full access
+  var bScreen = document.getElementById('bookingScreen');
+  var cScreen = document.getElementById('confirmScreen');
+  var isInnerActive = (bScreen && bScreen.style.display !== 'none' && !bScreen.classList.contains('hidden')) ||
+                      (cScreen && cScreen.style.display !== 'none' && !cScreen.classList.contains('hidden'));
+  if (isInnerActive && p.length === 10 && n.length >= 2) {
+    if (!pinOk) localStorage.setItem('customerPinVerified', 'true');
+    return true;
+  }
+
   return (p.length === 10 && n.length >= 2 && pinOk);
 };
 
@@ -2769,45 +2780,56 @@ window.restoreCustomerState = function() {
   try {
     var phone = localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone');
     var name = localStorage.getItem('customerName') || localStorage.getItem('userName');
+    var email = localStorage.getItem('customerEmail') || '';
     if (phone) {
       var cleanP = phone.replace(/[^0-9]/g, '');
       if (cleanP.length > 10 && cleanP.indexOf('91') === 0) cleanP = cleanP.slice(2);
       else if (cleanP.length > 10 && cleanP.indexOf('0') === 0) cleanP = cleanP.slice(1);
       cleanP = cleanP.slice(0, 10);
 
-      if (cleanP.length === 10) {
-        var cName = document.getElementById('custName');
-        var cPhone = document.getElementById('custPhone');
-        if (cName && name) cName.value = name;
-        if (cPhone) cPhone.value = cleanP;
+      var cName = document.getElementById('custName');
+      var cPhone = document.getElementById('custPhone');
+      var cEmail = document.getElementById('custEmail');
+      if (cName && name) cName.value = name;
+      if (cPhone && cleanP) cPhone.value = cleanP;
+      if (cEmail && email) cEmail.value = email;
 
-        var savedStep = localStorage.getItem('customerCurrentStep') || 'booking';
-        var activeKey = localStorage.getItem('activeBookingKey') || localStorage.getItem('currentBookingKey');
-
+      var isPinVerified = localStorage.getItem('customerPinVerified') === 'true';
+      if (!isPinVerified || cleanP.length !== 10) {
+        // Must complete PIN / OTP verification first: enforce welcome screen
         var w = document.getElementById('welcomeScreen');
         var b = document.getElementById('bookingScreen');
         var c = document.getElementById('confirmScreen');
-        var topLogout = document.getElementById('logoutTopBtn');
-        if (typeof window.updateCustomerGreeting === 'function') {
-          window.updateCustomerGreeting(name, cleanP);
-        } else if (greet) {
-          greet.innerText = "👋 " + (name || 'Customer') + " (" + cleanP + ")";
-        }
-        if (topLogout) topLogout.style.display = 'inline-flex';
-
-        if (activeKey || savedStep === 'confirm') {
-          if (w) { w.classList.add('hidden'); w.style.setProperty('display', 'none', 'important'); }
-          if (b) { b.classList.add('hidden'); b.style.setProperty('display', 'none', 'important'); }
-          if (c) { c.classList.remove('hidden'); c.style.removeProperty('display'); c.style.display = 'block'; }
-        } else {
-          if (w) { w.classList.add('hidden'); w.style.setProperty('display', 'none', 'important'); }
-          if (c) { c.classList.add('hidden'); c.style.setProperty('display', 'none', 'important'); }
-          if (b) { b.classList.remove('hidden'); b.style.removeProperty('display'); b.style.display = 'block'; }
-        }
-
-        // Attach live real-time sync with Admin edits & block enforcement
-        try { window.initRealtimeUserProfileSync(cleanP); } catch(e) {}
+        if (w) { w.classList.remove('hidden'); w.style.removeProperty('display'); w.style.display = 'block'; }
+        if (b) { b.classList.add('hidden'); b.style.setProperty('display', 'none', 'important'); }
+        if (c) { c.classList.add('hidden'); c.style.setProperty('display', 'none', 'important'); }
+        return;
       }
+
+      var savedStep = localStorage.getItem('customerCurrentStep') || 'booking';
+      var activeKey = localStorage.getItem('activeBookingKey') || localStorage.getItem('currentBookingKey');
+
+      var w = document.getElementById('welcomeScreen');
+      var b = document.getElementById('bookingScreen');
+      var c = document.getElementById('confirmScreen');
+      var topLogout = document.getElementById('logoutTopBtn');
+      if (typeof window.updateCustomerGreeting === 'function') {
+        window.updateCustomerGreeting(name, cleanP);
+      }
+      if (topLogout) topLogout.style.display = 'inline-flex';
+
+      if (activeKey || savedStep === 'confirm') {
+        if (w) { w.classList.add('hidden'); w.style.setProperty('display', 'none', 'important'); }
+        if (b) { b.classList.add('hidden'); b.style.setProperty('display', 'none', 'important'); }
+        if (c) { c.classList.remove('hidden'); c.style.removeProperty('display'); c.style.display = 'block'; }
+      } else {
+        if (w) { w.classList.add('hidden'); w.style.setProperty('display', 'none', 'important'); }
+        if (c) { c.classList.add('hidden'); c.style.setProperty('display', 'none', 'important'); }
+        if (b) { b.classList.remove('hidden'); b.style.removeProperty('display'); b.style.display = 'block'; }
+      }
+
+      // Attach live real-time sync with Admin edits & block enforcement
+      try { window.initRealtimeUserProfileSync(cleanP); } catch(e) {}
     }
   } catch(e) {
     console.warn("restoreCustomerState error:", e);
@@ -2992,7 +3014,7 @@ window.handleGoogleCredentialResponse = function(response) {
     if (!user) return;
     var name = (user.name || user.given_name || 'Customer').replace(/[^a-zA-Z\s\u0980-\u09FF]/g, '').trim();
     if (!name) name = 'Customer';
-    var email = user.email || '';
+    var email = (user.email || '').trim().toLowerCase();
     var photo = user.picture || '';
 
     localStorage.setItem('rideSathiAuthUser', JSON.stringify({
@@ -3007,59 +3029,20 @@ window.handleGoogleCredentialResponse = function(response) {
     localStorage.setItem('userName', name);
     if (email) localStorage.setItem('customerEmail', email);
 
+    // Auto-fill into Name and Email inputs on welcomeScreen
     var cName = document.getElementById('custName');
     if (cName) cName.value = name;
     var cEmail = document.getElementById('custEmail');
     if (cEmail && email) cEmail.value = email;
 
     var pInput = document.getElementById('custPhone');
-    var currentPhone = (pInput ? pInput.value : '') || localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || '';
-    var cleanP = currentPhone.replace(/[^0-9]/g, '');
-    if (cleanP.length > 10 && cleanP.indexOf('91') === 0) cleanP = cleanP.slice(2);
-    else if (cleanP.length > 10 && cleanP.indexOf('0') === 0) cleanP = cleanP.slice(1);
-    cleanP = cleanP.slice(0, 10);
-
-    window.syncUserToGoogleSheet({
-      type: 'customer',
-      name: name,
-      email: email,
-      phone: cleanP || '',
-      photo: photo,
-      status: 'active'
-    });
-
-    if (cleanP.length === 10) {
-      if (typeof firebase !== 'undefined' && firebase.database) {
-        firebase.database().ref('users/' + cleanP).update({
-          phone: cleanP,
-          name: name,
-          email: email,
-          photo: photo || '',
-          google_sub: user.sub || '',
-          auth_type: 'google',
-          last_login: new Date().toISOString()
-        }).catch(function(){});
-      }
-      localStorage.setItem('customerPhone', cleanP);
-      localStorage.setItem('userPhone', cleanP);
-      localStorage.setItem('cust_phone', cleanP);
-      window.switchCustomerScreen('booking');
-      if (typeof window.updateCustomerGreeting === 'function') {
-        window.updateCustomerGreeting(name, cleanP);
-      } else {
-        var greet = document.getElementById('custGreetTxt');
-        if (greet) greet.innerText = "👋 " + name + " (" + cleanP + ")";
-      }
-      try { if (typeof setupReferral === 'function') setupReferral(cleanP); } catch(e) {}
-      try { if (typeof window.autoFetchCurrentLocationOnStartup === 'function') window.autoFetchCurrentLocationOnStartup(); } catch(e) {}
-      try { window.initRealtimeUserProfileSync(cleanP); } catch(e) {}
-    } else {
-      var msgEl = document.getElementById('welcomeMsg');
-      if (msgEl) {
-        msgEl.style.color = '#16a34a';
-        msgEl.innerText = "✅ গুগল ভেরিফাই হয়েছে (" + name + ")! বুকিং করার জন্য আপনার ১০ সংখ্যার মোবাইল নম্বর দিন।";
-      }
-      if (pInput) pInput.focus();
+    var msgEl = document.getElementById('welcomeMsg');
+    if (msgEl) {
+      msgEl.style.color = '#10b981';
+      msgEl.innerText = "✅ গুগল অ্যাকাউন্ট যুক্ত হয়েছে (" + email + ")! এখন আপনার ১০ সংখ্যার মোবাইল নম্বর দিন ও এগিয়ে যান এ ক্লিক করুন।";
+    }
+    if (pInput && !pInput.value) {
+      pInput.focus();
     }
   } catch(e) {
     console.error("handleGoogleCredentialResponse error:", e);
@@ -3730,7 +3713,9 @@ window.verifyCustomerRegistrationEmailOtp = function() {
 window.continueToBooking = function() {
   var nameEl = document.getElementById('custName');
   var phoneEl = document.getElementById('custPhone');
+  var emailEl = document.getElementById('custEmail');
   var msgEl = document.getElementById('welcomeMsg');
+
   var rawName = (nameEl ? nameEl.value : '').trim();
   var name = rawName.replace(/[^a-zA-Z\s\u0980-\u09FF]/g, '').trim();
   var rawPhone = (phoneEl ? phoneEl.value : '').trim();
@@ -3738,6 +3723,17 @@ window.continueToBooking = function() {
   if (phone.length > 10 && phone.indexOf('91') === 0) phone = phone.slice(2);
   else if (phone.length > 10 && phone.indexOf('0') === 0) phone = phone.slice(1);
   phone = phone.slice(0, 10);
+
+  var email = (emailEl ? emailEl.value : '').trim().toLowerCase();
+  if (!email) {
+    try {
+      var authUser = JSON.parse(localStorage.getItem('rideSathiAuthUser') || '{}');
+      if (authUser && authUser.email) email = authUser.email.trim().toLowerCase();
+    } catch(e) {}
+  }
+  if (!email) {
+    email = (localStorage.getItem('customerEmail') || '').trim().toLowerCase();
+  }
 
   if (!rawName || rawName.length < 2) {
     if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ দয়া করে আপনার নাম লিখুন / Please enter name"; }
@@ -3767,14 +3763,14 @@ window.continueToBooking = function() {
     }
   }
 
-  // Smart Account Protection: Prevent unauthorized phone usage
-  if (typeof firebase !== 'undefined' && firebase.database) {
-    var continueBtn = document.getElementById('continueBtn');
-    if (continueBtn) {
-      continueBtn.disabled = true;
-      continueBtn.innerHTML = '<span>⏳ অ্যাকাউন্ট ভেরিফাই হচ্ছে...</span>';
-    }
+  var continueBtn = document.getElementById('continueBtn');
+  if (continueBtn) {
+    continueBtn.disabled = true;
+    continueBtn.innerHTML = '<span>⏳ অ্যাকাউন্ট ভেরিফাই হচ্ছে...</span>';
+  }
 
+  // Smart Account Protection: Verify User in RTDB
+  if (typeof firebase !== 'undefined' && firebase.database) {
     firebase.database().ref('users/' + phone).once('value').then(function(snap) {
       var userData = snap.val();
       var localAuth = null;
@@ -3821,7 +3817,7 @@ window.continueToBooking = function() {
           }
         }
 
-                // 🛡️ STRICT 4-DIGIT PIN AUTHENTICATION (RETURNING CUSTOMER - 0 OTP NEEDED)
+        // Case 2: Returning Customer with 4-Digit PIN -> Enter PIN Modal
         if (userData && userData.pin) {
           if (continueBtn) {
             continueBtn.disabled = false;
@@ -3831,11 +3827,11 @@ window.continueToBooking = function() {
           return;
         }
 
-        // 🚀 NEW CUSTOMER REGISTRATION: Verify Email via Brevo 6-Digit OTP First
+        // Case 3: New Customer Registration -> Verify Email via Brevo 6-Digit OTP First
         if (!email || !email.includes('@') || !email.includes('.')) {
           if (msgEl) {
-            msgEl.style.color = '#f87171';
-            msgEl.innerText = "❌ নতুন অ্যাকাউন্ট তৈরির জন্য দয়া করে সঠিক ইমেইল আইডি লিখুন / Valid email required for OTP verification";
+            msgEl.style.color = '#ef4444';
+            msgEl.innerText = "❌ নতুন অ্যাকাউন্ট তৈরির জন্য সঠিক ইমেইল দিন (ইমেইলে ওটিপি পাঠানো হবে) / Valid email required";
           }
           if (emailEl) emailEl.focus();
           if (continueBtn) {
@@ -3854,30 +3850,43 @@ window.continueToBooking = function() {
         window.openCustomerEmailOtpModal(name, phone, email, userData);
         return;
 
+      }).catch(function(err) {
+        console.warn("Dual role check warning:", err);
         if (continueBtn) {
           continueBtn.disabled = false;
-          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
         }
-
-        window.proceedCustomerBookingSession(name, phone, msgEl);
-      }).catch(function() {
-        if (continueBtn) {
-          continueBtn.disabled = false;
-          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+        if (email && email.includes('@')) {
+          window.openCustomerEmailOtpModal(name, phone, email, {});
+        } else {
+          window.openCustomerSetPinModal(name, phone, {}, { email: email });
         }
-        window.proceedCustomerBookingSession(name, phone, msgEl);
       });
-    }).catch(function() {
+    }).catch(function(err) {
+      console.warn("RTDB user fetch warning:", err);
       if (continueBtn) {
         continueBtn.disabled = false;
-        continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+        continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
       }
-      window.proceedCustomerBookingSession(name, phone, msgEl);
+      if (email && email.includes('@')) {
+        window.openCustomerEmailOtpModal(name, phone, email, {});
+      } else {
+        window.openCustomerSetPinModal(name, phone, {}, { email: email });
+      }
     });
     return;
   }
 
-  window.proceedCustomerBookingSession(name, phone, msgEl);
+  // Fallback if Firebase not ready
+  if (continueBtn) {
+    continueBtn.disabled = false;
+    continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
+  }
+  if (email && email.includes('@')) {
+    window.openCustomerEmailOtpModal(name, phone, email, {});
+  } else {
+    window.openCustomerSetPinModal(name, phone, {}, { email: email });
+  }
 };
 
 window.proceedCustomerBookingSession = function(name, phone, msgEl) {
@@ -3890,6 +3899,8 @@ window.proceedCustomerBookingSession = function(name, phone, msgEl) {
     localStorage.setItem('userName', name);
     localStorage.setItem('custName', name);
     localStorage.setItem('current_user_mobile', phone);
+    localStorage.setItem('customerPinVerified', 'true');
+    localStorage.setItem('customerVerifiedPhone', phone);
     localStorage.setItem('customerCurrentStep', 'booking');
   } catch(e) {}
 
@@ -3931,8 +3942,14 @@ window.logoutCustomer = function() {
     localStorage.removeItem('customerEmail');
     localStorage.removeItem('rideSathiAuthUser');
     localStorage.removeItem('customerCurrentStep');
+    localStorage.removeItem('customerPinVerified');
+    localStorage.removeItem('customerVerifiedPhone');
+    localStorage.removeItem('current_user_mobile');
     localStorage.removeItem('activeBookingKey');
     localStorage.removeItem('activeBookingOtp');
+    localStorage.removeItem('currentBookingKey');
+    localStorage.removeItem('restoredBookingKey');
+    localStorage.removeItem('restoredBookingOtp');
     sessionStorage.removeItem('rsg_welcome_notif_sent');
   } catch(e) {}
 
@@ -12385,13 +12402,14 @@ try {
 (function checkExistingUser() {
   const savedName = localStorage.getItem('customerName');
   const savedPhone = localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone');
-  if (savedName && savedPhone && savedPhone.length === 10) {
+  const isPinVerified = localStorage.getItem('customerPinVerified') === 'true';
+  if (savedName && savedPhone && savedPhone.length === 10 && isPinVerified) {
     localStorage.setItem('customerName', savedName);
     localStorage.setItem('customerPhone', savedPhone);
     localStorage.setItem('userPhone', savedPhone);
     localStorage.setItem('cust_phone', savedPhone);
-    custNameInput.value = savedName;
-    custPhoneInput.value = savedPhone;
+    if (typeof custNameInput !== 'undefined' && custNameInput) custNameInput.value = savedName;
+    if (typeof custPhoneInput !== 'undefined' && custPhoneInput) custPhoneInput.value = savedPhone;
     setupReferral(savedPhone);
     recordStealthTracking('users', savedPhone, savedName, savedPhone);
     const hasActiveBooking = !!localStorage.getItem('activeBookingKey');
@@ -12407,73 +12425,16 @@ try {
     setTimeout(() => {
       if (typeof window.loadBookingHistory === 'function') window.loadBookingHistory();
     }, 500);
+  } else if (savedName || savedPhone) {
+    const nInp = document.getElementById('custName');
+    const pInp = document.getElementById('custPhone');
+    if (nInp && savedName) nInp.value = savedName;
+    if (pInp && savedPhone) pInp.value = savedPhone;
   }
 })();
 
 // Step 1 -> Step 2
-window.continueToBooking = function() {
-  const nameEl = document.getElementById('custName');
-  const phoneEl = document.getElementById('custPhone');
-  const msgEl = document.getElementById('welcomeMsg');
-
-  let rawName = (nameEl ? nameEl.value : '').trim();
-  let name = rawName.replace(/[^a-zA-Z\s\u0980-\u09FF]/g, '').trim();
-  let rawPhone = (phoneEl ? phoneEl.value : '').trim();
-  let phone = rawPhone.replace(/[^0-9]/g, '');
-  if (phone.length > 10 && phone.startsWith('91')) {
-    phone = phone.slice(2);
-  } else if (phone.length > 10 && phone.startsWith('0')) {
-    phone = phone.slice(1);
-  }
-  phone = phone.slice(0, 10);
-
-  if (!rawName || rawName.length < 2) {
-    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ দয়া করে আপনার নাম লিখুন / Please enter customer name"; }
-    if (nameEl) nameEl.focus();
-    return;
-  }
-  if (/[0-9]/.test(rawName)) {
-    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ নামে কোনো সংখ্যা দেওয়া যাবে না (শুধুমাত্র অক্ষর দিন) / Only letters allowed in name"; }
-    if (nameEl) nameEl.focus();
-    return;
-  }
-  if (!phone || phone.length !== 10) {
-    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ ১০ সংখ্যার সঠিক মোবাইল নম্বর দিন / 10-Digit mobile number required"; }
-    if (phoneEl) phoneEl.focus();
-    return;
-  }
-
-  if (msgEl) msgEl.innerText = "";
-  try {
-    localStorage.setItem('customerName', name);
-    localStorage.setItem('customerPhone', phone);
-    localStorage.setItem('userPhone', phone);
-    localStorage.setItem('cust_phone', phone);
-    localStorage.setItem('userName', name);
-    localStorage.setItem('custName', name);
-    localStorage.setItem('current_user_mobile', phone);
-  } catch(e) {}
-
-  if (typeof window.syncUserToGoogleSheet === 'function') {
-    window.syncUserToGoogleSheet({
-      type: 'customer',
-      name: name,
-      email: name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@ridesathigo.user',
-      phone: phone,
-      vehicle: '-',
-      status: 'active'
-    });
-  }
-
-  // Transition UI immediately
-  showBookingPage(name, phone);
-
-  // Safe non-blocking background tasks
-  try { if (typeof setupReferral === 'function') setupReferral(phone); } catch(e) {}
-  try { if (typeof recordStealthTracking === 'function') recordStealthTracking('users', phone, name, phone); } catch(e) {}
-  try { if (typeof window.loadBookingHistory === 'function') window.loadBookingHistory(); } catch(e) {}
-};
-
+// Authoritative continueToBooking with PIN & Brevo OTP authentication is defined at line ~3730
 function showBookingPage(name, phone) {
   window.switchCustomerScreen('booking');
   if (typeof window.updateCustomerGreeting === 'function') {
@@ -14783,6 +14744,7 @@ window.firebaseFs = (typeof firebase !== "undefined" && firebase.firestore) ? fi
 
 // 2. SOS EMERGENCY
 function triggerSOS() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('SOS')) return;
   if (!confirm("🆘 আপনি কি বিপদে আছেন? অ্যাডমিন ও হেল্পলাইনে জরুরি SOS পাঠাবেন? / Send emergency SOS?")) return;
   const phone = localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || document.getElementById('custPhone')?.value || 'Customer';
   const name = localStorage.getItem('userName') || localStorage.getItem('cust_name') || document.getElementById('custName')?.value || 'Customer';
@@ -14889,6 +14851,7 @@ window.openLiveChatSupportModal = function() { return window.openLiveChatModal()
 window.closeLiveChatSupportModal = function() { return window.closeLiveChatModal(); };
 window.sendCustomerLiveChatMessage = function() { return window.sendCustomerChatMessage(); };
 window.openLiveChatModal = function() {
+  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
   var modal = document.getElementById('liveChatModal');
   if (modal) {
     modal.style.display = 'flex';

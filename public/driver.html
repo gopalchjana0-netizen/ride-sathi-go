@@ -11,6 +11,8 @@ try {
 } catch(e) {}
 </script>
 <script src="security-shield.js"></script>
+<!-- Cloudflare Turnstile Official Verification API (100% Free Forever) -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <script>
 // === INSTANT DRIVER I18N SYSTEM (0ms Latency) ===
 window.I18N = {
@@ -1664,6 +1666,18 @@ body{overflow-x: clip !important;width:100% !important;max-width:100vw !importan
     <option value="CAR" data-i18n="optCar">🚗 CAR (কার)</option>
   </select>
 
+  <!-- Cloudflare Turnstile Smart Human Verification (100% Free Forever) -->
+  <div id="cfTurnstileContainerDriver" style="margin:12px 0 8px;display:flex;justify-content:center;min-height:65px">
+    <div class="cf-turnstile"
+         id="rsg-turnstile-driver"
+         data-sitekey="1x00000000000000000000AA"
+         data-theme="light"
+         data-callback="onTurnstileSuccessDriver"
+         data-expired-callback="onTurnstileExpiredDriver"
+         data-error-callback="onTurnstileErrorDriver">
+    </div>
+  </div>
+
   <button id="loginBtn" onclick="loginDriver()" style="width:100%;padding:14px;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:16px;cursor:pointer;margin-top:8px" data-i18n="loginBtn">✅ Driver Login / প্রবেশ করুন</button>
   
   <!-- NEW DRIVER SIGNUP CTA -->
@@ -2423,6 +2437,39 @@ window.loginDriver = function() {
     }
   } catch(e) {}
 })();
+
+// === STRICT DRIVER ACCESS CONTROL (Protects all driver features until login) ===
+window.isDriverLoggedIn = function() {
+  var p = (localStorage.getItem('driverPhone') || (typeof DRIVER_PHONE !== 'undefined' ? DRIVER_PHONE : '') || '').replace(/[^0-9]/g, '');
+  if (p.length > 10 && p.indexOf('91') === 0) p = p.slice(2);
+  else if (p.length > 10 && p.indexOf('0') === 0) p = p.slice(1);
+  p = p.slice(0, 10);
+  return (p.length === 10);
+};
+
+window.requireDriverLogin = function(featureName) {
+  if (window.isDriverLoggedIn()) {
+    return true;
+  }
+  var curLang = localStorage.getItem('driverLang') || window.currentLang || 'bn';
+  var msg = "⚠️ অনুগ্রহ করে প্রথমে আপনার মোবাইল নম্বর দিয়ে ড্রাইভার লগইন অথবা নতুন ড্রাইভার রেজিস্ট্রেশন করুন!\n\nলগইন করার পর আপনি সকল ড্রাইভার ফিচার ব্যবহার করতে পারবেন।";
+  if (curLang === 'hi') {
+    msg = "⚠️ कृपया पहले अपना मोबाइल नंबर डालकर ड्राइवर लॉगिन या नया ड्राइवर रजिस्ट्रेशन करें!\n\nलॉगिन करने के बाद आप सभी ड्राइवर सुविधाओं का उपयोग कर सकेंगे।";
+  } else if (curLang === 'en') {
+    msg = "⚠️ Please enter your Mobile Number to Driver Login or Register first!\n\nAfter logging in, you will have full access to all driver features.";
+  }
+  alert(msg);
+
+  var lCard = document.getElementById('loginCard');
+  if (lCard) lCard.style.display = 'block';
+  var mApp = document.getElementById('mainApp');
+  if (mApp) mApp.style.display = 'none';
+
+  var pInp = document.getElementById('loginPhone');
+  if (pInp) pInp.focus();
+  return false;
+};
+
 // Prevent accidental horizontal page pan/drag on mobile
 window.preventHorizontalScrollLock = true;
 window.addEventListener('scroll', function() {
@@ -3740,6 +3787,18 @@ window.handleDriverGoogleCredentialResponse = function(response) {
   }
 };
 
+window.rsgTurnstileDriverVerified = false;
+window.onTurnstileSuccessDriver = function(token) {
+  window.rsgTurnstileDriverVerified = true;
+};
+window.onTurnstileExpiredDriver = function() {
+  window.rsgTurnstileDriverVerified = false;
+};
+window.onTurnstileErrorDriver = function() {
+  // Graceful fallback if Turnstile fails
+  window.rsgTurnstileDriverVerified = true;
+};
+
 // === LOGIN & AUTHENTICATION ===
 async function loginDriver() {
   unlockAudio();
@@ -3747,6 +3806,19 @@ async function loginDriver() {
   if (btn) {
     btn.innerText = '⏳ ভেরিফাই হচ্ছে...';
     btn.disabled = true;
+  }
+
+  // Cloudflare Turnstile Human Verification Check
+  if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
+    var tToken = window.turnstile.getResponse();
+    if (!tToken && !window.rsgTurnstileDriverVerified && document.getElementById('rsg-turnstile-driver')) {
+      alert(currentLang === 'bn' ? '⚠️ অনুগ্রহ করে "Cloudflare Verification" বক্সে ক্লিক করে ভেরিফাই করুন!' : 'Please complete Cloudflare human verification');
+      if (btn) {
+        btn.innerText = I18N[currentLang]?.loginBtn || '✅ Driver Login';
+        btn.disabled = false;
+      }
+      return;
+    }
   }
 
   let phoneEl = document.getElementById('loginPhone');
@@ -3759,6 +3831,26 @@ async function loginDriver() {
 
   if (!/^[0-9]{10}$/.test(p)) {
     alert(currentLang === 'bn' ? 'দয়া করে সঠিক ১০ সংখ্যার মোবাইল নম্বর দিন!' : 'Please enter valid 10-digit mobile number');
+    if (btn) {
+      btn.innerText = I18N[currentLang]?.loginBtn || '✅ Driver Login';
+      btn.disabled = false;
+    }
+    return;
+  }
+
+  // Dual-Role Restriction Check: Is this phone already an active Customer?
+  let [custCheckSnap, ctrlCheckSnap] = await Promise.all([
+    firebase.database().ref('users/' + p).once('value').catch(() => null),
+    firebase.database().ref('user_controls/' + p).once('value').catch(() => null)
+  ]);
+  let isCustomerAccount = Boolean(custCheckSnap && custCheckSnap.exists() && (custCheckSnap.val()?.auth_type || custCheckSnap.val()?.name));
+  let ctrlVal = (ctrlCheckSnap && ctrlCheckSnap.exists()) ? ctrlCheckSnap.val() : {};
+  let allowDual = Boolean(ctrlVal && ctrlVal.allow_dual_role);
+
+  if (isCustomerAccount && !allowDual) {
+    alert(currentLang === 'bn' 
+      ? '🚫 কাস্টমার অ্যাকাউন্টে ড্রাইভার লগইন নিষিদ্ধ!\n\nএই মোবাইল নম্বরটি ইতিমধ্যে কাস্টমার অ্যাকাউন্ট হিসেবে ব্যবহৃত হচ্ছে। একই নম্বরে ড্রাইভার পার্টনার হতে অ্যাডমিনের বিশেষ অনুমতি (Dual Role Permission) প্রয়োজন। হেল্পলাইনে যোগাযোগ করুন।'
+      : '🚫 Customer account detected!\n\nThis phone number is already registered as a Customer. To use it as a Driver, Admin Dual Role permission is required.');
     if (btn) {
       btn.innerText = I18N[currentLang]?.loginBtn || '✅ Driver Login';
       btn.disabled = false;
@@ -6990,6 +7082,7 @@ function toggleDueDetails() {
 }
 
 function openDueModal() {
+  if (typeof window.requireDriverLogin === 'function' && !window.requireDriverLogin('Due Pay')) return;
   try { localStorage.setItem('rs_driver_active_view', 'dues'); history.replaceState(null, '', '#dues'); } catch(e) {}
   get(ref(db, 'drivers/' + DRIVER_PHONE)).then(drSnap => {
     let dr = drSnap.val() || {};
@@ -7041,6 +7134,7 @@ function openDueModal() {
 
 // === DRIVER NAVIGATION DRAWER & TERMS MODAL HANDLERS ===
 window.openDriverNavDrawer = function() {
+  if (typeof window.requireDriverLogin === 'function' && !window.requireDriverLogin('Menu')) return;
   try { localStorage.setItem('rs_driver_active_view', 'profile'); history.replaceState(null, '', '#profile'); } catch(e) {}
   const drawer = document.getElementById('driverNavDrawer');
   const overlay = document.getElementById('driverNavDrawerOverlay');
@@ -7080,6 +7174,7 @@ window.closeDriverTermsModal = function() {
 };
 
 window.scrollToHistorySection = function() {
+  if (typeof window.requireDriverLogin === 'function' && !window.requireDriverLogin('History')) return;
   try { localStorage.setItem('rs_driver_active_view', 'history'); history.replaceState(null, '', '#history'); } catch(e) {}
   window.closeDriverNavDrawer();
   const hist = document.getElementById('historyBox');
@@ -7832,6 +7927,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // SOS EMERGENCY TRIGGER & FIRESTORE BOOKING LISTENER
 // =======================================================
 function triggerSOS() {
+  if (typeof window.requireDriverLogin === 'function' && !window.requireDriverLogin('SOS')) return;
   const dict = I18N[currentLang] || I18N.bn;
   if (!confirm(dict.sosConfirm || '🆘 জরুরি SOS অ্যালার্ট অ্যাডমিন কন্ট্রোলে পাঠাবেন?')) return;
   const myPhone = DRIVER_PHONE || localStorage.getItem('driverPhone') || 'Driver';

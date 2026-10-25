@@ -70,6 +70,52 @@ function doPost(e) {
     }
 
     // -------------------------------------------------------------
+    // ACTION 0: SEND FREE EMAIL OTP (100% LIFETIME FREE GMAIL OTP)
+    // -------------------------------------------------------------
+    if (action === "send_otp") {
+      var otpEmail = (body.email || targetEmail || "").toLowerCase().trim();
+      var otpCode = body.otp || "";
+      var custName = body.name || "Customer";
+      if (!otpEmail || !otpCode) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "error",
+          message: "Email and OTP code are required"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      try {
+        MailApp.sendEmail({
+          to: otpEmail,
+          subject: "🔐 RIDE SATHI - আপনার ওটিপি ভেরিফিকেশন কোড: " + otpCode,
+          htmlBody: "<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:2px solid #0284c7;border-radius:16px;background:#ffffff'>" +
+                    "<div style='text-align:center;margin-bottom:16px'>" +
+                    "<h2 style='color:#0284c7;margin:0'>🚖 RIDE SATHI GO</h2>" +
+                    "<p style='color:#64748b;font-size:13px;margin:4px 0 0'>Safe Rides, Trusted Service</p>" +
+                    "</div>" +
+                    "<p style='font-size:15px;color:#1e293b'>নমস্কার <b>" + custName + "</b>,</p>" +
+                    "<p style='font-size:14px;color:#475569;line-height:1.5'>আপনার রাইড সাথী অ্যাকাউন্টের ভেরিফিকেশন ও পিন রিকভারির জন্য নিচের ৬-সংখ্যার সিক্রেট ওটিপি কোডটি ব্যবহার করুন:</p>" +
+                    "<div style='text-align:center;margin:20px 0'>" +
+                    "<span style='display:inline-block;background:#f0fdf4;border:2px dashed #16a34a;color:#15803d;font-size:32px;font-weight:900;letter-spacing:8px;padding:12px 24px;border-radius:12px'>" +
+                    otpCode +
+                    "</span></div>" +
+                    "<p style='font-size:12.5px;color:#64748b;line-height:1.4'>⚠️ এই কোডটি ৫ মিনিটের জন্য কার্যকর থাকবে। সুরক্ষার স্বার্থে এই কোডটি কাউকে জানাবেন না।</p>" +
+                    "<hr style='border:none;border-top:1px solid #e2e8f0;margin:18px 0'>" +
+                    "<div style='text-align:center;font-size:11px;color:#94a3b8'>টিম Ride Sathi GO • হেল্পলাইন: +91 8768447312</div>" +
+                    "</div>"
+        });
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "success",
+          message: "OTP sent successfully to " + otpEmail
+        })).setMimeType(ContentService.MimeType.JSON);
+      } catch(err) {
+        return ContentService.createTextOutput(JSON.stringify({
+          status: "error",
+          message: "Failed to send email: " + err.message
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // -------------------------------------------------------------
     // ACTION 1: EDIT / UPDATE EXISTING USER
     // -------------------------------------------------------------
     if (action === "update") {
