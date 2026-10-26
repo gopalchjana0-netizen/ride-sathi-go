@@ -1,5 +1,5 @@
 // RideSathiGo Service Worker - v2.7.8 (Superfast Instant Open & Dynamic i18n)
-const CACHE_NAME = 'rsg-cache-v3.0.0';
+const CACHE_NAME = 'rsg-cache-v3.0.1';
 const CORE_STATIC_ASSETS = [
   '/',
   '/index.html',

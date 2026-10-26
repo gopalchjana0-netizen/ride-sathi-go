@@ -114,7 +114,17 @@
 </script>
 <script src="security-shield.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script id="rsgCacheBustSync">
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var r of regs) { r.update(); }
+      });
+    }
+  </script>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>RIDE SATHI GO - সাশ্রয়ী বাইক, টোটো ও কার বুকিং | পশ্চিম ও পূর্ব মেদিনীপুর সহ সমগ্র পশ্চিমবঙ্গ</title>
 <meta name="application-name" content="Ride Sathi Go">
 <meta name="apple-mobile-web-app-title" content="Ride Sathi Go">
@@ -2064,6 +2074,13 @@ window.setAppLanguage = window.setLanguage;
 
 // === STRICT CUSTOMER ACCESS CONTROL (Protects all features until login) ===
 window.isCustomerLoggedIn = function() {
+  // If welcomeScreen is currently visible to user, they are NOT logged in
+  var wScreen = document.getElementById('welcomeScreen');
+  if (wScreen) {
+    var isHidden = wScreen.classList.contains('hidden') || wScreen.style.display === 'none';
+    if (!isHidden) return false;
+  }
+
   var p = (localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || localStorage.getItem('current_user_mobile') || '').replace(/[^0-9]/g, '');
   if (p.length > 10 && p.indexOf('91') === 0) p = p.slice(2);
   else if (p.length > 10 && p.indexOf('0') === 0) p = p.slice(1);
@@ -2076,12 +2093,6 @@ window.isCustomerLoggedIn = function() {
     return false;
   }
 
-  // If welcomeScreen is currently visible to user, they are NOT logged in
-  var wScreen = document.getElementById('welcomeScreen');
-  if (wScreen && wScreen.style.display !== 'none' && !wScreen.classList.contains('hidden')) {
-    return false;
-  }
-
   return true;
 };
 
@@ -2089,13 +2100,7 @@ window.requireCustomerLogin = function(featureName) {
   if (window.isCustomerLoggedIn()) {
     return true;
   }
-  var curLang = localStorage.getItem('appLang') || localStorage.getItem('customerLang') || window.currentLang || 'bn';
-  var msg = "⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\n\nলগইন করার পর আপনি সকল ফিচার ব্যবহার করতে পারবেন।";
-  if (curLang === 'hi') {
-    msg = "⚠️ कृपया पहले अपना नाम और १० अंकों का मोबाइल नंबर डालकर लॉगिन करें!\n\nलॉगिन करने के बाद आप सभी सुविधाओं का उपयोग कर सकेंगे।";
-  } else if (curLang === 'en') {
-    msg = "⚠️ Please enter your Name and 10-digit Mobile Number to Login first!\n\nAfter logging in, you will have full access to all features.";
-  }
+  var msg = "⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি সকল ফিচার সম্পূর্ণভাবে ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to all features.";
   alert(msg);
 
   if (typeof window.switchCustomerScreen === 'function') {
@@ -2833,7 +2838,6 @@ window.restoreCustomerState = function() {
 
       // Attach live real-time sync with Admin edits & block enforcement
       try { window.initRealtimeUserProfileSync(cleanP); } catch(e) {}
-    }
   } catch(e) {
     console.warn("restoreCustomerState error:", e);
   }
@@ -3032,11 +3036,19 @@ window.handleGoogleCredentialResponse = function(response) {
     localStorage.setItem('userName', name);
     if (email) localStorage.setItem('customerEmail', email);
 
-    // Auto-fill into Name and Email inputs on welcomeScreen
+    // Auto-fill into Name and Email inputs on welcomeScreen (Customer can freely edit/change)
     var cName = document.getElementById('custName');
-    if (cName) cName.value = name;
+    if (cName) {
+      cName.value = name;
+      try { cName.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+      try { cName.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+    }
     var cEmail = document.getElementById('custEmail');
-    if (cEmail && email) cEmail.value = email;
+    if (cEmail && email) {
+      cEmail.value = email;
+      try { cEmail.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+      try { cEmail.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+    }
 
     var pInput = document.getElementById('custPhone');
     var msgEl = document.getElementById('welcomeMsg');
@@ -3840,26 +3852,31 @@ window.continueToBooking = function() {
     }
   }
 
-  // 4. Cloudflare Turnstile Human Verification (Graceful check)
-  if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
-    var tToken = window.turnstile.getResponse();
-    if (!tToken && !window.rsgTurnstileCustomerVerified && document.getElementById('rsg-turnstile-customer')) {
-      if (msgEl) {
-        msgEl.style.color = '#ef4444';
-        msgEl.innerText = "⚠️ অনুগ্রহ করে 'Cloudflare Verification' চেকবক্সে ক্লিক করুন!";
+  // 4. Cloudflare Turnstile Human Verification (Graceful non-blocking check)
+  try {
+    if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
+      var tToken = window.turnstile.getResponse();
+      if (!tToken && !window.rsgTurnstileCustomerVerified && document.getElementById('rsg-turnstile-customer')) {
+        try { window.turnstile.execute('#rsg-turnstile-customer'); } catch(e){}
       }
-      resetContinueBtn();
-      return;
     }
-  }
+  } catch(e) {}
 
-  // Check Firebase RTDB for existing customer or dual-role driver
+  // 5. Check Firebase RTDB with automatic 3.5s timeout safety (Guarantees OTP modal always opens)
+  var rtdbResolved = false;
+  var fallbackTimer = setTimeout(function() {
+    if (!rtdbResolved) {
+      rtdbResolved = true;
+      resetContinueBtn();
+      window.openCustomerEmailOtpModal(name, phone, email, {});
+    }
+  }, 3500);
+
   if (typeof firebase !== 'undefined' && firebase.database) {
     var rootDb = firebase.database();
     rootDb.ref('users/' + phone).once('value').then(function(snap) {
+      if (rtdbResolved) return;
       var userData = snap.val();
-      var localAuth = null;
-      try { localAuth = JSON.parse(localStorage.getItem('rideSathiAuthUser') || '{}'); } catch(e){}
 
       // Check Dual-Role Restriction
       Promise.all([
@@ -3868,6 +3885,10 @@ window.continueToBooking = function() {
         rootDb.ref('pending_drivers/' + phone).once('value').catch(function(){ return null; }),
         rootDb.ref('user_controls/' + phone).once('value').catch(function(){ return null; })
       ]).then(function(checkRes) {
+        if (rtdbResolved) return;
+        rtdbResolved = true;
+        clearTimeout(fallbackTimer);
+
         var drv1 = checkRes[0] && checkRes[0].exists();
         var drv2 = checkRes[1] && checkRes[1].exists();
         var drv3 = checkRes[2] && checkRes[2].exists();
@@ -3893,16 +3914,22 @@ window.continueToBooking = function() {
         resetContinueBtn();
         window.openCustomerEmailOtpModal(name, phone, email, userData || {});
       }).catch(function(err) {
-        console.warn("Dual role check warning, proceeding to OTP:", err);
+        if (rtdbResolved) return;
+        rtdbResolved = true;
+        clearTimeout(fallbackTimer);
         resetContinueBtn();
         window.openCustomerEmailOtpModal(name, phone, email, userData || {});
       });
     }).catch(function(err) {
-      console.warn("RTDB user fetch warning, proceeding to OTP:", err);
+      if (rtdbResolved) return;
+      rtdbResolved = true;
+      clearTimeout(fallbackTimer);
       resetContinueBtn();
       window.openCustomerEmailOtpModal(name, phone, email, {});
     });
   } else {
+    rtdbResolved = true;
+    clearTimeout(fallbackTimer);
     resetContinueBtn();
     window.openCustomerEmailOtpModal(name, phone, email, {});
   }
@@ -4190,9 +4217,10 @@ window.selectPay = function(mode) {
 
 // === GLOBAL CAPTURE-PHASE LOGIN GATE (Strictly locks ALL features except Language & Help on Login Page) ===
 document.addEventListener('click', function(e) {
-  var wScreen = document.getElementById('welcomeScreen');
-  var isLoginScreenVisible = wScreen && !wScreen.classList.contains('hidden') && wScreen.style.display !== 'none';
-  if (!isLoginScreenVisible) return;
+  // If user is already fully authenticated, allow normal interactions
+  if (typeof window.isCustomerLoggedIn === 'function' && window.isCustomerLoggedIn()) {
+    return;
+  }
 
   // 1. Allow interactions inside welcomeScreen (Inputs, Google Login, Turnstile, Continue Button)
   if (e.target.closest('#welcomeScreen')) return;
@@ -4206,7 +4234,7 @@ document.addEventListener('click', function(e) {
   }
 
   // 3. Allow Language Switching (বাং, हिंदी, ENG)
-  if (e.target.closest('.lang-segment') || e.target.closest('.lang-opt') || e.target.id?.startsWith('langBtn_')) {
+  if (e.target.closest('.lang-segment') || e.target.closest('.lang-opt') || (e.target.id && e.target.id.startsWith('langBtn_'))) {
     return;
   }
 
@@ -4220,7 +4248,7 @@ document.addEventListener('click', function(e) {
   e.stopPropagation();
   e.stopImmediatePropagation();
 
-  var msg = "⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি সকল ফিচার ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to all features.";
+  var msg = "⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি সকল ফিচার সম্পূর্ণভাবে ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to all features.";
   alert(msg);
 
   var phoneInp = document.getElementById('custPhone');
@@ -4230,7 +4258,7 @@ document.addEventListener('click', function(e) {
   } else if (phoneInp) {
     phoneInp.focus();
   }
-}, true); // useCapture = true ensures this fires BEFORE any element's onclick or listener!
+}, true);
 
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof window.initTouristRentalMasterListener === 'function') {
@@ -4678,8 +4706,14 @@ if ('serviceWorker' in navigator) {
 <!-- EARLY INSTANT HANDLER FOR LIVE CHAT (Ensures instant opening even before deferred scripts) -->
 <script>
 window.openLiveChatModal = function() {
-  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
-  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
+  if (typeof window.isCustomerLoggedIn === 'function' && !window.isCustomerLoggedIn()) {
+    if (typeof window.requireCustomerLogin === 'function') {
+      window.requireCustomerLogin('Live Chat');
+    } else {
+      alert("⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি লাইভ চ্যাট ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to live chat.");
+    }
+    return;
+  }
   var modal = document.getElementById('liveChatModal');
   if (modal) {
     modal.style.display = 'flex';
@@ -10515,7 +10549,14 @@ window.downloadInvoiceFromHistory = function(invOrRideId) {
 
 // === UBER / RAPIDO NAVIGATION DRAWER CONTROLLER ===
 window.openNavDrawer = function() {
-  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Menu')) return;
+  if (typeof window.isCustomerLoggedIn === 'function' && !window.isCustomerLoggedIn()) {
+    if (typeof window.requireCustomerLogin === 'function') {
+      window.requireCustomerLogin('Menu');
+    } else {
+      alert("⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি মেনু ও সকল ফিচার ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to the menu.");
+    }
+    return;
+  }
   var overlay = document.getElementById('navDrawerOverlay');
   var drawer = document.getElementById('navDrawer');
   if (overlay) overlay.classList.add('active');
@@ -14952,7 +14993,14 @@ window.openLiveChatSupportModal = function() { return window.openLiveChatModal()
 window.closeLiveChatSupportModal = function() { return window.closeLiveChatModal(); };
 window.sendCustomerLiveChatMessage = function() { return window.sendCustomerChatMessage(); };
 window.openLiveChatModal = function() {
-  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('Live Chat')) return;
+  if (typeof window.isCustomerLoggedIn === 'function' && !window.isCustomerLoggedIn()) {
+    if (typeof window.requireCustomerLogin === 'function') {
+      window.requireCustomerLogin('Live Chat');
+    } else {
+      alert("⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি লাইভ চ্যাট ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to live chat.");
+    }
+    return;
+  }
   var modal = document.getElementById('liveChatModal');
   if (modal) {
     modal.style.display = 'flex';
