@@ -3807,19 +3807,64 @@ window.dispatchRegistrationEmailOtp = function(custName, email, otpCode) {
   var err = document.getElementById('custRegOtpError');
   var brevoApiKey = ['xkeysib', 'a604e25f7cba3ce2132dd56ca9cd8de57fae5f5751a77a8be05e1c7a462b1542', 'rVvjCkCSNQbwhRQK'].join('-');
 
-  var emailHtml = "<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:2px solid #f59e0b;border-radius:16px;background:#ffffff;'>" +
-    "<div style='text-align:center;margin-bottom:16px;'>" +
-      "<h2 style='color:#0f172a;margin:0;'>🚖 RIDE SATHI GO</h2>" +
-      "<p style='color:#64748b;font-size:13px;margin:4px 0 0;'>২০২৬ অফিসিয়াল কাস্টমার ভেরিফিকেশন</p>" +
+  // 🔄 100% Dynamic Auto-Year Conversion (২০২৬, ২০২৭, ২০২৮...)
+  var bnDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+  var currentYearBn = String(new Date().getFullYear()).split('').map(function(d){ return bnDigits[d] || d; }).join('');
+
+  var emailHtml = "<div style='font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:26px 22px;border:2px solid #f59e0b;border-radius:18px;background:#ffffff;box-shadow:0 10px 25px rgba(0,0,0,0.08);'>" +
+    "<div style='text-align:center;margin-bottom:18px;'>" +
+      "<h2 style='color:#0f172a;margin:0;font-size:24px;letter-spacing:1px;'>🚖 RIDE SATHI GO</h2>" +
+      "<p style='color:#64748b;font-size:13px;font-weight:600;margin:5px 0 0;'>" + currentYearBn + " অফিসিয়াল কাস্টমার ভেরিফিকেশন</p>" +
     "</div>" +
-    "<p style='font-size:15px;color:#1e293b;'>নমস্কার <b>" + custName + "</b>,</p>" +
-    "<p style='font-size:14px;color:#475569;line-height:1.5;'>রাইড সাথী গো-তে নতুন অ্যাকাউন্ট তৈরি করার জন্য আপনার ৬-সংখ্যার সিক্রেট ওটিপি কোড:</p>" +
-    "<div style='text-align:center;margin:20px 0;'>" +
-      "<span style='display:inline-block;background:#fef3c7;border:2px dashed #f59e0b;color:#b45309;font-size:32px;font-weight:900;letter-spacing:8px;padding:12px 24px;border-radius:12px;'>" + otpCode + "</span>" +
+    "<p style='font-size:15px;color:#1e293b;margin:0 0 10px;'>নমস্কার <b>" + custName + "</b>,</p>" +
+    "<p style='font-size:14px;color:#475569;line-height:1.6;margin:0 0 18px;'>রাইড সাথী গো-তে নতুন অ্যাকাউন্ট তৈরি করার জন্য আপনার ৬-সংখ্যার সিক্রেট ওটিপি কোড:</p>" +
+    "<div style='text-align:center;margin:22px 0;'>" +
+      "<span style='display:inline-block;background:#fef3c7;border:2px dashed #f59e0b;color:#b45309;font-size:34px;font-weight:900;letter-spacing:8px;padding:12px 28px;border-radius:14px;'>" + otpCode + "</span>" +
     "</div>" +
-    "<p style='font-size:12.5px;color:#64748b;line-height:1.4;'>⚠️ এই কোডটি ৫ মিনিটের জন্য কার্যকর থাকবে। সুরক্ষার স্বার্থে এই কোডটি কাউকে জানাবেন না।</p>" +
-    "<hr style='border:none;border-top:1px solid #e2e8f0;margin:18px 0;'>" +
-    "<div style='text-align:center;font-size:11px;color:#94a3b8;'>টিম Ride Sathi GO • হেল্পলাইন: +91 8768447312</div>" +
+    "<p style='font-size:13px;color:#d97706;background:#fffbeb;padding:10px 14px;border-radius:10px;border-left:4px solid #f59e0b;line-height:1.5;margin:16px 0;'>⚠️ <b>জরুরি তথ্য:</b> এই কোডটি <b>১০ মিনিটের জন্য</b> কার্যকর থাকবে। সুরক্ষার স্বার্থে এই কোডটি কাউকে জানাবেন না।</p>" +
+    
+    "<!-- OFFICIAL SOCIAL MEDIA HUB (Facebook, Instagram, LinkedIn, WhatsApp) -->" +
+    "<div style='margin:24px 0 16px;padding:16px 14px;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;text-align:center;'>" +
+      "<div style='font-size:12.5px;font-weight:700;color:#334155;margin-bottom:12px;'>📢 আমাদের অফিসিয়াল পেজে যুক্ত থাকুন • Follow Us:</div>" +
+      "<table role='presentation' border='0' cellpadding='0' cellspacing='0' align='center' style='margin:0 auto;'>" +
+        "<tr>" +
+          "<!-- Facebook -->" +
+          "<td style='padding:0 8px;' align='center'>" +
+            "<a href='https://www.facebook.com/share/1EajM2z9MR/' target='_blank' style='text-decoration:none;' title='Facebook'>" +
+              "<img src='https://img.icons8.com/color/48/facebook-new.png' width='34' height='34' alt='Facebook' style='display:block;border:0;' />" +
+              "<span style='font-size:10px;color:#1877f2;font-weight:bold;display:block;margin-top:4px;'>Facebook</span>" +
+            "</a>" +
+          "</td>" +
+          "<!-- Instagram -->" +
+          "<td style='padding:0 8px;' align='center'>" +
+            "<a href='https://www.instagram.com/ride.sathi.go' target='_blank' style='text-decoration:none;' title='Instagram'>" +
+              "<img src='https://img.icons8.com/color/48/instagram-new--v1.png' width='34' height='34' alt='Instagram' style='display:block;border:0;' />" +
+              "<span style='font-size:10px;color:#e1306c;font-weight:bold;display:block;margin-top:4px;'>Instagram</span>" +
+            "</a>" +
+          "</td>" +
+          "<!-- LinkedIn -->" +
+          "<td style='padding:0 8px;' align='center'>" +
+            "<a href='https://www.linkedin.com/company/ride-sathi-go/' target='_blank' style='text-decoration:none;' title='LinkedIn'>" +
+              "<img src='https://img.icons8.com/color/48/linkedin.png' width='34' height='34' alt='LinkedIn' style='display:block;border:0;' />" +
+              "<span style='font-size:10px;color:#0a66c2;font-weight:bold;display:block;margin-top:4px;'>LinkedIn</span>" +
+            "</a>" +
+          "</td>" +
+          "<!-- WhatsApp -->" +
+          "<td style='padding:0 8px;' align='center'>" +
+            "<a href='https://wa.me/918768447312?text=Hi%20Ride%20Sathi%20Go' target='_blank' style='text-decoration:none;' title='WhatsApp Helpline'>" +
+              "<img src='https://img.icons8.com/color/48/whatsapp--v1.png' width='34' height='34' alt='WhatsApp' style='display:block;border:0;' />" +
+              "<span style='font-size:10px;color:#16a34a;font-weight:bold;display:block;margin-top:4px;'>WhatsApp</span>" +
+            "</a>" +
+          "</td>" +
+        "</tr>" +
+      "</table>" +
+    "</div>" +
+
+    "<hr style='border:none;border-top:1px solid #e2e8f0;margin:16px 0 12px;'>" +
+    "<div style='text-align:center;font-size:11.5px;color:#94a3b8;line-height:1.5;'>" +
+      "টিম Ride Sathi GO • হেল্পলাইন: <a href='tel:8768447312' style='color:#0284c7;font-weight:bold;text-decoration:none;'>+91 8768447312</a><br>" +
+      "পশ্চিম মেদিনীপুর, পশ্চিমবঙ্গ • সর্বস্বত্ব সংরক্ষিত" +
+    "</div>" +
   "</div>";
 
   function fallbackToAppsScript() {
