@@ -445,13 +445,30 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:32px">📧</span>
           <div>
-            <b style="font-size:17px;color:#0369a1;letter-spacing:-0.2px">উৎসব ও অফার ইমেইল ক্যাম্পেইন (Festival & Offer Email Broadcast)</b>
-            <p class="small" style="color:#0284c7;margin:2px 0 0">নির্দিষ্ট কাস্টমার বা ড্রাইভারদের বেছে নিয়ে উৎসবের শুভেচ্ছা, ফটো ব্যানার ও স্পেশাল ছাড় সরাসরি তাদের জিমেইলে পাঠান (Brevo 100% Free)</p>
+            <b style="font-size:17px;color:#0369a1;letter-spacing:-0.2px">উৎসব ও অফার ইমেইল ক্যাম্পেইন (Festival & Offer Email Broadcast Center)</b>
+            <p class="small" style="color:#0284c7;margin:2px 0 0">কাস্টমার, ড্রাইভার বা যেকোনো কাস্টম ইমেইলে উৎসবের শুভেচ্ছা, ফটো ব্যানার ও স্পেশাল ছাড় পাঠান (Brevo + Gmail ডাবল ব্যাকআপ)</p>
           </div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <span class="badge" style="background:#16a34a;color:#fff;font-size:11px;padding:5px 10px;font-weight:900">🟢 Brevo API Connected</span>
           <button type="button" class="btn blue" onclick="initFestivalEmailCampaign(true)" style="padding:6px 12px;font-size:11.5px">🔄 রিফ্রেশ তালিকা</button>
+        </div>
+      </div>
+
+      <!-- SENDER IDENTITY & BACKUP STATUS -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#ffffff;border:1.5px solid #bae6fd;padding:10px 14px;border-radius:12px;margin-top:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">✉️</span>
+          <div>
+            <span style="font-size:11px;color:#0284c7;font-weight:bold;display:block">অফিসিয়াল প্রেরক (Official Sender):</span>
+            <b style="font-size:13.5px;color:#0369a1">Ride Sathi GO &lt;support.ridesathi@gmail.com&gt;</b>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:bold;color:#0369a1;cursor:pointer;background:#f0f9ff;padding:5px 10px;border-radius:8px;border:1px solid #7dd3fc">
+            <input type="checkbox" id="campaignSendSelfCopy" checked style="width:16px;height:16px;accent-color:#0284c7">
+            📩 অফিশিয়াল সাপোর্টেও (support.ridesathi@gmail.com) একটি রেকর্ড কপি পাঠান
+          </label>
         </div>
       </div>
     </div>
@@ -468,10 +485,10 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         </div>
       </div>
 
-      <!-- AUDIENCE PILL BUTTONS -->
+      <!-- AUDIENCE FILTER PILL BUTTONS -->
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
         <button type="button" class="btn" id="fAudienceBoth" onclick="filterCampaignAudience('ALL')" style="padding:8px 16px;border-radius:10px;font-weight:900;font-size:12.5px;background:#0f172a;color:#fff;border:none">
-          👥 উভয়কেই (Customers & Drivers)
+          👥 সবাইকে (কাস্টমার, ড্রাইভার ও কাস্টম)
         </button>
         <button type="button" class="btn" id="fAudienceCustomer" onclick="filterCampaignAudience('customer')" style="padding:8px 16px;border-radius:10px;font-weight:900;font-size:12.5px;background:#e2e8f0;color:#0f172a;border:none">
           👤 শুধু কাস্টমার (Customers)
@@ -479,6 +496,26 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <button type="button" class="btn" id="fAudienceDriver" onclick="filterCampaignAudience('driver')" style="padding:8px 16px;border-radius:10px;font-weight:900;font-size:12.5px;background:#e2e8f0;color:#0f172a;border:none">
           🚖 শুধু ড্রাইভার (Drivers)
         </button>
+        <button type="button" class="btn" id="fAudienceCustom" onclick="filterCampaignAudience('custom')" style="padding:8px 16px;border-radius:10px;font-weight:900;font-size:12.5px;background:#e2e8f0;color:#0f172a;border:none">
+          🌐 শুধু কাস্টম ইমেইল (Custom Emails)
+        </button>
+      </div>
+
+      <!-- ADD CUSTOM EMAIL SECTION (USER REQUEST: SEND TO ANY OTHER EMAIL ID) -->
+      <div style="background:#f5f3ff;border:1.5px dashed #8b5cf6;padding:12px 14px;border-radius:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+          <b style="font-size:13.5px;color:#5b21b6">➕ অন্যান্য কাস্টম ইমেইল আইডি যোগ করুন (Add Any Custom Email IDs):</b>
+          <span style="font-size:11px;color:#7c3aed">কমা (,) বা এন্টার দিয়ে একাধিক ইমেইল একবারে পেস্ট করতে পারেন</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="campaignCustomEmailInput" placeholder="যেমন: partner@gmail.com, friend@yahoo.com, office@domain.com..." style="flex:1;min-width:240px;margin:0;padding:8px 12px;border-radius:8px;border:1px solid #c4b5fd" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomCampaignEmails();}">
+          <button type="button" class="btn" onclick="addCustomCampaignEmails()" style="background:#7c3aed;color:#fff;font-weight:bold;padding:8px 16px;border-radius:8px;border:none">
+            ➕ তালিকায় যোগ করুন
+          </button>
+        </div>
+        <div id="campaignCustomEmailCountTag" style="font-size:11.5px;color:#6d28d9;font-weight:bold;margin-top:6px;display:none">
+          ✅ যুক্ত করা কাস্টম ইমেইল: <span id="campaignCustomEmailCount">0</span> টি
+        </div>
       </div>
 
       <!-- SEARCH & QUICK SELECT CONTROLS -->
@@ -498,7 +535,7 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
 
       <!-- SCROLLABLE USERS LIST TABLE -->
       <div style="max-height:280px;overflow-y:auto;border:1.5px solid #e2e8f0;border-radius:12px;background:#f8fafc;padding:6px" id="campaignUsersListWrap">
-        <div style="text-align:center;padding:24px;color:#64748b" id="campaignUsersLoading">⏳ কাস্টমার ও ড্রাইভারদের তালিকা লোড হচ্ছে...</div>
+        <div style="text-align:center;padding:24px;color:#64748b" id="campaignUsersLoading">⏳ কাস্টমার, ড্রাইভার ও কাস্টম প্রাপকদের তালিকা লোড হচ্ছে...</div>
         <div id="campaignUsersList" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
     </div>
@@ -595,46 +632,56 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
         <div style="text-align:center;margin-bottom:12px">
           <h2 style="color:#0f172a;margin:0;font-size:22px;letter-spacing:1px">🚖 RIDE SATHI GO</h2>
           <p id="prevHeading" style="color:#d97706;font-size:14px;font-weight:bold;margin:4px 0 0">উৎসবের স্পেশাল ধামাকা অফার!</p>
+          <p style="color:#64748b;font-size:11.5px;margin:2px 0 0">২০২৬ অফিসিয়াল উৎসব ও অফার স্পেশাল</p>
         </div>
 
         <p style="font-size:14.5px;color:#1e293b;margin:0 0 10px">নমস্কার <b>গোপাল জানা (Customer / Driver)</b>,</p>
 
-        <div id="prevBody" style="font-size:13.5px;color:#334155;line-height:1.6;margin:10px 0 16px;white-space:pre-line;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0">
+        <div id="prevBody" style="font-size:13.5px;color:#334155;line-height:1.6;margin:10px 0 14px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;white-space:pre-line">
+          উৎসবের এই আনন্দের দিনে আপনার যেকোনো যাতায়াত হোক সহজ, সাশ্রয়ী ও আরামদায়ক!
         </div>
 
-        <!-- Coupon Box -->
-        <div id="prevCouponBox" style="text-align:center;margin:16px 0;background:#fef3c7;border:2px dashed #f59e0b;padding:12px;border-radius:12px">
-          <span style="font-size:11px;color:#78350f;font-weight:bold;display:block">আপনার স্পেশাল ডিসকাউন্ট কুপন কোড:</span>
-          <b id="prevCouponCode" style="font-size:22px;color:#b45309;letter-spacing:4px">FESTIVE2026</b>
+        <!-- Optional Promo Coupon Preview -->
+        <div id="prevCouponBox" style="text-align:center;margin:14px 0;background:#fef3c7;border:2px dashed #f59e0b;padding:12px;border-radius:12px">
+          <span style="font-size:11px;color:#78350f;font-weight:bold;display:block;margin-bottom:4px">🎉 আপনার স্পেশাল ডিসকাউন্ট কুপন কোড:</span>
+          <span id="prevCouponCode" style="display:inline-block;font-size:20px;font-weight:900;color:#b45309;letter-spacing:3px;padding:4px 14px;background:#fff;border-radius:8px;border:1px solid #fde68a">FESTIVE2026</span>
         </div>
 
         <!-- CTA Button -->
-        <div style="text-align:center;margin:20px 0 16px">
-          <span id="prevCtaBtn" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;text-decoration:none;padding:12px 24px;border-radius:25px;font-weight:900;font-size:13.5px;box-shadow:0 4px 14px rgba(245,158,11,0.35)">
-            🚖 এখনই রাইড বুক করুন
-          </span>
+        <div style="text-align:center;margin:18px 0 14px">
+          <a href="https://ride-sathi-go.web.app" target="_blank" id="prevCtaBtn" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;text-decoration:none;padding:12px 28px;border-radius:25px;font-weight:900;font-size:13.5px;box-shadow:0 4px 14px rgba(245,158,11,0.35)">
+            🚖 এখনই রাইড বুক করুন ➔
+          </a>
         </div>
 
-        <!-- SOCIAL ICONS -->
-        <div style="margin:20px 0 12px;padding:12px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;text-align:center">
-          <div style="font-size:11.5px;font-weight:700;color:#475569;margin-bottom:8px">📢 আমাদের অফিসিয়াল সোশ্যাল মিডিয়া:</div>
+        <!-- OFFICIAL SOCIAL MEDIA HUB -->
+        <div style="margin:18px 0 12px;padding:12px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;text-align:center">
+          <div style="font-size:11.5px;font-weight:700;color:#475569;margin-bottom:8px">📢 আমাদের অফিসিয়াল পেজে যুক্ত থাকুন • Follow Us:</div>
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">
             <tr>
-              <td style="padding:0 6px" align="center">
-                <img src="https://img.icons8.com/color/48/facebook-new.png" width="28" height="28" alt="Facebook" style="display:block">
-                <span style="font-size:9.5px;color:#1877f2;font-weight:bold">Facebook</span>
+              <td style="padding:0 8px" align="center">
+                <a href="https://www.facebook.com/share/1EajM2z9MR/" target="_blank" style="text-decoration:none">
+                  <img src="https://img.icons8.com/color/48/facebook-new.png" width="30" height="30" alt="Facebook" style="display:block;border:0">
+                  <span style="font-size:9.5px;color:#1877f2;font-weight:bold;display:block;margin-top:2px">Facebook</span>
+                </a>
               </td>
-              <td style="padding:0 6px" align="center">
-                <img src="https://img.icons8.com/color/48/instagram-new--v1.png" width="28" height="28" alt="Instagram" style="display:block">
-                <span style="font-size:9.5px;color:#e1306c;font-weight:bold">Instagram</span>
+              <td style="padding:0 8px" align="center">
+                <a href="https://wa.me/918768447312" target="_blank" style="text-decoration:none">
+                  <img src="https://img.icons8.com/color/48/whatsapp--v1.png" width="30" height="30" alt="WhatsApp" style="display:block;border:0">
+                  <span style="font-size:9.5px;color:#25d366;font-weight:bold;display:block;margin-top:2px">WhatsApp</span>
+                </a>
               </td>
-              <td style="padding:0 6px" align="center">
-                <img src="https://img.icons8.com/color/48/linkedin.png" width="28" height="28" alt="LinkedIn" style="display:block">
-                <span style="font-size:9.5px;color:#0a66c2;font-weight:bold">LinkedIn</span>
+              <td style="padding:0 8px" align="center">
+                <a href="https://www.instagram.com/ridesathi_go?igsh=MXFhMHhpczZkcnM5NQ==" target="_blank" style="text-decoration:none">
+                  <img src="https://img.icons8.com/color/48/instagram-new--v1.png" width="30" height="30" alt="Instagram" style="display:block;border:0">
+                  <span style="font-size:9.5px;color:#e1306c;font-weight:bold;display:block;margin-top:2px">Instagram</span>
+                </a>
               </td>
-              <td style="padding:0 6px" align="center">
-                <img src="https://img.icons8.com/color/48/whatsapp--v1.png" width="28" height="28" alt="WhatsApp" style="display:block">
-                <span style="font-size:9.5px;color:#16a34a;font-weight:bold">WhatsApp</span>
+              <td style="padding:0 8px" align="center">
+                <a href="https://www.linkedin.com/in/ride-sathi-go-netizen-1262963aa?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" style="text-decoration:none">
+                  <img src="https://img.icons8.com/color/48/linkedin.png" width="30" height="30" alt="LinkedIn" style="display:block;border:0">
+                  <span style="font-size:9.5px;color:#0a66c2;font-weight:bold;display:block;margin-top:2px">LinkedIn</span>
+                </a>
               </td>
             </tr>
           </table>
@@ -647,19 +694,69 @@ input,select,textarea{width:100%;padding:10px;border:1.5px solid #e2e8f0;border-
       </div>
     </div>
 
-    <!-- 4. ACTION & SENDING DISPATCH BAR -->
+    <!-- 4. ACTION & DOUBLE BACKUP DISPATCH BAR -->
     <div class="card" style="border:2px solid #16a34a;background:#f0fdf4;border-radius:16px;padding:18px">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
         <div>
-          <b style="font-size:15px;color:#166534">🚀 ইমেইল ব্রডকাস্ট পাঠানো শুরু করুন</b>
-          <p class="small" style="color:#15803d;margin:2px 0 0">প্রথমে টেস্ট পাঠান অথবা নির্বাচিত সকলের কাছে ১-ক্লিকে পাঠিয়ে দিন</p>
+          <b style="font-size:15px;color:#166534">🚀 ইমেইল ব্রডকাস্ট পাঠানো শুরু করুন (ডাবল ব্যাকআপ সিস্টেম সহ)</b>
+          <p class="small" style="color:#15803d;margin:2px 0 0">Brevo-র মাধ্যমে সরাসরি পাঠান অথবা Brevo লিমিট শেষ হলে ১-ক্লিকে Gmail ব্যাকআপ ব্যবহার করুন</p>
         </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button type="button" class="btn blue" onclick="sendTestCampaignEmail()" style="padding:12px 18px;font-size:13px;border-radius:10px;font-weight:bold">
-            📩 আমার ইমেইলে টেস্ট পাঠান (Test to Admin)
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn blue" onclick="sendTestCampaignEmail()" style="padding:10px 16px;font-size:12.5px;border-radius:10px;font-weight:bold">
+            📩 আমার ইমেইলে টেস্ট পাঠান (Test Email)
           </button>
-          <button type="button" class="btn approve" onclick="sendBulkCampaignEmails()" id="btnStartBulkCampaign" style="padding:14px 24px;font-size:14px;border-radius:10px;font-weight:900;box-shadow:0 4px 14px rgba(22,163,74,0.35)">
-            🚀 নির্বাচিতদের ইমেইল পাঠান (Send Broadcast) ➔
+        </div>
+      </div>
+
+      <!-- DISPATCH MODES GRID (PRIMARY BREVO & BACKUP GMAIL) -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:12px;margin-bottom:14px">
+        <!-- METHOD 1: BREVO CLOUD API -->
+        <div style="background:#ffffff;border:2px solid #16a34a;border-radius:14px;padding:14px;box-shadow:0 4px 12px rgba(22,163,74,0.1)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:22px">🚀</span>
+            <div>
+              <b style="font-size:13.5px;color:#166534">গেটওয়ে ১: Brevo ক্লাউড API (অটোমেটিক)</b>
+              <small style="color:#64748b;display:block">অ্যাডমিন প্যানেল থেকে প্রগ্রেস বার সহ সরাসরি ডেলিভারি</small>
+            </div>
+          </div>
+          <p style="font-size:12px;color:#475569;margin:6px 0 10px;line-height:1.4">
+            প্রতিটি ইমেইল আলাদাভাবে ব্যক্তিগত নামে পাঠানো হয়। দৈনিক ৩০০টি ফ্রি ইমেইল পাঠানো যাবে।
+          </p>
+          <button type="button" class="btn approve" onclick="sendBulkCampaignEmails()" id="btnStartBulkCampaign" style="width:100%;padding:12px;font-size:13.5px;border-radius:10px;font-weight:900;box-shadow:0 4px 14px rgba(22,163,74,0.3)">
+            🚀 Brevo মাধ্যমে ব্রডকাস্ট পাঠান ➔
+          </button>
+        </div>
+
+        <!-- METHOD 2: 1-CLICK GMAIL BACKUP (USER REQUEST: DOUBLE BACKUP) -->
+        <div style="background:#ffffff;border:2px solid #dc2626;border-radius:14px;padding:14px;box-shadow:0 4px 12px rgba(220,38,38,0.1)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:22px">📮</span>
+            <div>
+              <b style="font-size:13.5px;color:#991b1b">গেটওয়ে ২: অফিসিয়াল Gmail ডাবল ব্যাকআপ</b>
+              <small style="color:#64748b;display:block">Brevo লিমিট শেষ হলেও আনলিমিটেড ফ্রি ব্যাকআপ</small>
+            </div>
+          </div>
+          <p style="font-size:12px;color:#475569;margin:6px 0 10px;line-height:1.4">
+            ১-ক্লিকে Gmail খুলে যাবে—সকল ইমেইল BCC-তে এবং মেসেজ স্বয়ংক্রিয়ভাবে বসে যাবে, কোনো কিছু টাইপ করতে হবে না!
+          </p>
+          <button type="button" class="btn" onclick="sendViaGmailBackup()" style="width:100%;padding:12px;font-size:13.5px;border-radius:10px;font-weight:900;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;box-shadow:0 4px 14px rgba(220,38,38,0.3)">
+            📮 ১-ক্লিকে Gmail ব্যাকআপে পাঠান ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- QUICK COPY TOOLS (FOR WHATSAPP/TELEGRAM/EXTERNAL) -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px 14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <span style="font-size:12px;font-weight:bold;color:#475569">📋 সহায়ক কপি টুলস (Quick Copy Tools):</span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn" onclick="copyCampaignBccEmails()" style="padding:5px 10px;font-size:11px;background:#fff;border:1px solid #cbd5e1;color:#334155;font-weight:bold">
+            📋 সকল ইমেইল কপি (BCC)
+          </button>
+          <button type="button" class="btn" onclick="copyCampaignPlainText()" style="padding:5px 10px;font-size:11px;background:#fff;border:1px solid #cbd5e1;color:#334155;font-weight:bold">
+            📋 পুরো বার্তা কপি
+          </button>
+          <button type="button" class="btn" onclick="copyCampaignHtmlText()" style="padding:5px 10px;font-size:11px;background:#fff;border:1px solid #cbd5e1;color:#334155;font-weight:bold">
+            📋 HTML কোড কপি
           </button>
         </div>
       </div>
@@ -15166,83 +15263,75 @@ setTimeout(function() {
 <!-- 📧 RIDE SATHI FESTIVAL & OFFER EMAIL CAMPAIGN ENGINE   -->
 <!-- ======================================================= -->
 <script>
+// ==================== FESTIVAL & OFFER EMAIL CAMPAIGN SCRIPT (V2 - CUSTOM EMAILS & DOUBLE BACKUP) ====================
 window.campaignUsersData = [];
+window.campaignCustomEmailsList = [];
 window.campaignCurrentAudience = 'ALL';
 
+// Switch between Push Notice & Festival Email Campaign
 window.switchBroadcastSubTab = function(mode) {
   var pBox = document.getElementById('subContainerPush');
   var eBox = document.getElementById('subContainerEmail');
-  var bP = document.getElementById('subTabBtnPush');
-  var bE = document.getElementById('subTabBtnEmail');
+  var pBtn = document.getElementById('subTabBtnPush');
+  var eBtn = document.getElementById('subTabBtnEmail');
 
   if (mode === 'email') {
     if (pBox) pBox.style.display = 'none';
     if (eBox) eBox.style.display = 'block';
-    if (bP) { bP.style.background = '#f1f5f9'; bP.style.color = '#334155'; }
-    if (bE) { bE.style.background = 'linear-gradient(135deg,#0284c7,#0369a1)'; bE.style.color = '#fff'; }
-    window.initFestivalEmailCampaign(false);
+    if (pBtn) { pBtn.style.background = '#f1f5f9'; pBtn.style.color = '#334155'; }
+    if (eBtn) { eBtn.style.background = 'linear-gradient(135deg,#0284c7,#0369a1)'; eBtn.style.color = '#fff'; }
+    window.initFestivalEmailCampaign();
+    window.updateCampaignEmailPreview();
   } else {
     if (pBox) pBox.style.display = 'block';
     if (eBox) eBox.style.display = 'none';
-    if (bP) { bP.style.background = 'linear-gradient(135deg,#d97706,#b45309)'; bP.style.color = '#fff'; }
-    if (bE) { bE.style.background = '#f1f5f9'; bE.style.color = '#334155'; }
+    if (pBtn) { pBtn.style.background = 'linear-gradient(135deg,#d97706,#b45309)'; pBtn.style.color = '#fff'; }
+    if (eBtn) { eBtn.style.background = '#f1f5f9'; eBtn.style.color = '#334155'; }
   }
 };
 
-window.initFestivalEmailCampaign = function(forceRefresh) {
+// Initialize Campaign Recipient Lists (Customers + Drivers + Custom)
+window.initFestivalEmailCampaign = function(forceReload) {
+  var listEl = document.getElementById('campaignUsersList');
   var loadingEl = document.getElementById('campaignUsersLoading');
-  if (loadingEl) loadingEl.style.display = 'block';
+  if (!listEl) return;
 
-  function populateFromData(users) {
-    window.campaignUsersData = [];
-    var seen = new Set();
-
-    (users || []).forEach(function(u) {
-      if (!u) return;
-      var phone = String(u.phone || '').replace(/[^0-9]/g, '').slice(-10);
-      var email = String(u.email || '').toLowerCase().trim();
-      var key = (u.type || 'user') + '_' + (phone || email);
-      if (seen.has(key)) return;
-      seen.add(key);
-
-      window.campaignUsersData.push({
-        id: u.key || u.driverKey || u.userId || key,
-        name: u.name || (u.type === 'driver' ? 'Driver Partner' : 'Customer'),
-        phone: phone,
-        email: email,
-        type: u.type || 'customer',
-        status: u.status || 'active',
-        vehicle: u.vehicle || '-'
-      });
-    });
-
+  function populateFromData(allList) {
+    window.campaignUsersData = allList || [];
     if (loadingEl) loadingEl.style.display = 'none';
     window.renderCampaignUsersList();
-    window.updateCampaignEmailPreview();
-    if (forceRefresh) alert("✅ ক্যাম্পেইন প্রাপক তালিকা সফলভাবে রিফ্রেশ হয়েছে (" + window.campaignUsersData.length + " জন)!");
   }
 
-  // Check if manageAllUsersCache is populated
-  if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache) && manageAllUsersCache.length > 0 && !forceRefresh) {
+  if (!forceReload && window.campaignUsersData && window.campaignUsersData.length > 0) {
+    populateFromData(window.campaignUsersData);
+    return;
+  }
+
+  if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache) && manageAllUsersCache.length > 0 && !forceReload) {
     populateFromData(manageAllUsersCache);
-  } else if (typeof firebase !== 'undefined' && firebase.database) {
+  } else {
+    if (loadingEl) {
+      loadingEl.style.display = 'block';
+      loadingEl.innerText = "⏳ ফায়ারবেস থেকে কাস্টমার ও ড্রাইভার তালিকা লোড হচ্ছে...";
+    }
+
     Promise.all([
-      firebase.database().ref('users').once('value'),
-      firebase.database().ref('drivers').once('value')
-    ]).then(function(snaps) {
+      firebase.database().ref('users').once('value').then(function(s){ return s.val() || {}; }),
+      firebase.database().ref('drivers').once('value').then(function(s){ return s.val() || {}; })
+    ]).then(function(results) {
+      var uSnap = results[0];
+      var dSnap = results[1];
       var list = [];
-      var uSnap = snaps[0].val() || {};
-      var dSnap = snaps[1].val() || {};
 
       Object.keys(uSnap).forEach(function(k) {
         var u = uSnap[k] || {};
         list.push({
-          key: 'cust_' + k,
-          name: u.name || ('Customer ' + k.slice(-4)),
+          key: 'usr_' + k,
+          name: u.name || 'Valued Customer',
           email: u.email || '',
           phone: u.phone || k,
           type: 'customer',
-          status: u.status || 'active'
+          status: (u.blocked ? 'blocked' : 'active')
         });
       });
 
@@ -15271,12 +15360,85 @@ window.initFestivalEmailCampaign = function(forceRefresh) {
   }
 };
 
+// USER REQUEST FEATURE: Add arbitrary custom email IDs
+window.addCustomCampaignEmails = function() {
+  var input = document.getElementById('campaignCustomEmailInput');
+  if (!input) return;
+  var raw = input.value.trim();
+  if (!raw) {
+    alert("⚠️ অনুগ্রহ করে এক বা একাধিক ইমেইল আইডি লিখুন বা পেস্ট করুন!");
+    return;
+  }
+
+  // Split by comma, semicolon, space, or newline
+  var parts = raw.split(/[s,;]+/);
+  var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var addedCount = 0;
+
+  parts.forEach(function(part) {
+    var email = part.trim().toLowerCase();
+    if (email && emailRegex.test(email)) {
+      // Check if already in custom list
+      var exists = window.campaignCustomEmailsList.some(function(item) {
+        return item.email.toLowerCase() === email;
+      });
+      if (!exists) {
+        var displayName = email.split('@')[0];
+        window.campaignCustomEmailsList.push({
+          key: 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          name: displayName,
+          email: email,
+          phone: 'কাস্টম ইমেইল',
+          type: 'custom',
+          status: 'active',
+          isCustom: true,
+          checked: true
+        });
+        addedCount++;
+      }
+    }
+  });
+
+  input.value = '';
+
+  var countTag = document.getElementById('campaignCustomEmailCountTag');
+  var countEl = document.getElementById('campaignCustomEmailCount');
+  if (countTag && countEl) {
+    countTag.style.display = window.campaignCustomEmailsList.length > 0 ? 'block' : 'none';
+    countEl.innerText = window.campaignCustomEmailsList.length;
+  }
+
+  if (addedCount > 0) {
+    window.renderCampaignUsersList();
+    alert("✅ সফলভাবে " + addedCount + " টি কাস্টম ইমেইল তালিকায় যুক্ত করা হয়েছে এবং স্বয়ংক্রিয়ভাবে সিলেক্ট করা হয়েছে!");
+  } else {
+    alert("⚠️ কোনো নতুন বৈধ ইমেইল অ্যাড্রেস পাওয়া যায়নি অথবা ইমেইলটি আগেই যুক্ত করা আছে।");
+  }
+};
+
+// Remove a specific custom email
+window.removeCustomCampaignEmail = function(emailToRemove) {
+  window.campaignCustomEmailsList = window.campaignCustomEmailsList.filter(function(item) {
+    return item.email.toLowerCase() !== emailToRemove.toLowerCase();
+  });
+  var countTag = document.getElementById('campaignCustomEmailCountTag');
+  var countEl = document.getElementById('campaignCustomEmailCount');
+  if (countTag && countEl) {
+    countTag.style.display = window.campaignCustomEmailsList.length > 0 ? 'block' : 'none';
+    countEl.innerText = window.campaignCustomEmailsList.length;
+  }
+  window.renderCampaignUsersList();
+};
+
 window.filterCampaignAudience = function(aud) {
   window.campaignCurrentAudience = aud;
-  ['Both', 'Customer', 'Driver'].forEach(function(btnId) {
+  ['Both', 'Customer', 'Driver', 'Custom'].forEach(function(btnId) {
     var b = document.getElementById('fAudience' + btnId);
     if (b) {
-      if ((aud === 'ALL' && btnId === 'Both') || (aud === 'customer' && btnId === 'Customer') || (aud === 'driver' && btnId === 'Driver')) {
+      if ((aud === 'ALL' && btnId === 'Both') || 
+          (aud === 'customer' && btnId === 'Customer') || 
+          (aud === 'driver' && btnId === 'Driver') ||
+          (aud === 'custom' && btnId === 'Custom')) {
         b.style.background = '#0f172a';
         b.style.color = '#fff';
       } else {
@@ -15299,7 +15461,10 @@ window.renderCampaignUsersList = function() {
   var q = (document.getElementById('campaignUserSearchInput')?.value || '').toLowerCase().trim();
   var aud = window.campaignCurrentAudience || 'ALL';
 
-  var filtered = window.campaignUsersData.filter(function(u) {
+  // Merge database users with custom emails
+  var allPool = (window.campaignUsersData || []).concat(window.campaignCustomEmailsList || []);
+
+  var filtered = allPool.filter(function(u) {
     if (aud !== 'ALL' && u.type !== aud) return false;
     if (q) {
       var matchName = u.name && u.name.toLowerCase().includes(q);
@@ -15311,22 +15476,30 @@ window.renderCampaignUsersList = function() {
   });
 
   if (filtered.length === 0) {
-    listEl.innerHTML = '<div style="text-align:center;padding:16px;color:#64748b;font-size:12.5px">কোনো ব্যবহারকারী পাওয়া যায়নি</div>';
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#64748b;font-size:13px">কোনো ইউজার বা প্রাপক পাওয়া যায়নি</div>';
     window.updateSelectedCampaignCount();
     return;
   }
 
   var html = '';
-  filtered.forEach(function(u, idx) {
+  filtered.forEach(function(u) {
     var hasEmail = u.email && u.email.includes('@');
     var emailDisp = hasEmail ? u.email : '<span style="color:#ef4444;font-style:italic">⚠️ কোনো ইমেইল নেই</span>';
-    var isDriver = u.type === 'driver';
-    var typeBadge = isDriver ? 
-      '<span style="background:#dcfce7;color:#166534;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:900">🚖 Driver</span>' :
-      '<span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:900">👤 Customer</span>';
+    
+    var typeBadge = '';
+    if (u.type === 'driver') {
+      typeBadge = '<span style="background:#dcfce7;color:#166534;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:900">🚖 Driver</span>';
+    } else if (u.type === 'customer') {
+      typeBadge = '<span style="background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:900">👤 Customer</span>';
+    } else {
+      typeBadge = '<span style="background:#f5f3ff;color:#6b21a8;border:1px solid #d8b4fe;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:900">🌐 Custom Email</span>';
+    }
 
     var checkedAttr = hasEmail ? 'checked' : 'disabled';
     var rowBg = hasEmail ? '#ffffff' : '#f1f5f9';
+
+    var deleteBtn = u.isCustom ? 
+      '<button type="button" class="btn reject" style="padding:2px 6px;font-size:10px" onclick="removeCustomCampaignEmail(\'' + u.email + '\')">❌ মুছুন</button>' : '';
 
     html += '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:' + rowBg + ';border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;cursor:' + (hasEmail ? 'pointer' : 'not-allowed') + ';transition:all 0.15s">' +
       '<div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">' +
@@ -15341,7 +15514,8 @@ window.renderCampaignUsersList = function() {
           '</div>' +
         '</div>' +
       '</div>' +
-      '<div>' +
+      '<div style="display:flex;align-items:center;gap:6px">' +
+        deleteBtn +
         (u.status === 'active' ? '<span style="font-size:11px;color:#16a34a;font-weight:bold">🟢 Active</span>' : '<span style="font-size:11px;color:#ef4444;font-weight:bold">🔴 Blocked</span>') +
       '</div>' +
     '</label>';
@@ -15352,86 +15526,73 @@ window.renderCampaignUsersList = function() {
 };
 
 window.toggleSelectAllCampaignUsers = function(selectAll) {
-  var checks = document.querySelectorAll('.campaign-recipient-check');
+  var checks = document.querySelectorAll('.campaign-recipient-check:not([disabled])');
   checks.forEach(function(c) {
-    if (!c.disabled) {
-      c.checked = selectAll;
-    }
+    c.checked = !!selectAll;
   });
   window.updateSelectedCampaignCount();
 };
 
 window.updateSelectedCampaignCount = function() {
+  var badge = document.getElementById('campaignSelectionBadge');
   var checks = document.querySelectorAll('.campaign-recipient-check:checked');
   var count = checks.length;
-  var badge = document.getElementById('campaignSelectionBadge');
   if (badge) {
     badge.innerText = '🎯 নির্বাচিত প্রাপক: ' + count + ' জন';
-    badge.style.background = count > 0 ? '#dcfce7' : '#fef3c7';
-    badge.style.borderColor = count > 0 ? '#16a34a' : '#f59e0b';
-    badge.style.color = count > 0 ? '#15803d' : '#b45309';
   }
 };
 
 window.uploadCampaignPhotoFile = function(input) {
-  if (!input.files || !input.files[0]) return;
+  if (!input || !input.files || input.files.length === 0) return;
   var file = input.files[0];
-  var progDiv = document.getElementById('campaignUploadProgress');
-  var percentSpan = document.getElementById('campaignUploadPercent');
-  if (progDiv) progDiv.style.display = 'block';
+  var progWrap = document.getElementById('campaignUploadProgress');
+  var progTxt = document.getElementById('campaignUploadPercent');
+  var urlInput = document.getElementById('campaignPhotoUrlInput');
 
-  try {
-    if (typeof firebase !== 'undefined' && firebase.storage) {
-      var storageRef = firebase.storage().ref('campaigns/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, ''));
+  if (progWrap) progWrap.style.display = 'block';
+
+  if (typeof firebase !== 'undefined' && firebase.storage) {
+    try {
+      var storageRef = firebase.storage().ref('campaigns/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_'));
       var uploadTask = storageRef.put(file);
 
-      uploadTask.on('state_changed',
-        function(snapshot) {
-          var pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-          if (percentSpan) percentSpan.innerText = pct + '%';
-        },
-        function(err) {
-          console.warn('Storage put error, fallback to reader:', err);
-          var reader = new FileReader();
-          reader.onload = function(e) {
-            if (progDiv) progDiv.style.display = 'none';
-            document.getElementById('campaignPhotoUrlInput').value = e.target.result;
-            window.updateCampaignEmailPreview();
-          };
-          reader.readAsDataURL(file);
-        },
-        function() {
-          uploadTask.snapshot.ref.getDownloadURL().then(function(url) {
-            if (progDiv) progDiv.style.display = 'none';
-            document.getElementById('campaignPhotoUrlInput').value = url;
-            window.updateCampaignEmailPreview();
-            alert("✅ ছবি সফলভাবে আপলোড হয়েছে!");
-          });
-        }
-      );
-    } else {
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        if (progDiv) progDiv.style.display = 'none';
-        document.getElementById('campaignPhotoUrlInput').value = e.target.result;
-        window.updateCampaignEmailPreview();
-      };
-      reader.readAsDataURL(file);
+      uploadTask.on('state_changed', function(snapshot) {
+        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        if (progTxt) progTxt.innerText = Math.round(progress) + '%';
+      }, function(error) {
+        console.warn("Storage upload failed, falling back to FileReader:", error);
+        fallbackToFileReader(file);
+      }, function() {
+        uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+          if (progWrap) progWrap.style.display = 'none';
+          if (urlInput) urlInput.value = downloadURL;
+          window.updateCampaignEmailPreview();
+          alert("✅ ছবি সফলভাবে আপলোড হয়েছে!");
+        });
+      });
+      return;
+    } catch(e) {
+      console.warn("Storage ref error, fallback:", e);
     }
-  } catch(e) {
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      if (progDiv) progDiv.style.display = 'none';
-      document.getElementById('campaignPhotoUrlInput').value = ev.target.result;
-      window.updateCampaignEmailPreview();
-    };
-    reader.readAsDataURL(file);
   }
+
+  function fallbackToFileReader(f) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      if (progWrap) progWrap.style.display = 'none';
+      if (urlInput) urlInput.value = e.target.result;
+      window.updateCampaignEmailPreview();
+      alert("✅ ছবির প্রিভিউ প্রস্তুত হয়েছে!");
+    };
+    reader.readAsDataURL(f);
+  }
+
+  fallbackToFileReader(file);
 };
 
 window.setCampaignPresetBanner = function(url) {
-  var inp = document.getElementById('campaignPhotoUrlInput');
-  if (inp) inp.value = url;
+  var urlInput = document.getElementById('campaignPhotoUrlInput');
+  if (urlInput) urlInput.value = url;
   window.updateCampaignEmailPreview();
 };
 
@@ -15442,20 +15603,20 @@ window.updateCampaignEmailPreview = function() {
   var coupon = (document.getElementById('campaignCouponCode')?.value || '').trim();
   var cta = document.getElementById('campaignCtaText')?.value || '🚖 এখনই রাইড বুক করুন';
 
-  var prevH = document.getElementById('prevHeading');
-  var prevB = document.getElementById('prevBody');
+  var prevHeading = document.getElementById('prevHeading');
+  var prevBody = document.getElementById('prevBody');
   var prevBannerBox = document.getElementById('prevBannerBox');
   var prevBannerImg = document.getElementById('prevBannerImg');
   var prevCouponBox = document.getElementById('prevCouponBox');
   var prevCouponCode = document.getElementById('prevCouponCode');
   var prevCtaBtn = document.getElementById('prevCtaBtn');
 
-  if (prevH) prevH.innerText = heading;
-  if (prevB) prevB.innerText = body;
-  if (prevCtaBtn) prevCtaBtn.innerText = cta;
+  if (prevHeading) prevHeading.innerText = heading;
+  if (prevBody) prevBody.innerText = body;
+  if (prevCtaBtn) prevCtaBtn.innerHTML = cta + ' ➔';
 
   if (prevBannerBox && prevBannerImg) {
-    if (photoUrl) {
+    if (photoUrl && photoUrl.length > 5) {
       prevBannerImg.src = photoUrl;
       prevBannerBox.style.display = 'block';
     } else {
@@ -15464,7 +15625,7 @@ window.updateCampaignEmailPreview = function() {
   }
 
   if (prevCouponBox && prevCouponCode) {
-    if (coupon) {
+    if (coupon.length > 0) {
       prevCouponCode.innerText = coupon;
       prevCouponBox.style.display = 'block';
     } else {
@@ -15528,21 +15689,21 @@ window.buildFestivalCampaignEmailHtml = function(recipientName, heading, bodyTex
             "</a>" +
           "</td>" +
           "<td style='padding:0 8px;' align='center'>" +
-            "<a href='https://www.instagram.com/ride.sathi.go' target='_blank' style='text-decoration:none;'>" +
+            "<a href='https://wa.me/918768447312' target='_blank' style='text-decoration:none;'>" +
+              "<img src='https://img.icons8.com/color/48/whatsapp--v1.png' width='32' height='32' alt='WhatsApp' style='display:block;border:0;' />" +
+              "<span style='font-size:10px;color:#25d366;font-weight:bold;display:block;margin-top:3px;'>WhatsApp</span>" +
+            "</a>" +
+          "</td>" +
+          "<td style='padding:0 8px;' align='center'>" +
+            "<a href='https://www.instagram.com/ridesathi_go?igsh=MXFhMHhpczZkcnM5NQ==' target='_blank' style='text-decoration:none;'>" +
               "<img src='https://img.icons8.com/color/48/instagram-new--v1.png' width='32' height='32' alt='Instagram' style='display:block;border:0;' />" +
               "<span style='font-size:10px;color:#e1306c;font-weight:bold;display:block;margin-top:3px;'>Instagram</span>" +
             "</a>" +
           "</td>" +
           "<td style='padding:0 8px;' align='center'>" +
-            "<a href='https://www.linkedin.com/company/ride-sathi-go/' target='_blank' style='text-decoration:none;'>" +
+            "<a href='https://www.linkedin.com/in/ride-sathi-go-netizen-1262963aa?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app' target='_blank' style='text-decoration:none;'>" +
               "<img src='https://img.icons8.com/color/48/linkedin.png' width='32' height='32' alt='LinkedIn' style='display:block;border:0;' />" +
               "<span style='font-size:10px;color:#0a66c2;font-weight:bold;display:block;margin-top:3px;'>LinkedIn</span>" +
-            "</a>" +
-          "</td>" +
-          "<td style='padding:0 8px;' align='center'>" +
-            "<a href='https://wa.me/918768447312?text=Hi%20Ride%20Sathi%20Go' target='_blank' style='text-decoration:none;'>" +
-              "<img src='https://img.icons8.com/color/48/whatsapp--v1.png' width='32' height='32' alt='WhatsApp' style='display:block;border:0;' />" +
-              "<span style='font-size:10px;color:#16a34a;font-weight:bold;display:block;margin-top:3px;'>WhatsApp</span>" +
             "</a>" +
           "</td>" +
         "</tr>" +
@@ -15557,6 +15718,7 @@ window.buildFestivalCampaignEmailHtml = function(recipientName, heading, bodyTex
   "</div>";
 };
 
+// Send single email via Brevo API
 window.sendBrevoEmailSingle = function(recipientEmail, recipientName, subject, htmlBody) {
   var brevoApiKey = ['xkeysib', 'a604e25f7cba3ce2132dd56ca9cd8de57fae5f5751a77a8be05e1c7a462b1542', 'rVvjCkCSNQbwhRQK'].join('-');
 
@@ -15579,6 +15741,7 @@ window.sendBrevoEmailSingle = function(recipientEmail, recipientName, subject, h
   });
 };
 
+// Test email sender
 window.sendTestCampaignEmail = function() {
   var subject = document.getElementById('campaignEmailSubject')?.value || 'উৎসব অফার টেস্ট';
   var heading = document.getElementById('campaignEmailHeading')?.value || 'উৎসবের স্পেশাল অফার!';
@@ -15589,7 +15752,7 @@ window.sendTestCampaignEmail = function() {
 
   var testHtml = window.buildFestivalCampaignEmailHtml('গোপাল জানা (Admin)', heading, body, photoUrl, coupon, cta);
 
-  var target = prompt("📩 টেস্ট ইমেইল কোন আইডিতে পাঠাতে চান?", "gopalchjana0@gmail.com");
+  var target = prompt("📩 টেস্ট ইমেইল কোন আইডিতে পাঠাতে চান?\n(আপনার সাপোর্ট ইমেইল বা ব্যক্তিগত ইমেইল দিতে পারেন)", "gopalchjana0@gmail.com");
   if (!target || !target.includes('@')) return;
 
   var btn = event ? event.target : null;
@@ -15597,18 +15760,19 @@ window.sendTestCampaignEmail = function() {
 
   window.sendBrevoEmailSingle(target.trim(), "Gopal (Admin)", "[TEST] " + subject, testHtml)
     .then(function(res) {
-      if (btn) { btn.disabled = false; btn.innerText = "📩 আমার ইমেইলে টেস্ট পাঠান (Test to Admin)"; }
+      if (btn) { btn.disabled = false; btn.innerText = "📩 আমার ইমেইলে টেস্ট পাঠান (Test Email)"; }
       if (res.status === 201 || res.status === 200) {
         alert("✅ সফলভাবে আপনার ইমেইল (" + target + ")-এ টেস্ট ইমেইল পাঠানো হয়েছে! দয়া করে ইনবক্স চেক করুন।");
       } else {
         alert("⚠️ ইমেইল পাঠাতে সমস্যা হয়েছে (Status: " + res.status + ")");
       }
     }).catch(function(err) {
-      if (btn) { btn.disabled = false; btn.innerText = "📩 আমার ইমেইলে টেস্ট পাঠান (Test to Admin)"; }
+      if (btn) { btn.disabled = false; btn.innerText = "📩 আমার ইমেইলে টেস্ট পাঠান (Test Email)"; }
       alert("❌ ত্রুটি: " + err.message);
     });
 };
 
+// Method 1: Bulk send via Brevo API with auto-quota backup prompt
 window.sendBulkCampaignEmails = function() {
   var checks = Array.from(document.querySelectorAll('.campaign-recipient-check:checked'));
   var targets = checks.map(function(c) {
@@ -15620,8 +15784,22 @@ window.sendBulkCampaignEmails = function() {
     };
   }).filter(function(t) { return t.email && t.email.includes('@'); });
 
+  // Add official copy if checked
+  var sendSelfCopy = document.getElementById('campaignSendSelfCopy')?.checked;
+  if (sendSelfCopy) {
+    var hasSupport = targets.some(function(t) { return t.email.toLowerCase() === 'support.ridesathi@gmail.com'; });
+    if (!hasSupport) {
+      targets.push({
+        email: 'support.ridesathi@gmail.com',
+        name: 'Ride Sathi Support Desk',
+        phone: 'Support Desk',
+        type: 'support'
+      });
+    }
+  }
+
   if (targets.length === 0) {
-    alert("⚠️ কোনো প্রাপক নির্বাচন করা হয়নি অথবা নির্বাচিতদের কোনো ইমেইল আইডি নেই! দয়া করে তালিকায় টিক দিন।");
+    alert("⚠️ কোনো প্রাপক নির্বাচন করা হয়নি অথবা নির্বাচিতদের কোনো ইমেইল আইডি নেই! দয়া করে তালিকায় টিক দিন অথবা কাস্টম ইমেইল যোগ করুন।");
     return;
   }
 
@@ -15632,29 +15810,28 @@ window.sendBulkCampaignEmails = function() {
   var coupon = (document.getElementById('campaignCouponCode')?.value || '').trim();
   var cta = document.getElementById('campaignCtaText')?.value || '🚖 এখনই রাইড বুক করুন';
 
-  if (!confirm("আপনি কি নির্বাচিত " + targets.length + " জন কাস্টমার/ড্রাইভারকে এই উৎসব ইমেইল পাঠাতে চান?")) {
-    return;
-  }
+  var confirmMsg = "❓ আপনি কি নিশ্চিত যে " + targets.length + " জন প্রাপকের কাছে এই অফার ইমেইল পাঠাতে চান?\n\n• বিষয়: " + subject + "\n• প্রেরক: support.ridesathi@gmail.com";
+  if (!confirm(confirmMsg)) return;
 
   var progWrap = document.getElementById('campaignSendProgressWrap');
   var progBar = document.getElementById('campaignProgressBar');
-  var statusTxt = document.getElementById('campaignSendStatusTxt');
   var countTxt = document.getElementById('campaignSendCountTxt');
+  var statusTxt = document.getElementById('campaignSendStatusTxt');
   var logBox = document.getElementById('campaignSendLog');
   var btnStart = document.getElementById('btnStartBulkCampaign');
 
   if (progWrap) progWrap.style.display = 'block';
-  if (logBox) logBox.innerHTML = '';
   if (btnStart) btnStart.disabled = true;
+  if (logBox) logBox.innerHTML = '<div style="color:#0369a1">🚀 ব্রডকাস্ট শুরু হয়েছে (মোট: ' + targets.length + ' জন)...</div>';
 
   var total = targets.length;
+  var idx = 0;
   var successCount = 0;
   var failCount = 0;
-  var idx = 0;
 
   function sendNext() {
     if (idx >= total) {
-      if (statusTxt) statusTxt.innerText = "🎉 ব্রডকাস্ট সফলভাবে সমাপ্ত হয়েছে!";
+      if (statusTxt) statusTxt.innerText = "✅ ব্রডকাস্ট সম্পন্ন হয়েছে!";
       if (btnStart) btnStart.disabled = false;
       alert("✅ মোট " + successCount + " জনের কাছে সফলভাবে অফার ইমেইল পৌঁছে গেছে!" + (failCount > 0 ? " (ব্যর্থ: " + failCount + ")" : ""));
       return;
@@ -15674,22 +15851,148 @@ window.sendBulkCampaignEmails = function() {
         if (res.status === 201 || res.status === 200) {
           successCount++;
           if (logBox) logBox.innerHTML += '<div style="color:#16a34a">✅ [' + idx + '/' + total + '] ' + recipient.name + ' (' + recipient.email + ') - পাঠানো হয়েছে</div>';
+          if (logBox) logBox.scrollTop = logBox.scrollHeight;
+          setTimeout(sendNext, 350); // 350ms throttle
+        } else if (res.status === 402 || res.status === 429) {
+          // QUOTA EXCEEDED: TRIGGER DOUBLE BACKUP PROMPT
+          failCount += (total - idx + 1);
+          if (logBox) logBox.innerHTML += '<div style="color:#ef4444;font-weight:bold">⚠️ Brevo দৈনিক ফ্রি লিমিট (৩০০ ইমেইল) পূর্ণ হয়েছে!</div>';
+          if (btnStart) btnStart.disabled = false;
+          
+          var remaining = targets.slice(idx - 1);
+          var useBackup = confirm("⚠️ Brevo দৈনিক ফ্রি কোটা পূর্ণ হয়েছে!\n\nআপনি কি ১-ক্লিকে বাকি " + remaining.length + " জনকে আপনার অফিসিয়াল Gmail (support.ridesathi@gmail.com) ব্যাকআপ দিয়ে পাঠাতে চান?");
+          if (useBackup) {
+            window.sendViaGmailBackup(remaining);
+          }
         } else {
           failCount++;
           if (logBox) logBox.innerHTML += '<div style="color:#ef4444">❌ [' + idx + '/' + total + '] ' + recipient.name + ' (' + recipient.email + ') - এরর: ' + res.status + '</div>';
+          if (logBox) logBox.scrollTop = logBox.scrollHeight;
+          setTimeout(sendNext, 350);
         }
-        if (logBox) logBox.scrollTop = logBox.scrollHeight;
-        setTimeout(sendNext, 350); // 350ms delay between emails
       })
       .catch(function(err) {
         failCount++;
         if (logBox) logBox.innerHTML += '<div style="color:#ef4444">❌ [' + idx + '/' + total + '] ' + recipient.name + ' (' + recipient.email + ') - ব্যর্থ: ' + err.message + '</div>';
+        if (logBox) logBox.scrollTop = logBox.scrollHeight;
         setTimeout(sendNext, 350);
       });
   }
 
   sendNext();
 };
+
+// Method 2 (USER REQUEST FEATURE: 1-Click Double Backup via Official Gmail)
+window.sendViaGmailBackup = function(customList) {
+  var list = customList;
+  if (!list || !Array.isArray(list)) {
+    var checks = Array.from(document.querySelectorAll('.campaign-recipient-check:checked'));
+    list = checks.map(function(c) {
+      return (c.value || '').trim();
+    }).filter(function(e) { return e && e.includes('@'); });
+  } else {
+    list = list.map(function(item) {
+      return typeof item === 'string' ? item : item.email;
+    }).filter(function(e) { return e && e.includes('@'); });
+  }
+
+  if (list.length === 0) {
+    alert("⚠️ কোনো প্রাপক নির্বাচন করা হয়নি! দয়া করে তালিকায় টিক দিন অথবা কাস্টম ইমেইল যোগ করুন।");
+    return;
+  }
+
+  var subject = document.getElementById('campaignEmailSubject')?.value || 'উৎসব অফার';
+  var heading = document.getElementById('campaignEmailHeading')?.value || 'উৎসবের স্পেশাল অফার!';
+  var body = document.getElementById('campaignEmailBody')?.value || '';
+  var photoUrl = document.getElementById('campaignPhotoUrlInput')?.value.trim() || '';
+  var coupon = (document.getElementById('campaignCouponCode')?.value || '').trim();
+  var cta = document.getElementById('campaignCtaText')?.value || '🚖 এখনই রাইড বুক করুন';
+
+  // Format rich plain text for Gmail body
+  var currentYear = new Date().getFullYear();
+  var plainBody = "🎉 " + heading + "\n" +
+    currentYear + " অফিসিয়াল উৎসব ও অফার স্পেশাল\n\n" +
+    "নমস্কার,\n\n" +
+    body + "\n\n";
+
+  if (coupon) {
+    plainBody += "🎟️ আপনার স্পেশাল ডিসকাউন্ট কুপন কোড: " + coupon + "\n\n";
+  }
+
+  if (photoUrl) {
+    plainBody += "📷 উৎসবের ব্যানার ছবি দেখুন: " + photoUrl + "\n\n";
+  }
+
+  plainBody += "🚖 " + cta + ": https://ride-sathi-go.web.app\n" +
+    "📞 সার্বক্ষণিক হেল্পলাইন: +91 8768447312\n" +
+    "✉️ অফিসিয়াল সাপোর্ট: support.ridesathi@gmail.com\n\n" +
+    "📢 আমাদের অফিসিয়াল সোশ্যাল মিডিয়ায় যুক্ত থাকুন:\n" +
+    "• Facebook: https://www.facebook.com/share/1EajM2z9MR/\n" +
+    "• WhatsApp: https://wa.me/918768447312\n" +
+    "• Instagram: https://www.instagram.com/ridesathi_go?igsh=MXFhMHhpczZkcnM5NQ==\n" +
+    "• LinkedIn: https://www.linkedin.com/in/ride-sathi-go-netizen-1262963aa\n\n" +
+    "— টিম Ride Sathi GO (পশ্চিম মেদিনীপুর, পশ্চিমবঙ্গ)";
+
+  // Put all recipients in BCC for total privacy protection
+  var bccList = list.join(',');
+
+  // Construct official Gmail web compose URL
+  var gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1" +
+    "&to=" + encodeURIComponent("support.ridesathi@gmail.com") +
+    "&bcc=" + encodeURIComponent(bccList) +
+    "&su=" + encodeURIComponent(subject) +
+    "&body=" + encodeURIComponent(plainBody);
+
+  var newWin = window.open(gmailUrl, '_blank');
+  if (!newWin) {
+    // If popup was blocked, fallback to standard mailto
+    window.location.href = "mailto:support.ridesathi@gmail.com?bcc=" + encodeURIComponent(bccList) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(plainBody);
+  }
+
+  alert("✅ আপনার ব্রাউজারে অফিশিয়াল Gmail খুলে গেছে!\n\n• To: support.ridesathi@gmail.com\n• BCC: " + list.length + " জন প্রাপকের ইমেইল গোপনভাবে যুক্ত হয়েছে\n• বিষয় ও বার্তা স্বয়ংক্রিয়ভাবে বসে গেছে!\n\nআপনি শুধুমাত্র জিমেইলে 'Send' বাটনে চাপলেই সবার কাছে পৌঁছে যাবে!");
+};
+
+// Helper: Copy all selected recipient emails (for manual paste if preferred)
+window.copyCampaignBccEmails = function() {
+  var checks = Array.from(document.querySelectorAll('.campaign-recipient-check:checked'));
+  var emails = checks.map(function(c) { return (c.value || '').trim(); }).filter(function(e) { return e && e.includes('@'); });
+  if (emails.length === 0) {
+    alert("⚠️ কোনো প্রাপক নির্বাচন করা নেই!");
+    return;
+  }
+  var text = emails.join(', ');
+  navigator.clipboard.writeText(text).then(function() {
+    alert("✅ মোট " + emails.length + " জনের ইমেইল অ্যাড্রেস ক্লিপবোর্ডে কপি করা হয়েছে!");
+  }).catch(function() {
+    prompt("কপি করতে নিচের তালিকা সিলেক্ট করুন:", text);
+  });
+};
+
+// Helper: Copy formatted plain text
+window.copyCampaignPlainText = function() {
+  var heading = document.getElementById('campaignEmailHeading')?.value || 'উৎসবের স্পেশাল অফার!';
+  var body = document.getElementById('campaignEmailBody')?.value || '';
+  var coupon = (document.getElementById('campaignCouponCode')?.value || '').trim();
+  var photoUrl = document.getElementById('campaignPhotoUrlInput')?.value.trim() || '';
+  var text = "🎉 " + heading + "\n\n" + body + (coupon ? "\n\n🎟️ কুপন: " + coupon : "") + (photoUrl ? "\n📷 ছবি: " + photoUrl : "") + "\n\n🚖 রাইড বুক করুন: https://ride-sathi-go.web.app\n📞 হেল্পলাইন: 8768447312";
+  navigator.clipboard.writeText(text).then(function() {
+    alert("✅ উৎসবের বার্তা সফলভাবে কপি করা হয়েছে!");
+  });
+};
+
+// Helper: Copy rich HTML
+window.copyCampaignHtmlText = function() {
+  var heading = document.getElementById('campaignEmailHeading')?.value || 'উৎসবের স্পেশাল অফার!';
+  var body = document.getElementById('campaignEmailBody')?.value || '';
+  var photoUrl = document.getElementById('campaignPhotoUrlInput')?.value.trim() || '';
+  var coupon = (document.getElementById('campaignCouponCode')?.value || '').trim();
+  var cta = document.getElementById('campaignCtaText')?.value || '🚖 এখনই রাইড বুক করুন';
+  var html = window.buildFestivalCampaignEmailHtml('সম্মানিত গ্রাহক', heading, body, photoUrl, coupon, cta);
+  navigator.clipboard.writeText(html).then(function() {
+    alert("✅ সম্পূর্ণ ইমেইল HTML কোড সফলভাবে কপি করা হয়েছে!");
+  });
+};
+// ==================== END FESTIVAL EMAIL CAMPAIGN SCRIPT ====================
 </script>
 
 </body></html>
