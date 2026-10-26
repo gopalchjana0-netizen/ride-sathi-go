@@ -4470,6 +4470,11 @@ document.addEventListener('click', function(e) {
     return;
   }
 
+  // 5. Allow PWA 1-Click App Installation & Dismissal without requiring login
+  if (e.target.closest('#pwaInstallBanner') || e.target.closest('#pwaInstallBtn') || e.target.closest('[onclick*="installPwaApp"]') || e.target.closest('[onclick*="dismissPwaBanner"]') || e.target.closest('#rsgHeadsUpBanner')) {
+    return;
+  }
+
   // 🛑 STRICTLY BLOCK ALL OTHER CLICKS (Hamburger Menu, SOS, Chat, Voice, Bell, Bottom Tabs, Booking Cards, etc.)
   e.preventDefault();
   e.stopPropagation();
