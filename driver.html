@@ -1624,6 +1624,187 @@ body{overflow-x: clip !important;width:100% !important;max-width:100vw !importan
 </div>
 
 <!-- 3. LOGIN CARD -->
+
+<!-- ============================================== -->
+<!-- 🔑 DRIVER 4-DIGIT PIN AUTHENTICATION MODAL -->
+<!-- ============================================== -->
+<div id="driverEnterPinModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div style="max-width:390px;width:92%;background:#ffffff;border-radius:24px;padding:24px 20px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:1.5px solid #e2e8f0;text-align:center;position:relative;box-sizing:border-box">
+    <div style="width:54px;height:54px;background:#ecfdf5;color:#16a34a;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;box-shadow:0 4px 14px rgba(22,163,74,0.25)">
+      🏍️
+    </div>
+    <h3 style="margin:0 0 4px;font-size:18px;color:#0f172a">সিক্রেট পিন দিয়ে প্রবেশ করুন</h3>
+    <p style="font-size:12.5px;color:#64748b;margin:0 0 14px">আপনার ৪-সংখ্যার গোপন ড্রাইভার পিন লিখুন</p>
+
+    <!-- Driver Info Pill -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 12px;margin-bottom:14px;display:inline-flex;align-items:center;gap:8px;max-width:100%;flex-wrap:wrap;justify-content:center">
+      <span style="font-size:12.5px;font-weight:900;color:#0f172a" id="driverEnterPinDispName">Driver Partner</span>
+      <span style="font-size:12px;color:#16a34a;font-weight:800" id="driverEnterPinDispPhone">📱 +91 XXXXXXXXXX</span>
+      <span style="font-size:11px;background:#f1f5f9;color:#475569;font-weight:700;padding:2px 6px;border-radius:6px" id="driverEnterPinDispVehicle">TOTO</span>
+    </div>
+
+    <!-- 4-Digit Input Box with Eye Toggle -->
+    <div style="position:relative;margin-bottom:12px">
+      <input type="password" id="driverInputPin" maxlength="4" placeholder="••••" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); if(this.value.length===4){ setTimeout(function(){ verifyDriverPin(); }, 120); }" onkeypress="if(event.key==='Enter') verifyDriverPin();" style="width:100%;box-sizing:border-box;padding:12px 42px 12px 12px;border-radius:14px;font-size:26px;letter-spacing:10px;text-align:center;border:2px solid #16a34a;font-weight:900;background:#f0f9ff;outline:none">
+      <button type="button" onclick="toggleDriverPinVisibility('driverInputPin', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;color:#64748b;padding:4px">👁️</button>
+    </div>
+
+    <p id="driverEnterPinError" style="color:#ef4444;font-size:12px;font-weight:800;margin:0 0 12px;min-height:16px"></p>
+
+    <!-- Verify Button -->
+    <button type="button" id="driverVerifyPinBtn" onclick="verifyDriverPin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.35);margin-bottom:12px">
+      লগইন করুন ➡️
+    </button>
+
+    <!-- Forgot PIN / Change Number Link -->
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding-top:8px;border-top:1px solid #f1f5f9">
+      <button type="button" onclick="openDriverForgotPinModalFromEnter()" style="background:none;border:none;color:#dc2626;font-weight:800;cursor:pointer;padding:4px">
+        ❓ পিন ভুলে গেছেন?
+      </button>
+      <button type="button" onclick="closeDriverEnterPinModal()" style="background:none;border:none;color:#64748b;font-weight:700;cursor:pointer;padding:4px">
+        ✕ নম্বর বদলান
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 🛡️ DRIVER FIRST-TIME PIN SETUP MODAL -->
+<!-- ============================================== -->
+<div id="driverSetPinModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div style="max-width:420px;width:94%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:1.5px solid #e2e8f0;text-align:left;position:relative;max-height:92vh;overflow-y:auto;box-sizing:border-box">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;border-bottom:1.5px solid #f1f5f9;padding-bottom:10px">
+      <div style="width:42px;height:42px;background:#f0fdf4;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">
+        🛡️
+      </div>
+      <div>
+        <h3 style="margin:0;font-size:16.5px;color:#0f172a">গোপন পিন সেটআপ</h3>
+        <p style="margin:2px 0 0;font-size:12px;color:#64748b">ড্রাইভার অ্যাকাউন্টের সুরক্ষার জন্য পিন সেট করুন</p>
+      </div>
+    </div>
+
+    <!-- Driver Info Pill -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12.5px;display:flex;align-items:center;justify-content:space-between">
+      <b style="color:#0f172a" id="driverSetPinDispName">Driver Name</b>
+      <span style="color:#16a34a;font-weight:800" id="driverSetPinDispPhone">📱 +91 XXXXXXXXXX</span>
+    </div>
+
+    <!-- New PIN Input -->
+    <label style="font-size:12.5px;font-weight:800;color:#1e293b;display:block;margin-top:10px">
+      নতুন ৪-সংখ্যার গোপন পিন * (যেমন: 2580)
+    </label>
+    <div class="pin-wrap" style="position:relative;margin:4px 0 10px">
+      <input type="password" id="driverSetNewPinInput" maxlength="4" placeholder="••••" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" style="width:100%;box-sizing:border-box;padding:11px 40px 11px 12px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:18px;letter-spacing:6px;font-weight:900;outline:none">
+      <button type="button" onclick="toggleDriverPinVisibility('driverSetNewPinInput', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#64748b">👁️</button>
+    </div>
+
+    <!-- Confirm PIN Input -->
+    <label style="font-size:12.5px;font-weight:800;color:#1e293b;display:block;margin-top:8px">
+      পিন নিশ্চিত করুন * (Confirm PIN)
+    </label>
+    <div class="pin-wrap" style="position:relative;margin:4px 0 10px">
+      <input type="password" id="driverSetConfirmPinInput" maxlength="4" placeholder="••••" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" style="width:100%;box-sizing:border-box;padding:11px 40px 11px 12px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:18px;letter-spacing:6px;font-weight:900;outline:none">
+      <button type="button" onclick="toggleDriverPinVisibility('driverSetConfirmPinInput', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#64748b">👁️</button>
+    </div>
+
+    <!-- Security Question -->
+    <label style="font-size:12.5px;font-weight:800;color:#1e293b;display:block;margin-top:8px">
+      সিকিউরিটি প্রশ্ন নির্বাচন করুন * (পিন ভুলে গেলে কাজে লাগবে)
+    </label>
+    <select id="driverSetSecQ" style="width:100%;padding:11px 36px 11px 12px;margin:4px 0 10px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:13px;box-sizing:border-box;background:#fff;outline:none">
+      <option value="আপনার প্রিয় শিক্ষকের নাম কি?">👨‍🏫 আপনার প্রিয় শিক্ষকের নাম কি?</option>
+      <option value="আপনার জন্মস্থান / গ্রামের নাম কি?">🏡 আপনার জন্মস্থান / গ্রামের নাম কি?</option>
+      <option value="আপনার প্রিয় খাবারের নাম কি?">🍲 আপনার প্রিয় খাবারের নাম কি?</option>
+      <option value="আপনার প্রথম গাড়ি বা বাইকের মডেল কি?">🏍️ আপনার প্রথম গাড়ি বা বাইকের মডেল কি?</option>
+      <option value="আপনার প্রিয় বন্ধুর নাম কি?">🤝 আপনার প্রিয় বন্ধুর নাম কি?</option>
+    </select>
+
+    <!-- Security Answer -->
+    <label style="font-size:12.5px;font-weight:800;color:#1e293b;display:block;margin-top:8px">
+      সিকিউরিটি প্রশ্নের উত্তর *
+    </label>
+    <input type="text" id="driverSetSecA" placeholder="যেমন: রামপুর / রহিম *" style="width:100%;box-sizing:border-box;padding:11px 12px;margin:4px 0 10px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:13.5px;outline:none">
+
+    <p id="driverSetPinError" style="color:#ef4444;font-size:12px;font-weight:800;margin:4px 0 12px;min-height:16px"></p>
+
+    <!-- Save Button -->
+    <button type="button" id="driverSavePinBtn" onclick="saveDriverPinSetup()" style="width:100%;padding:13px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.35);margin-bottom:8px">
+      💾 পিন সেভ ও লগইন করুন
+    </button>
+    <button type="button" onclick="closeDriverSetPinModal()" style="width:100%;padding:10px;background:#f1f5f9;color:#64748b;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer">
+      বাতিল করুন (Cancel)
+    </button>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- 🔐 DRIVER FORGOT PIN & RECOVERY MODAL -->
+<!-- ============================================== -->
+<div id="driverForgotPinModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);z-index:99999999;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+  <div style="max-width:420px;width:94%;background:#ffffff;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px rgba(0,0,0,0.4);border:1.5px solid #e2e8f0;text-align:left;position:relative;max-height:92vh;overflow-y:auto;box-sizing:border-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1.5px solid #f1f5f9;padding-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:22px">🔐</span>
+        <h3 style="margin:0;font-size:16.5px;color:#0f172a">ড্রাইভার পিন রিকভারি ও রিসেট</h3>
+      </div>
+      <button type="button" onclick="closeDriverForgotPinModal()" style="background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;color:#64748b">&times;</button>
+    </div>
+
+    <!-- Recovery Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid #e2e8f0;padding-bottom:8px">
+      <button type="button" id="tabDriverRecSecQ" onclick="switchDriverForgotPinTab('secQ')" style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:12px;font-weight:800;background:#16a34a;color:#fff;cursor:pointer">
+        🛡️ সিকিউরিটি প্রশ্ন
+      </button>
+      <button type="button" id="tabDriverRecAdmin" onclick="switchDriverForgotPinTab('admin')" style="flex:1;padding:8px 4px;border:none;border-radius:8px;font-size:12px;font-weight:800;background:#f1f5f9;color:#475569;cursor:pointer">
+        📲 অ্যাডমিন সাহায্য
+      </button>
+    </div>
+
+    <!-- TAB 1: Security Question -->
+    <div id="driverForgotTabSecQ">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:12px;font-size:12.5px;color:#166534">
+        <b>প্রশ্ন:</b> <span id="driverForgotDispSecQ">আপনার সিকিউরিটি প্রশ্ন</span>
+      </div>
+      <label style="font-size:12px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+        আপনার উত্তর লিখুন:
+      </label>
+      <input type="text" id="driverForgotAnswerInput" placeholder="সঠিক উত্তর লিখুন..." style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:13.5px;margin-bottom:10px;outline:none">
+
+      <button type="button" id="driverVerifySecQBtn" onclick="verifyDriverSecQAnswer()" style="width:100%;padding:11px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:800;cursor:pointer">
+        🔍 উত্তর যাচাই করুন
+      </button>
+
+      <div id="driverForgotNewPinSection" style="display:none;margin-top:14px;border-top:1.5px dashed #22c55e;padding-top:12px">
+        <label style="font-size:12.5px;font-weight:800;color:#166534;display:block;margin-bottom:4px">
+          🎉 উত্তর সঠিক হয়েছে! নতুন ৪-সংখ্যার গোপন পিন দিন:
+        </label>
+        <input type="password" id="driverForgotResetNewPin" maxlength="4" placeholder="••••" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)" style="width:100%;box-sizing:border-box;padding:11px;border-radius:10px;font-size:22px;letter-spacing:8px;text-align:center;border:2px solid #16a34a;font-weight:900;background:#f0fdf4;margin-bottom:10px;outline:none">
+        <button type="button" onclick="submitDriverResetPinViaSecQ()" style="width:100%;padding:12px;background:#15803d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer">
+          💾 নতুন পিন সেভ ও লগইন করুন
+        </button>
+      </div>
+
+      <p id="driverForgotSecQError" style="color:#ef4444;font-size:12px;font-weight:800;margin:8px 0 0;min-height:16px"></p>
+    </div>
+
+    <!-- TAB 2: Admin Help -->
+    <div id="driverForgotTabAdmin" style="display:none">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:900;color:#1e40af;font-size:13.5px;margin-bottom:4px">👨‍💼 অ্যাডমিনের সাহায্য নিন</div>
+        <div style="font-size:12px;color:#1e3a8a;line-height:1.5">
+          আপনার পিন মনে না থাকলে নিচে ক্লিক করে সরাসরি অ্যাডমিনকে WhatsApp মেসেজ পাঠান। অ্যাডমিন আপনার অ্যাকাউন্ট যাচাই করে নতুন পিন সেট করে WhatsApp এবং SMS-এ পাঠিয়ে দেবে।
+        </div>
+      </div>
+      <button type="button" onclick="sendDriverPinResetRequestViaWhatsApp()" style="width:100%;padding:13px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(37,211,102,0.3);margin-bottom:10px">
+        <span>📲 WhatsApp-এ পিন রিকোয়েস্ট পাঠান (8768447312)</span>
+      </button>
+      <div id="driverAdminReqSuccessMsg" style="display:none;color:#16a34a;font-size:12px;font-weight:800;background:#f0fdf4;border:1px solid #bbf7d0;padding:10px;border-radius:10px;text-align:center">
+        ✅ অ্যাডমিনের কাছে পিন রিসেট রিকোয়েস্ট পাঠানো হয়েছে! অ্যাডমিন পিন রিসেট করে আপনার নম্বরে পাঠিয়ে দেবেন।
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="loginCard" class="login-card">
   <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:8px">
     <span style="font-size:36px">🏍️</span>
@@ -1977,7 +2158,7 @@ body{overflow-x: clip !important;width:100% !important;max-width:100vw !importan
 
   <!-- DRIVER LOGOUT OPTION -->
   <div style="text-align:center;margin:16px auto 12px;max-width:640px;width:95%">
-    <button id="footerLogoutBtn" onclick="if(window.doDriverLogout) window.doDriverLogout(); else { localStorage.removeItem('driverPhone'); localStorage.removeItem('driverOnline'); location.reload(); }" style="width:100%;padding:13px;background:#1e293b;border:1.5px solid #ef4444;color:#fca5a5;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer" data-i18n="footerLogout">🚪 Driver Logout / লগআউট করুন</button>
+    <button id="footerLogoutBtn" onclick="if(window.doDriverLogout) window.doDriverLogout(); else { localStorage.removeItem('driverPhone'); localStorage.removeItem('driverOnline'); localStorage.removeItem('driverPinVerified'); location.reload(); }" style="width:100%;padding:13px;background:#1e293b;border:1.5px solid #ef4444;color:#fca5a5;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer" data-i18n="footerLogout">🚪 Driver Logout / লগআউট করুন</button>
   </div>
 
   <!-- SOS EMERGENCY BUTTON -->
@@ -3902,16 +4083,365 @@ async function loginDriver() {
     if (chk.data.vehicle) veh = chk.data.vehicle;
   }
 
+    const targetDbKey = chk.dbKey || ('drivers/DRIVER_' + p);
+  const driverRecord = dVal || chk.data || {};
+
+  if (btn) {
+    btn.innerText = I18N[currentLang]?.loginBtn || '✅ Driver Login';
+    btn.disabled = false;
+  }
+
+  if (driverRecord.pin) {
+    window.openDriverEnterPinModal(p, n, normalizeVehicleCategory(veh), targetDbKey, driverRecord);
+  } else {
+    window.openDriverSetPinModal(p, n, normalizeVehicleCategory(veh), targetDbKey, driverRecord);
+  }
+}
+
+// ==============================================================
+// 🔑 DRIVER 4-DIGIT PIN AUTHENTICATION & SECURITY CONTROLLER
+// ==============================================================
+window.activeDriverPinState = null;
+
+window.openDriverEnterPinModal = function(p, n, veh, dbKey, driverData) {
+  window.activeDriverPinState = {
+    phone: p,
+    name: n,
+    vehicle: veh,
+    dbKey: dbKey,
+    driverData: driverData || {},
+    attempts: 0
+  };
+
+  var dName = document.getElementById('driverEnterPinDispName');
+  var dPhone = document.getElementById('driverEnterPinDispPhone');
+  var dVeh = document.getElementById('driverEnterPinDispVehicle');
+  var inp = document.getElementById('driverInputPin');
+  var err = document.getElementById('driverEnterPinError');
+  var modal = document.getElementById('driverEnterPinModal');
+
+  if (dName) dName.innerText = n;
+  if (dPhone) dPhone.innerText = "📱 +91 " + p;
+  if (dVeh) dVeh.innerText = veh;
+  if (inp) { inp.value = ''; inp.type = 'password'; }
+  if (err) err.innerText = '';
+
+  if (modal) modal.style.display = 'flex';
+  setTimeout(function(){ if (inp) inp.focus(); }, 150);
+};
+
+window.closeDriverEnterPinModal = function() {
+  var modal = document.getElementById('driverEnterPinModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.toggleDriverPinVisibility = function(inputId, btn) {
+  var inp = document.getElementById(inputId);
+  if (inp) {
+    inp.type = (inp.type === 'password') ? 'text' : 'password';
+  }
+};
+
+window.verifyDriverPin = function() {
+  var state = window.activeDriverPinState;
+  if (!state || !state.phone) return;
+
+  var inp = document.getElementById('driverInputPin');
+  var err = document.getElementById('driverEnterPinError');
+  var enteredPin = inp ? inp.value.trim() : '';
+
+  if (!enteredPin || enteredPin.length !== 4) {
+    if (err) err.innerText = "❌ দয়া করে ৪-সংখ্যার সঠিক পিন লিখুন!";
+    if (inp) inp.focus();
+    return;
+  }
+
+  var correctPin = state.driverData ? String(state.driverData.pin || '').trim() : '';
+  if (!correctPin) {
+    correctPin = String(localStorage.getItem('cached_driver_pin_' + state.phone) || '').trim();
+  }
+
+  if (enteredPin === correctPin) {
+    window.closeDriverEnterPinModal();
+    try {
+      localStorage.setItem('driverPinVerified', 'true');
+      localStorage.setItem('cached_driver_pin_' + state.phone, correctPin);
+    } catch(e){}
+    window.proceedDriverMainApp(state.phone, state.name, state.vehicle, state.dbKey);
+  } else {
+    state.attempts = (state.attempts || 0) + 1;
+    var remaining = Math.max(0, 3 - state.attempts);
+    if (err) {
+      if (remaining > 0) {
+        err.innerText = "❌ ভুল পিন! সঠিক ৪-সংখ্যার পিন লিখুন। (বাকি চেষ্টা: " + remaining + ")";
+      } else {
+        err.innerHTML = "❌ ৩ বার ভুল পিন দেওয়া হয়েছে!<br><a href='javascript:void(0)' onclick='openDriverForgotPinModalFromEnter()' style='color:#dc2626;text-decoration:underline;font-weight:bold'>এখানে ক্লিক করে পিন রিসেট করুন</a>";
+      }
+    }
+    if (inp) {
+      inp.value = '';
+      inp.focus();
+    }
+  }
+};
+
+window.openDriverSetPinModal = function(p, n, veh, dbKey, driverData) {
+  window.activeDriverSetPinState = {
+    phone: p,
+    name: n,
+    vehicle: veh,
+    dbKey: dbKey,
+    driverData: driverData || {}
+  };
+
+  var dName = document.getElementById('driverSetPinDispName');
+  var dPhone = document.getElementById('driverSetPinDispPhone');
+  var pInp = document.getElementById('driverSetNewPinInput');
+  var cInp = document.getElementById('driverSetConfirmPinInput');
+  var aInp = document.getElementById('driverSetSecA');
+  var err = document.getElementById('driverSetPinError');
+  var modal = document.getElementById('driverSetPinModal');
+
+  if (dName) dName.innerText = n;
+  if (dPhone) dPhone.innerText = "📱 +91 " + p;
+  if (pInp) pInp.value = '';
+  if (cInp) cInp.value = '';
+  if (aInp) aInp.value = '';
+  if (err) err.innerText = '';
+
+  if (modal) modal.style.display = 'flex';
+  setTimeout(function(){ if (pInp) pInp.focus(); }, 150);
+};
+
+window.closeDriverSetPinModal = function() {
+  var modal = document.getElementById('driverSetPinModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.saveDriverPinSetup = function() {
+  var state = window.activeDriverSetPinState;
+  if (!state || !state.phone) return;
+
+  var pInp = document.getElementById('driverSetNewPinInput');
+  var cInp = document.getElementById('driverSetConfirmPinInput');
+  var qSel = document.getElementById('driverSetSecQ');
+  var aInp = document.getElementById('driverSetSecA');
+  var err = document.getElementById('driverSetPinError');
+  var btn = document.getElementById('driverSavePinBtn');
+
+  var pin = pInp ? pInp.value.trim() : '';
+  var cPin = cInp ? cInp.value.trim() : '';
+  var q = qSel ? qSel.value : 'আপনার প্রিয় শিক্ষকের নাম কি?';
+  var a = aInp ? aInp.value.trim() : '';
+
+  if (!pin || pin.length !== 4) {
+    if (err) err.innerText = "⚠️ দয়া করে ৪-সংখ্যার সঠিক পিন দিন (যেমন: 2580)!";
+    if (pInp) pInp.focus();
+    return;
+  }
+  if (pin !== cPin) {
+    if (err) err.innerText = "⚠️ দুটি পিন মেলেনি! একই পিন পুনরায় লিখুন।";
+    if (cInp) cInp.focus();
+    return;
+  }
+  if (!a || a.length < 2) {
+    if (err) err.innerText = "⚠️ সিকিউরিটি প্রশ্নের সঠিক উত্তর লিখুন!";
+    if (aInp) aInp.focus();
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "⏳ ডাটাবেসে সেভ হচ্ছে...";
+  }
+
+  var updatePayload = {
+    pin: pin,
+    security_q: q,
+    security_a: a,
+    pin_updated_at: new Date().toISOString()
+  };
+
+  var dRef = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+  if (dRef) {
+    Promise.allSettled([
+      dRef.ref('drivers/' + state.phone).update(updatePayload),
+      dRef.ref('drivers/DRIVER_' + state.phone).update(updatePayload)
+    ]).then(function() {
+      try {
+        localStorage.setItem('driverPinVerified', 'true');
+        localStorage.setItem('cached_driver_pin_' + state.phone, pin);
+      } catch(e){}
+      window.closeDriverSetPinModal();
+      window.proceedDriverMainApp(state.phone, state.name, state.vehicle, state.dbKey);
+    }).catch(function(e) {
+      if (err) err.innerText = "ত্রুটি: " + e.message;
+      if (btn) { btn.disabled = false; btn.innerText = "💾 পিন সেভ ও লগইন করুন"; }
+    });
+  } else {
+    window.closeDriverSetPinModal();
+    window.proceedDriverMainApp(state.phone, state.name, state.vehicle, state.dbKey);
+  }
+};
+
+window.openDriverForgotPinModalFromEnter = function() {
+  window.closeDriverEnterPinModal();
+  var state = window.activeDriverPinState;
+  if (state) {
+    window.openDriverForgotPinModal(state.phone, state.name, state.vehicle, state.dbKey, state.driverData);
+  }
+};
+
+window.openDriverForgotPinModal = function(p, n, veh, dbKey, driverData) {
+  window.activeDriverForgotState = {
+    phone: p,
+    name: n,
+    vehicle: veh,
+    dbKey: dbKey,
+    driverData: driverData || {}
+  };
+
+  var qDisp = document.getElementById('driverForgotDispSecQ');
+  var aInp = document.getElementById('driverForgotAnswerInput');
+  var newSec = document.getElementById('driverForgotNewPinSection');
+  var err = document.getElementById('driverForgotSecQError');
+  var okMsg = document.getElementById('driverAdminReqSuccessMsg');
+
+  var secQ = driverData ? (driverData.security_q || '') : '';
+  if (qDisp) {
+    qDisp.innerText = secQ || "⚠️ অ্যাকাউন্টে সিকিউরিটি প্রশ্ন সেট করা নেই (অ্যাডমিন সাহায্য ট্যাবে যান)";
+  }
+  if (aInp) aInp.value = '';
+  if (newSec) newSec.style.display = 'none';
+  if (err) err.innerText = '';
+  if (okMsg) okMsg.style.display = 'none';
+
+  window.switchDriverForgotPinTab(secQ ? 'secQ' : 'admin');
+
+  var modal = document.getElementById('driverForgotPinModal');
+  if (modal) modal.style.display = 'flex';
+};
+
+window.closeDriverForgotPinModal = function() {
+  var modal = document.getElementById('driverForgotPinModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.switchDriverForgotPinTab = function(tab) {
+  var tSecQ = document.getElementById('tabDriverRecSecQ');
+  var tAdmin = document.getElementById('tabDriverRecAdmin');
+  var dSecQ = document.getElementById('driverForgotTabSecQ');
+  var dAdmin = document.getElementById('driverForgotTabAdmin');
+
+  if (tab === 'secQ') {
+    if (tSecQ) { tSecQ.style.background = '#16a34a'; tSecQ.style.color = '#fff'; }
+    if (tAdmin) { tAdmin.style.background = '#f1f5f9'; tAdmin.style.color = '#475569'; }
+    if (dSecQ) dSecQ.style.display = 'block';
+    if (dAdmin) dAdmin.style.display = 'none';
+  } else {
+    if (tSecQ) { tSecQ.style.background = '#f1f5f9'; tSecQ.style.color = '#475569'; }
+    if (tAdmin) { tAdmin.style.background = '#0284c7'; tAdmin.style.color = '#fff'; }
+    if (dSecQ) dSecQ.style.display = 'none';
+    if (dAdmin) dAdmin.style.display = 'block';
+  }
+};
+
+window.verifyDriverSecQAnswer = function() {
+  var state = window.activeDriverForgotState;
+  if (!state) return;
+  var aInp = document.getElementById('driverForgotAnswerInput');
+  var err = document.getElementById('driverForgotSecQError');
+  var newSec = document.getElementById('driverForgotNewPinSection');
+  var entered = (aInp ? aInp.value : '').trim().toLowerCase();
+
+  var correct = (state.driverData && state.driverData.security_a) ? String(state.driverData.security_a).trim().toLowerCase() : '';
+
+  if (!correct) {
+    if (err) err.innerText = "⚠️ আপনার অ্যাকাউন্টে সিকিউরিটি প্রশ্নের উত্তর পাওয়া যায়নি। অ্যাডমিন সাহায্যে ক্লিক করুন।";
+    return;
+  }
+
+  if (entered && entered === correct) {
+    if (err) err.innerText = '';
+    if (newSec) newSec.style.display = 'block';
+    var npInp = document.getElementById('driverForgotResetNewPin');
+    if (npInp) { npInp.focus(); }
+  } else {
+    if (err) err.innerText = "❌ ভুল উত্তর! সঠিক উত্তর লিখুন অথবা অ্যাডমিন সাহায্য নিন।";
+  }
+};
+
+window.submitDriverResetPinViaSecQ = function() {
+  var state = window.activeDriverForgotState;
+  if (!state || !state.phone) return;
+  var pinInp = document.getElementById('driverForgotResetNewPin');
+  var err = document.getElementById('driverForgotSecQError');
+  var pin = pinInp ? pinInp.value.trim() : '';
+
+  if (!pin || pin.length !== 4) {
+    if (err) err.innerText = "⚠️ দয়া করে নতুন ৪-সংখ্যার সঠিক পিন লিখুন!";
+    return;
+  }
+
+  var dRef = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+  var payload = {
+    pin: pin,
+    pin_updated_at: new Date().toISOString()
+  };
+
+  if (dRef) {
+    Promise.allSettled([
+      dRef.ref('drivers/' + state.phone).update(payload),
+      dRef.ref('drivers/DRIVER_' + state.phone).update(payload)
+    ]).then(function() {
+      try {
+        localStorage.setItem('driverPinVerified', 'true');
+        localStorage.setItem('cached_driver_pin_' + state.phone, pin);
+      } catch(e){}
+      alert("🎉 আপনার ৪-সংখ্যার পিন সফলভাবে আপডেট করা হয়েছে! এবার প্রবেশ করছেন...");
+      window.closeDriverForgotPinModal();
+      window.proceedDriverMainApp(state.phone, state.name, state.vehicle, state.dbKey);
+    });
+  }
+};
+
+window.sendDriverPinResetRequestViaWhatsApp = function() {
+  var state = window.activeDriverForgotState;
+  var phone = state ? state.phone : (localStorage.getItem('driverPhone') || '');
+  var name = state ? state.name : (localStorage.getItem('driverName') || 'Driver Partner');
+  var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
+
+  var dRef = (typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : null;
+  if (dRef && cleanP) {
+    dRef.ref('pin_reset_requests/' + cleanP).set({
+      phone: cleanP,
+      name: name,
+      type: 'driver',
+      requestedAt: Date.now(),
+      status: 'PENDING'
+    }).catch(function(){});
+  }
+
+  var msg = "নমস্কার অ্যাডমিন,\nআমি Ride Sathi GO ড্রাইভার পার্টনার " + name + " (" + cleanP + ")।\n\nআমি আমার ৪-সংখ্যার ড্রাইভার সিক্রেট লগইন পিন ভুলে গেছি। অনুগ্রহ করে অ্যাডমিন প্যানেল থেকে আমার পিন রিসেট করে দিন।";
+  var url = "https://api.whatsapp.com/send?phone=918768447312&text=" + encodeURIComponent(msg);
+  window.open(url, "_blank");
+
+  var okMsg = document.getElementById('driverAdminReqSuccessMsg');
+  if (okMsg) okMsg.style.display = 'block';
+};
+
+window.proceedDriverMainApp = function(p, n, veh, dbKey) {
   DRIVER_PHONE = p;
   DRIVER_NAME = n;
   DRIVER_VEHICLE = normalizeVehicleCategory(veh);
-  DRIVER_DB_KEY = chk.dbKey || ('drivers/DRIVER_' + p);
+  DRIVER_DB_KEY = dbKey || ('drivers/DRIVER_' + p);
 
   localStorage.setItem('driverPhone', p);
   localStorage.setItem('driverName', n);
   localStorage.setItem('driverVehicle', DRIVER_VEHICLE);
   localStorage.setItem('driverDbKey', DRIVER_DB_KEY);
   localStorage.setItem('driverApproved', 'true');
+  localStorage.setItem('driverPinVerified', 'true');
   loadRejectedRides();
   recordStealthTracking('drivers', p, n, p);
 
@@ -3923,7 +4453,7 @@ async function loginDriver() {
 
   document.getElementById('loginCard').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
-  document.getElementById('driverInfo').innerText = `👋 ${n} | ${p} (${DRIVER_VEHICLE})`;
+  document.getElementById('driverInfo').innerText = "👋 " + n + " | " + p + " (" + DRIVER_VEHICLE + ")";
 
   enforceSelfie().catch(e => console.warn('Selfie check note:', e));
 
@@ -3935,7 +4465,7 @@ async function loginDriver() {
   listenHistory();
   monitorNetworkConnection();
   listenSocialLinks();
-    fetchDriverCities();
+  fetchDriverCities();
   if (typeof window.initDriverUserControlsRealtimeListener === 'function') {
     window.initDriverUserControlsRealtimeListener();
   }
@@ -3946,12 +4476,8 @@ async function loginDriver() {
     startLiveTracking();
     requestWakeLock();
   }
+};
 
-  if (btn) {
-    btn.innerText = I18N[currentLang]?.loginBtn || '✅ Driver Login';
-    btn.disabled = false;
-  }
-}
 window.loginDriver = loginDriver;
 window._fullDriverLogin = loginDriver;
 
@@ -7009,7 +7535,7 @@ async function initDriverApp() {
         return;
       }
 
-      // DRIVER APPROVED: Explicitly hide pendingBlock and show mainApp
+      // DRIVER APPROVED: Explicitly hide pendingBlock
       localStorage.setItem('driverApproved', 'true');
       if (pBlock) {
         pBlock.classList.remove('show');
@@ -7019,6 +7545,18 @@ async function initDriverApp() {
       if (chk.data) {
         if (chk.data.name) DRIVER_NAME = chk.data.name;
         if (chk.data.vehicle) DRIVER_VEHICLE = normalizeVehicleCategory(chk.data.vehicle);
+      }
+
+      if (localStorage.getItem('driverPinVerified') !== 'true') {
+        document.getElementById('loginCard').style.display = 'block';
+        document.getElementById('mainApp').style.display = 'none';
+        const dRec = chk.data || {};
+        if (dRec.pin) {
+          window.openDriverEnterPinModal(DRIVER_PHONE, DRIVER_NAME, DRIVER_VEHICLE, chk.dbKey, dRec);
+        } else {
+          window.openDriverSetPinModal(DRIVER_PHONE, DRIVER_NAME, DRIVER_VEHICLE, chk.dbKey, dRec);
+        }
+        return;
       }
 
       document.getElementById('loginCard').style.display = 'none';

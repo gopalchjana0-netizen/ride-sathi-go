@@ -10,34 +10,53 @@
 <link rel="icon" type="image/png" sizes="512x512" href="driver-registration-512.png">
 <link rel="apple-touch-icon" href="driver-registration-512.png">
 <style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;font-family:system-ui;padding:12px}
-.card{background:#fff;width:100%;max-width:460px;padding:24px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-h2{text-align:center;margin:0 0 6px;color:#0f172a;line-height:1.3;font-size:22px}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;font-family:system-ui,-apple-system,sans-serif;padding:16px 12px;box-sizing:border-box}
+.card{background:#fff;width:100%;max-width:480px;padding:26px 22px;border-radius:24px;box-shadow:0 15px 40px rgba(0,0,0,.35);box-sizing:border-box}
+h2{text-align:center;margin:0 0 6px;color:#0f172a;line-height:1.3;font-size:22px;font-weight:900}
 .sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:16px;font-weight:bold}
 label{font-size:13px;font-weight:800;margin-top:14px;display:block;color:#1e293b}
-input,select{width:100%;padding:14px;margin:6px 0;border:1.5px solid #cbd5e1;border-radius:12px;font-size:15px;box-sizing:border-box;background:#fff;outline:none}
-input:focus,select:focus{border-color:#16a34a}
+input,select{width:100%;padding:13px 14px;margin:6px 0;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14.5px;box-sizing:border-box;background:#fff;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,0.15)}
 select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg fill='%23334155' height='24' viewBox='0 0 24 24' width='24'><path d='M7 10l5 5 5-5z'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:40px;cursor:pointer}
-.btn{width:100%;padding:15px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-weight:800;font-size:16px;margin-top:18px;cursor:pointer}
-.btn:disabled{background:#94a3b8}
-.waitBox{display:none;text-align:center;padding:20px;background:#f0fdf4;border:2px dashed #16a34a;border-radius:16px;margin-top:14px}
-.hint{font-size:11px;color:#64748b;margin-top:2px}
+.pin-wrap{position:relative;margin:6px 0}
+.pin-wrap input{margin:0;padding-right:42px;letter-spacing:6px;font-weight:900;font-size:18px}
+.pin-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#64748b;padding:4px}
+.btn{width:100%;padding:15px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none;border-radius:14px;font-weight:900;font-size:16px;margin-top:20px;cursor:pointer;box-shadow:0 4px 14px rgba(22,163,74,0.35);transition:all .2s}
+.btn:hover{filter:brightness(1.05)}
+.btn:disabled{background:#94a3b8;cursor:not-allowed;box-shadow:none}
+.waitBox{display:none;text-align:center;padding:22px;background:#f0fdf4;border:2px dashed #16a34a;border-radius:18px;margin-top:18px}
+.hint{font-size:11.5px;color:#64748b;margin-top:1px;line-height:1.4}
+.sec-badge{display:inline-flex;align-items:center;gap:4px;background:#fefce8;color:#854d0e;border:1px solid #fef08a;padding:3px 8px;border-radius:8px;font-size:11px;font-weight:800;margin-top:2px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <div class="card">
-<h2>🏍️ RIDE সাথী GO<br>ড্রাইভার রেজিস্ট্রেশন / Driver Registration</h2>
-<div class="sub">নতুন ড্রাইভার যোগ দিন / Add New Driver</div>
+<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px">
+  <span style="font-size:30px">🏍️</span>
+  <span style="font-size:24px;font-weight:900;background:linear-gradient(90deg,#ff0080,#ff8c00);-webkit-background-clip:text;-webkit-text-fill-color:transparent">RIDE SATHI GO</span>
+  <span style="font-size:30px">🛺</span>
+</div>
+<h2>ড্রাইভার রেজিস্ট্রেশন / Driver Registration</h2>
+<div class="sub">নতুন চালক পার্টনার যোগ দিন • ০% কমিশন অফার!</div>
+
 <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:14px;padding:12px;margin:10px 0 14px;text-align:center">
   <div style="color:#15803d;font-weight:900;font-size:13.5px">🎉 চালকদের জন্য বিশেষ অফার: ০% কমিশন!</div>
   <div style="color:#166534;font-size:11.5px;margin-top:3px;font-weight:700">দৈনিক মাত্র ₹১০ বা মাসিক ₹১৯৯ পাস • ১০০% ভাড়ার টাকা আপনার!</div>
 </div>
+
 <label>আপনার নাম * / Your Name *</label>
-<input id="name" placeholder="আপনার নাম লিখুন / Enter Your Name">
+<input id="name" placeholder="আপনার পুরো নাম লিখুন / Enter Full Name">
+
 <label>মোবাইল নম্বর * / Mobile Number *</label>
-<input id="mobile" placeholder="10 Digit মোবাইল নম্বর / 10 Digit Mobile Number" type="tel" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+<input id="mobile" placeholder="10 Digit মোবাইল নম্বর" type="tel" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)">
+<div class="hint">এই নম্বরেই আপনার ড্রাইভার আইডি তৈরি হবে।</div>
+
+<label>আপনার ইমেইল আইডি * / Email Address * (বাধ্যতামূলক)</label>
+<input id="email" type="email" placeholder="example@gmail.com *" required>
+<div class="hint">অফিসিয়াল নোটিশ, পাস রিসিপ্ট ও অ্যাকাউন্টের তথ্যের জন্য বৈধ ইমেইল দিন।</div>
+
 <label>গাড়ির ধরণ * / Vehicle Type *</label>
 <select id="vehicle">
 <option value="Bike">🏍️ Bike / বাইক</option>
@@ -45,31 +64,72 @@ select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg fill='
 <option value="Car">🚗 Car / কার</option>
 <option value="Auto">🛺 Auto / অটো</option>
 </select>
+
 <label>গাড়ির নম্বর * / Vehicle Number *</label>
-<input id="vehNo" placeholder="গাড়ির নম্বর লিখুন / Enter Vehicle Number">
-<div class="hint">আপনার গাড়ির নম্বর লিখুন / Enter your vehicle number</div>
+<input id="vehNo" placeholder="যেমন: WB-30-AB-1234">
+<div class="hint">আপনার গাড়ির সঠিক রেজিস্ট্রেশন নম্বর লিখুন।</div>
+
+<div style="margin-top:16px;padding:14px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:16px">
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:16px">🔐</span>
+    <b style="font-size:13.5px;color:#0f172a">অ্যাকাউন্ট সিকিউরিটি ও পিন সেটআপ</b>
+  </div>
+  <div class="hint" style="margin-top:3px">Driver App-এ লগইন ও সুরক্ষার জন্য ৪-সংখ্যার গোপন পিন সেট করুন।</div>
+
+  <label style="margin-top:10px">৪-সংখ্যার সিক্রেট লগইন পিন * / 4-Digit Login PIN *</label>
+  <div class="pin-wrap">
+    <input id="pin" type="password" maxlength="4" inputmode="numeric" placeholder="••••" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)">
+    <button type="button" class="pin-toggle" onclick="togglePinVisibility()">👁️</button>
+  </div>
+  <div class="hint">এই ৪-সংখ্যার পিন দিয়ে পরবর্তীতে Driver App-এ লগইন করবেন।</div>
+
+  <label style="margin-top:12px">সিকিউরিটি প্রশ্ন * / Security Question *</label>
+  <select id="security_q">
+    <option value="আপনার প্রিয় শিক্ষকের নাম কি?">👨‍🏫 আপনার প্রিয় শিক্ষকের নাম কি?</option>
+    <option value="আপনার জন্মস্থান / গ্রামের নাম কি?">🏡 আপনার জন্মস্থান / গ্রামের নাম কি?</option>
+    <option value="আপনার প্রিয় খাবারের নাম কি?">🍲 আপনার প্রিয় খাবারের নাম কি?</option>
+    <option value="আপনার প্রথম গাড়ি বা বাইকের মডেল কি?">🏍️ আপনার প্রথম গাড়ি বা বাইকের মডেল কি?</option>
+    <option value="আপনার প্রিয় বন্ধুর নাম কি?">🤝 আপনার প্রিয় বন্ধুর নাম কি?</option>
+  </select>
+
+  <label style="margin-top:10px">সিকিউরিটি প্রশ্নের উত্তর * / Security Answer *</label>
+  <input id="security_a" placeholder="প্রশ্নের উত্তর লিখুন (যেমন: রামপুর / রহিম) *">
+  <div class="hint">পিন ভুলে গেলে এই উত্তরের মাধ্যমে আপনি নিজেই পিন রিসেট করতে পারবেন।</div>
+</div>
+
 <button class="btn" id="btn" onclick="register()">✅ রেজিস্টার করুন / Register Now</button>
+
 <div id="waitBox" class="waitBox">
-<div style="font-size:48px">⏳</div>
-<h3 style="margin:8px 0;color:#14532d">রেজিস্ট্রেশন হয়ে গেছে! / Registration Done!</h3>
-<p style="font-size:13px;color:#334155;margin:0;line-height:1.5">
-Admin Approve করলেই Panel খুলবে।<br>Panel will open after Admin Approval.
-</p>
-<div style="margin:16px auto 10px;text-align:center">
-  <img id="qr_driver_app" alt="Driver App QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk" style="width:160px;height:160px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-  <div style="font-size:12px;color:#166534;margin:6px 0;font-weight:700">📱 QR Scan করে Driver APK ডাউনলোড করুন</div>
+  <div style="font-size:46px">⏳</div>
+  <h3 style="margin:8px 0;color:#14532d">রেজিস্ট্রেশন সফল হয়েছে! / Registration Successful!</h3>
+  <p style="font-size:13px;color:#334155;margin:0;line-height:1.5">
+    অ্যাডমিন অনুমোদন (Approval) করলেই আপনার ড্রাইভার প্যানেল খুলে যাবে।<br>
+    অনুমোদনের পর আপনার ৪-সংখ্যার গোপন পিন দিয়ে Driver App-এ লগইন করতে পারবেন।
+  </p>
+  <div style="margin:16px auto 10px;text-align:center">
+    <img id="qr_driver_app" alt="Driver App QR" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk" style="width:150px;height:150px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+    <div style="font-size:12px;color:#166534;margin:6px 0;font-weight:700">📱 QR Scan করে Driver APK ডাউনলোড করুন</div>
+  </div>
+  <a class="btn" id="btn_driver_app" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk" download style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">📥 Direct Download Driver APK</a>
+  <a class="btn" id="btn_to_download_portal" href="/download.html" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;background:#0284c7;color:#fff;margin-top:10px">Go to Download Page -&gt; /download.html</a>
+  <button class="btn" style="background:#0f172a;margin-top:10px" onclick="location.href='driver.html'">➡️ ড্রাইভার প্যানেলে যান / Go to Driver Panel</button>
 </div>
-<a class="btn" id="btn_driver_app" href="https://github.com/gopalchjana0-netizen/ride-sathi-go/releases/download/v1.0/RideSathi-Driver.apk" download style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">📥 Direct Download Driver APK (v1.0)</a>
-<a class="btn" id="btn_to_download_portal" href="/download.html" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;background:#0284c7;color:#fff;margin-top:10px">Go to Download Page -&gt; /download.html</a>
-<button class="btn" style="background:#0f172a;margin-top:10px" onclick="location.href='driver.html'">➡️ ড্রাইভার প্যানেলে যান / Go to Driver Panel</button>
-</div>
-<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:14px">Support: 8768447312 | RIDE SATHI GO</p>
-<div style="margin-top:12px;text-align:center">
+
+<p style="font-size:11.5px;color:#94a3b8;text-align:center;margin-top:18px">অফিসিয়াল হেল্পলাইন: +91 8768447312 • support.ridesathi@gmail.com</p>
+<div style="margin-top:8px;text-align:center">
   <a href="/download.html" style="font-size:12px;color:#0284c7;text-decoration:none;font-weight:700">Go to Download Page -&gt; /download.html</a>
 </div>
 </div>
+
 <script>
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+function togglePinVisibility() {
+  const pInput = document.getElementById('pin');
+  if (pInput) {
+    pInput.type = (pInput.type === 'password') ? 'text' : 'password';
+  }
+}
 </script>
 <script>
 firebase.initializeApp({
@@ -81,27 +141,101 @@ firebase.initializeApp({
   messagingSenderId:"253493728683",
   appId:"1:253493728683:web:ef2ec9bcf7885788dfeeee"
 });
-const db=firebase.database();
+const db = firebase.database();
+
 async function register(){
- let n=document.getElementById('name').value.trim();
- let m=document.getElementById('mobile').value.trim();
- let v=document.getElementById('vehicle').value;
- let vn=document.getElementById('vehNo').value.trim();
- let btn=document.getElementById('btn');
- if(!n){alert('আপনার নাম লিখুন / Enter Your Name');return;}
- if(m.length!=10){alert('10 Digit মোবাইল নম্বর দিন / Enter 10 digit mobile number');return;}
- if(!vn){alert('গাড়ির নম্বর লিখুন / Enter Vehicle Number');return;}
- btn.innerText='⏳ হচ্ছে... / Processing...';btn.disabled=true;
- try{
-  let now=Date.now();
-  let data={name:n,mobile:m,vehicle:v,vehNo:vn,status:'PENDING',type:'REGISTRATION',isRegistration:true,isSelfieVerified:false,due:0,createdAt:now,lastUpdate:now};
-   // Sync with all admin listener paths
-   await db.ref('pending_drivers/'+m).set(data);
-   await db.ref('driver_registrations/'+m).set(data);
-   await db.ref('driver_requests/'+m).set(data);
-  localStorage.setItem('driverPhone',m);localStorage.setItem('driverName',n);
-  document.getElementById('waitBox').style.display='block';btn.innerText='✅ হয়ে গেছে / Done';btn.style.background='#0f172a';
- }catch(e){alert('Error: '+e.message);btn.innerText='✅ রেজিস্টার করুন / Register Now';btn.disabled=false;}
+  let n = document.getElementById('name').value.trim();
+  let m = document.getElementById('mobile').value.trim();
+  let em = document.getElementById('email').value.trim().toLowerCase();
+  let v = document.getElementById('vehicle').value;
+  let vn = document.getElementById('vehNo').value.trim();
+  let pin = document.getElementById('pin').value.trim();
+  let secQ = document.getElementById('security_q').value;
+  let secA = document.getElementById('security_a').value.trim();
+  let btn = document.getElementById('btn');
+
+  if (!n) { alert('⚠️ অনুগ্রহ করে আপনার নাম লিখুন / Enter Your Name'); return; }
+  if (m.length !== 10) { alert('⚠️ অনুগ্রহ করে ১০ সংখ্যার মোবাইল নম্বর দিন / Enter 10 digit mobile number'); return; }
+  if (!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+    alert('⚠️ অনুগ্রহ করে একটি বৈধ ইমেইল আইডি দিন (বাধ্যতামূলক)! / Please enter a valid Email ID (Mandatory)!');
+    document.getElementById('email').focus();
+    return;
+  }
+  if (!vn) { alert('⚠️ গাড়ির নম্বর লিখুন / Enter Vehicle Number'); return; }
+  if (!pin || !/^[0-9]{4}$/.test(pin)) {
+    alert('⚠️ অনুগ্রহ করে ৪-সংখ্যার সিক্রেট পিন দিন (যেমন: 2580)! / Please enter 4-digit secret PIN!');
+    document.getElementById('pin').focus();
+    return;
+  }
+  if (!secA || secA.length < 2) {
+    alert('⚠️ অনুগ্রহ করে সিকিউরিটি প্রশ্নের সঠিক উত্তর লিখুন! / Please provide a valid Security Answer!');
+    document.getElementById('security_a').focus();
+    return;
+  }
+
+  btn.innerText = '⏳ যাচাই হচ্ছে... / Processing...';
+  btn.disabled = true;
+
+  try {
+    // Dual-Role Restriction: Check if this phone already belongs to a Customer
+    let [custCheckSnap, ctrlCheckSnap] = await Promise.all([
+      db.ref('users/' + m).once('value').catch(() => null),
+      db.ref('user_controls/' + m).once('value').catch(() => null)
+    ]);
+    let isCustomerAccount = Boolean(custCheckSnap && custCheckSnap.exists() && (custCheckSnap.val()?.auth_type || custCheckSnap.val()?.name));
+    let ctrlVal = (ctrlCheckSnap && ctrlCheckSnap.exists()) ? ctrlCheckSnap.val() : {};
+    let allowDual = Boolean(ctrlVal && ctrlVal.allow_dual_role);
+
+    if (isCustomerAccount && !allowDual) {
+      alert('🚫 কাস্টমার অ্যাকাউন্টে ড্রাইভার রেজিস্ট্রেশন নিষিদ্ধ!\n\nএই মোবাইল নম্বরটি (' + m + ') ইতিমধ্যে কাস্টমার অ্যাকাউন্ট হিসেবে ব্যবহৃত হচ্ছে। একই নম্বরে ড্রাইভার পার্টনার হতে অ্যাডমিনের বিশেষ অনুমতি (Dual Role Permission) প্রয়োজন।\n\nঅনুগ্রহ করে অ্যাডমিন হেল্পলাইনে যোগাযোগ করুন: 8768447312');
+      btn.innerText = '✅ রেজিস্টার করুন / Register Now';
+      btn.disabled = false;
+      return;
+    }
+
+    let now = Date.now();
+    let data = {
+      name: n,
+      mobile: m,
+      phone: m,
+      email: em,
+      pin: pin,
+      security_q: secQ,
+      security_a: secA,
+      vehicle: v,
+      vehicleType: v.toUpperCase(),
+      vehNo: vn,
+      vehiclePlate: vn,
+      status: 'PENDING',
+      type: 'REGISTRATION',
+      isRegistration: true,
+      isSelfieVerified: false,
+      due: 0,
+      createdAt: now,
+      lastUpdate: now
+    };
+
+    // Sync with all admin listener and driver paths
+    await Promise.allSettled([
+      db.ref('pending_drivers/' + m).set(data),
+      db.ref('driver_registrations/' + m).set(data),
+      db.ref('driver_requests/' + m).set(data),
+      db.ref('drivers/' + m).set(data),
+      db.ref('drivers/DRIVER_' + m).set(data)
+    ]);
+
+    localStorage.setItem('driverPhone', m);
+    localStorage.setItem('driverName', n);
+    localStorage.setItem('driverEmail', em);
+
+    document.getElementById('waitBox').style.display = 'block';
+    btn.innerText = '✅ হয়ে গেছে / Done';
+    btn.style.background = '#0f172a';
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.innerText = '✅ রেজিস্টার করুন / Register Now';
+    btn.disabled = false;
+  }
 }
 </script>
 </body>

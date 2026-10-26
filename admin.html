@@ -3560,7 +3560,7 @@ function doPost(e) {
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #f1f5f9;padding-bottom:12px;margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:22px">🔑</span>
-        <b style="font-size:16px;color:#0f172a">কাস্টমার সিক্রেট পিন রিসেট ও সেন্ড</b>
+        <b style="font-size:16px;color:#0f172a" id="adminPinModalTitle">কাস্টমার সিক্রেট পিন রিসেট ও সেন্ড</b>
       </div>
       <button type="button" onclick="closeAdminPinResetModal()" style="background:#f1f5f9;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;font-weight:bold;cursor:pointer">✕</button>
     </div>
@@ -3568,6 +3568,7 @@ function doPost(e) {
     <input type="hidden" id="adminPinTargetPhone">
     <input type="hidden" id="adminPinTargetName">
     <input type="hidden" id="adminPinTargetEmail">
+    <input type="hidden" id="adminPinTargetType" value="customer">
 
     <!-- Customer Pill Info -->
     <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
@@ -13153,6 +13154,36 @@ async function loadManageUsersData(forceAlert = false) {
   const loadingEl = document.getElementById('manageUsersLoading');
   if (loadingEl) loadingEl.style.display = 'block';
 
+  function cleanPersonName(raw) {
+    if (!raw || typeof raw !== 'string') return '';
+    const trimmed = raw.trim();
+    const lower = trimmed.toLowerCase();
+    const genericTokens = ['customer', 'driver', 'admin', 'user', 'partner', 'driver partner', 'undefined', 'null', 'nan', '-', 'na', 'n/a'];
+    if (genericTokens.includes(lower)) return '';
+    if (lower.startsWith('customer (') || lower.startsWith('driver (')) return '';
+    if (/^[0-9+\s()-]+$/.test(trimmed)) return '';
+    return trimmed;
+  }
+
+  function extractNameFromEmail(em) {
+    if (!em || typeof em !== 'string') return '';
+    const cleanE = em.trim().toLowerCase();
+    if (cleanE.endsWith('@ridesathigo.user')) {
+      const prefix = cleanE.replace('@ridesathigo.user', '');
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    }
+    return '';
+  }
+
+  function extractCleanPhone(obj) {
+    if (!obj) return '';
+    let pTo = String(obj.to || '').replace(/[^0-9]/g, '').slice(-10);
+    if (pTo.length === 10) return pTo;
+    let pPhone = String(obj.phone || obj.mobile || '').replace(/[^0-9]/g, '').slice(-10);
+    if (pPhone.length === 10) return pPhone;
+    return '';
+  }
+
   try {
     const userMap = new Map();
 
@@ -13167,11 +13198,12 @@ async function loadManageUsersData(forceAlert = false) {
         const isBlocked = d.status === 'BLOCKED' || d.isBlocked === true;
         const driverRating = Number(d.rating !== undefined ? d.rating : (d.avgRating !== undefined ? d.avgRating : 4.9)) || 4.9;
         const driverPhoto = d.photo || d.driverPhoto || d.profileImage || d.selfie || '';
+        const realName = cleanPersonName(d.name) || 'Driver Partner';
 
         userMap.set(key, {
           key: key,
           driverKey: k,
-          name: d.name || 'Driver Partner',
+          name: realName,
           email: email,
           phone: phone,
           type: 'driver',
@@ -13223,11 +13255,27 @@ async function loadManageUsersData(forceAlert = false) {
     // Merge Sheet users
     sheetUsers.forEach(u => {
       const email = String(u.email || u.from || '').toLowerCase().trim();
-      const phone = String(u.phone || u.to || '').replace(/[^0-9]/g, '').slice(-10);
+      const phone = extractCleanPhone(u);
       if (phone && deletedPhonesSet.has(phone)) return;
+
+      // Filter out completely blank ghost rows in sheet
+      if (!phone && (!email || !email.includes('@')) && !cleanPersonName(u.name)) return;
+
       const isDriver = String(u.type || '').toLowerCase().includes('driver') || (u.vehicle && u.vehicle !== '-');
       const key = (isDriver ? 'drv_' : 'cust_') + (phone || email || Math.random());
-      const name = u.name || u['customer name'] || u.phone || (isDriver ? 'Driver' : 'Customer');
+
+      let parsedName = cleanPersonName(u.name);
+      if (!parsedName && u.phone && /[a-zA-Z\u0980-\u09FF]/.test(u.phone)) {
+        parsedName = cleanPersonName(u.phone);
+      }
+      if (!parsedName) {
+        parsedName = cleanPersonName(u['customer name']);
+      }
+      if (!parsedName) {
+        parsedName = extractNameFromEmail(email);
+      }
+      const finalName = parsedName || (isDriver ? 'Driver Partner' : 'Customer');
+
       const status = String(u.status || 'active').toLowerCase().trim();
       const photo = u.photo || u.picture || u.km || '';
       const vehicle = u.vehicle || u.type || '-';
@@ -13237,7 +13285,7 @@ async function loadManageUsersData(forceAlert = false) {
         userMap.set(key, {
           key: key,
           driverKey: isDriver ? (phone || key) : undefined,
-          name: name,
+          name: finalName,
           email: email,
           phone: phone,
           type: isDriver ? 'driver' : 'customer',
@@ -13248,6 +13296,16 @@ async function loadManageUsersData(forceAlert = false) {
           date: date,
           source: 'Google Auth & Sheet'
         });
+      } else {
+        const existing = userMap.get(key);
+        if (parsedName && (!existing.name || existing.name === 'Customer' || existing.name === 'Driver Partner')) {
+          existing.name = parsedName;
+        }
+        if (email && (!existing.email || existing.email.endsWith('@ridesathigo.user'))) {
+          existing.email = email;
+        }
+        if (photo && !existing.photo) existing.photo = photo;
+        if (status === 'blocked') existing.status = 'blocked';
       }
     });
 
@@ -13263,21 +13321,32 @@ async function loadManageUsersData(forceAlert = false) {
       const status = isBlocked ? 'blocked' : 'active';
       const driverRating = Number(d.rating !== undefined ? d.rating : (d.avgRating !== undefined ? d.avgRating : 4.9)) || 4.9;
       const driverPhoto = d.photo || d.driverPhoto || d.profileImage || d.selfie || '';
+      const realName = cleanPersonName(d.name);
 
-      userMap.set(key, {
-        key: key,
-        driverKey: k,
-        name: d.name || 'Driver Partner',
-        email: email,
-        phone: phone,
-        type: 'driver',
-        vehicle: d.vehicleType || d.vehicle || 'TOTO',
-        status: status,
-        photo: driverPhoto,
-        rating: driverRating,
-        date: d.regDate || d.date || new Date().toISOString(),
-        source: 'Firebase Driver'
-      });
+      if (userMap.has(key)) {
+        const existing = userMap.get(key);
+        if (realName) existing.name = realName;
+        if (email && (!existing.email || existing.email.endsWith('@ridesathigo.user'))) existing.email = email;
+        if (driverPhoto && !existing.photo) existing.photo = driverPhoto;
+        existing.status = status;
+        existing.rating = driverRating;
+        if (d.vehicleType || d.vehicle) existing.vehicle = d.vehicleType || d.vehicle;
+      } else {
+        userMap.set(key, {
+          key: key,
+          driverKey: k,
+          name: realName || 'Driver Partner',
+          email: email,
+          phone: phone,
+          type: 'driver',
+          vehicle: d.vehicleType || d.vehicle || 'TOTO',
+          status: status,
+          photo: driverPhoto,
+          rating: driverRating,
+          date: d.regDate || d.date || new Date().toISOString(),
+          source: 'Firebase Driver'
+        });
+      }
     });
 
     // Merge Firebase Users (CUSTOMERS) - 100% Reliable
@@ -13290,38 +13359,46 @@ async function loadManageUsersData(forceAlert = false) {
 
       const isBlocked = u.status === 'BLOCKED' || u.isBlocked === true;
       const status = isBlocked ? 'blocked' : 'active';
-      const name = u.name || ('Customer (' + phone + ')');
+      const realName = cleanPersonName(u.name);
       const lastLoginTime = u.lastLoginAt ? new Date(u.lastLoginAt).toISOString() : (u.lastLoginFormatted || (u.updatedAt ? new Date(u.updatedAt).toISOString() : (u.createdAt ? new Date(u.createdAt).toISOString() : (u.date || new Date().toISOString()))));
       const date = lastLoginTime;
 
-      userMap.set(key, {
-        key: key,
-        userId: k,
-        name: name,
-        email: email,
-        phone: phone,
-        type: 'customer',
-        vehicle: '-',
-        status: status,
-        photo: u.photo || '',
-        rating: undefined,
-        date: date,
-        source: 'Registered Customer'
-      });
+      if (userMap.has(key)) {
+        const existing = userMap.get(key);
+        if (realName) existing.name = realName;
+        if (email && (!existing.email || existing.email.endsWith('@ridesathigo.user'))) existing.email = email;
+        if (u.photo && !existing.photo) existing.photo = u.photo;
+        existing.status = status;
+      } else {
+        userMap.set(key, {
+          key: key,
+          userId: k,
+          name: realName || 'Customer',
+          email: email,
+          phone: phone,
+          type: 'customer',
+          vehicle: '-',
+          status: status,
+          photo: u.photo || '',
+          rating: undefined,
+          date: date,
+          source: 'Registered Customer'
+        });
+      }
     });
 
-    // Merge Bookings (Extract any additional customers who placed rides)
+    // Merge Bookings (Extract any additional customer names who booked)
     Object.keys(fbBookings).forEach(bk => {
       const b = fbBookings[bk] || {};
       const cPhone = String(b.customerPhone || b.mobile || b.phone || '').replace(/[^0-9]/g, '').slice(-10);
-      const cName = b.customerName || b.name || '';
+      const cName = cleanPersonName(b.customerName || b.name);
       if (!cPhone || cPhone.length !== 10 || deletedPhonesSet.has(cPhone)) return;
       const key = 'cust_' + cPhone;
 
       if (!userMap.has(key)) {
         userMap.set(key, {
           key: key,
-          name: cName || ('Customer (' + cPhone + ')'),
+          name: cName || 'Customer',
           email: '',
           phone: cPhone,
           type: 'customer',
@@ -13334,7 +13411,7 @@ async function loadManageUsersData(forceAlert = false) {
         });
       } else {
         const existing = userMap.get(key);
-        if (existing.type === 'customer' && (!existing.name || existing.name.startsWith('Customer (')) && cName) {
+        if (existing.type === 'customer' && (!existing.name || existing.name === 'Customer') && cName) {
           existing.name = cName;
         }
       }
@@ -13537,6 +13614,9 @@ function renderManageUsers(users, searchQ = '') {
             </button>
             <button type="button" class="btn" onclick="adminOpenPhotoManager('${dKey}')" style="background:#0284c7;color:#fff;padding:6px 11px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(2,132,199,0.3)" title="ড্রাইভারের ছবি পরিবর্তন বা ডিলিট করুন">
               📷 ফটো
+            </button>
+            <button type="button" class="btn" onclick="openAdminPinResetModal('${u.phone}', '${encodeURIComponent(u.name || '')}', 'driver')" style="background:#059669;color:#fff;padding:6px 11px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(5,150,105,0.3)" title="ড্রাইভারের ৪-সংখ্যার সিক্রেট পিন রিসেট ও সেন্ড করুন">
+              🔑 পিন রিসেট
             </button>
           ` : `
             <button type="button" class="btn" onclick="openUserPermissionControlModal('${u.phone}', 'customer', '${encodeURIComponent(u.name || '')}', '${u.email || ''}')" style="background:#0284c7;color:#fff;padding:6px 12px;font-size:11.5px;font-weight:800;display:flex;align-items:center;gap:4px;border:none;border-radius:8px;box-shadow:0 1px 3px rgba(2,132,199,0.3)" title="কাস্টমার ফিচার ও পারমিশন কন্ট্রোল করুন">
@@ -14142,15 +14222,19 @@ window.setAllPermCheckboxes = setAllPermCheckboxes;
 // ==============================================================
 // 🔑 ADMIN PIN RESET & DISPATCH LOGIC (100% FREE FOR ADMIN)
 // ==============================================================
-window.openAdminPinResetModal = function(phone, name) {
+window.openAdminPinResetModal = function(phone, name, type) {
   var cleanP = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
   if (!cleanP || cleanP.length !== 10) {
     alert("⚠️ সঠিক ১০ সংখ্যার মোবাইল নম্বর পাওয়া যায়নি!");
     return;
   }
-  var decodedName = decodeURIComponent(name || 'Customer');
+  type = (type === 'driver') ? 'driver' : 'customer';
+  var isDriver = (type === 'driver');
+  var decodedName = decodeURIComponent(name || (isDriver ? 'Driver Partner' : 'Customer'));
   var phoneInp = document.getElementById('adminPinTargetPhone');
   var nameInp = document.getElementById('adminPinTargetName');
+  var typeInp = document.getElementById('adminPinTargetType');
+  var titleEl = document.getElementById('adminPinModalTitle');
   var dName = document.getElementById('adminPinDispName');
   var dPhone = document.getElementById('adminPinDispPhone');
   var dCur = document.getElementById('adminPinDispCurrent');
@@ -14160,7 +14244,9 @@ window.openAdminPinResetModal = function(phone, name) {
 
   if (phoneInp) phoneInp.value = cleanP;
   if (nameInp) nameInp.value = decodedName;
-  if (dName) dName.innerText = decodedName;
+  if (typeInp) typeInp.value = type;
+  if (titleEl) titleEl.innerText = isDriver ? "🚖 ড্রাইভার সিক্রেট পিন রিসেট ও সেন্ড" : "👤 কাস্টমার সিক্রেট পিন রিসেট ও সেন্ড";
+  if (dName) dName.innerText = decodedName + (isDriver ? " (Driver)" : " (Customer)");
   if (dPhone) dPhone.innerText = "📱 +91 " + cleanP;
   if (dCur) dCur.innerText = "⏳ লোড হচ্ছে...";
   if (newInp) newInp.value = "";
@@ -14172,8 +14258,14 @@ window.openAdminPinResetModal = function(phone, name) {
 
   var dRef = (typeof getAdminDb === 'function') ? getAdminDb() : ((typeof db !== 'undefined') ? db : (window.firebase && window.firebase.database ? window.firebase.database() : null));
   if (dRef) {
-    dRef.ref('users/' + cleanP).once('value').then(function(snap) {
-      var val = snap.val() || {};
+    var readPath = isDriver ? ('drivers/' + cleanP) : ('users/' + cleanP);
+    dRef.ref(readPath).once('value').then(function(snap) {
+      var val = snap.val();
+      if (!val && isDriver) {
+        return dRef.ref('drivers/DRIVER_' + cleanP).once('value').then(function(s2){ return s2.val() || {}; });
+      }
+      return val || {};
+    }).then(function(val) {
       var curPin = val.pin ? String(val.pin) : 'সেট করা নেই (Not Set)';
       if (dCur) dCur.innerText = curPin;
       var emailInp = document.getElementById('adminPinTargetEmail');
@@ -14208,11 +14300,14 @@ window.adminAutoGenerateNewPin = function() {
 window.saveAdminResetPin = function() {
   var phoneEl = document.getElementById('adminPinTargetPhone');
   var pinEl = document.getElementById('adminNewPinInput');
+  var typeEl = document.getElementById('adminPinTargetType');
   var statusMsg = document.getElementById('adminPinStatusMsg');
   var btn = document.getElementById('adminSavePinBtn');
 
   var phone = phoneEl ? phoneEl.value : '';
   var pin = pinEl ? pinEl.value.trim() : '';
+  var type = typeEl ? typeEl.value : 'customer';
+  var isDriver = (type === 'driver');
 
   if (!pin || pin.length !== 4) {
     alert("⚠️ দয়া করে ৪-সংখ্যার সঠিক পিন দিন (যেমন: 2580)!");
@@ -14232,11 +14327,20 @@ window.saveAdminResetPin = function() {
     btn.innerText = "⏳ ডাটাবেসে পিন সেভ হচ্ছে...";
   }
 
-  dRef.ref('users/' + cleanP).update({
+  var updatePayload = {
     pin: pin,
     pin_updated_at: new Date().toISOString(),
     pin_updated_by: 'admin'
-  }).then(function() {
+  };
+
+  var savePromise = isDriver 
+    ? Promise.allSettled([
+        dRef.ref('drivers/' + cleanP).update(updatePayload),
+        dRef.ref('drivers/DRIVER_' + cleanP).update(updatePayload)
+      ])
+    : dRef.ref('users/' + cleanP).update(updatePayload);
+
+  savePromise.then(function() {
     dRef.ref('pin_reset_requests/' + cleanP).remove().catch(function(){});
     if (btn) {
       btn.disabled = false;
@@ -14246,7 +14350,7 @@ window.saveAdminResetPin = function() {
     if (dCur) dCur.innerText = pin;
     if (statusMsg) {
       statusMsg.style.color = "#16a34a";
-      statusMsg.innerHTML = "✅ পিন সফলভাবে সেভ হয়েছে! এবার নিচে থেকে কাস্টমারকে WhatsApp অথবা Normal SMS পাঠিয়ে দিন।";
+      statusMsg.innerHTML = "✅ " + (isDriver ? "ড্রাইভার" : "কাস্টমার") + " পিন সফলভাবে সেভ হয়েছে! এবার নিচে থেকে WhatsApp অথবা Normal SMS পাঠিয়ে দিন।";
     }
     if (typeof manageAllUsersCache !== 'undefined' && Array.isArray(manageAllUsersCache)) {
       var target = manageAllUsersCache.find(function(u){ return u.phone === cleanP; });
@@ -14265,29 +14369,34 @@ window.sendAdminPinViaWhatsApp = function() {
   var phone = (document.getElementById('adminPinTargetPhone') || {}).value || '';
   var name = (document.getElementById('adminPinTargetName') || {}).value || 'Customer';
   var pin = (document.getElementById('adminNewPinInput') || {}).value || '';
+  var type = (document.getElementById('adminPinTargetType') || {}).value || 'customer';
+  var isDriver = (type === 'driver');
   pin = pin.trim();
   if (!pin || pin.length !== 4) {
     alert("⚠️ আগে ৪-সংখ্যার পিন লিখুন অথবা 'Auto Generate' করুন!");
     return;
   }
   var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
-  var msg = "নমস্কার " + name + ",\nRide Sathi-তে আপনার নতুন সিক্রেট লগইন পিন হলো: " + pin + "\n\nএই ৪-সংখ্যার পিন দিয়ে লগইন করুন এবং কাউকে এটি শেয়ার করবেন না।\n\n- টিম Ride Sathi GO";
+  var msg = isDriver
+    ? "নমস্কার " + name + ",\nRide Sathi GO Driver Portal-এ আপনার ৪-সংখ্যার গোপন লগইন পিন হলো: " + pin + "\n\nএই ৪-সংখ্যার সিক্রেট পিন দিয়ে Driver App / ওয়েবসাইটে লগইন করুন এবং কাউকে এটি শেয়ার করবেন না।\n\n- টিম Ride Sathi GO"
+    : "নমস্কার " + name + ",\nRide Sathi-তে আপনার নতুন সিক্রেট লগইন পিন হলো: " + pin + "\n\nএই ৪-সংখ্যার পিন দিয়ে লগইন করুন এবং কাউকে এটি শেয়ার করবেন না।\n\n- টিম Ride Sathi GO";
   var url = "https://api.whatsapp.com/send?phone=91" + cleanP + "&text=" + encodeURIComponent(msg);
   window.open(url, "_blank");
 };
-
 
 window.sendAdminPinViaEmail = function() {
   var email = (document.getElementById('adminPinTargetEmail') || {}).value || '';
   var name = (document.getElementById('adminPinTargetName') || {}).value || 'Customer';
   var pin = (document.getElementById('adminNewPinInput') || {}).value || '';
+  var type = (document.getElementById('adminPinTargetType') || {}).value || 'customer';
+  var isDriver = (type === 'driver');
   pin = pin.trim();
   if (!pin || pin.length !== 4) {
     alert("⚠️ আগে ৪-সংখ্যার পিন লিখুন অথবা 'Auto Generate' করুন!");
     return;
   }
   if (!email || !email.includes('@')) {
-    email = prompt("📧 কাস্টমারের ইমেইল আইডি লিখুন (Customer Email):", "");
+    email = prompt("📧 " + (isDriver ? "ড্রাইভারের" : "কাস্টমারের") + " ইমেইল আইডি লিখুন:", "");
     if (!email || !email.includes('@')) {
       alert("⚠️ সঠিক ইমেইল আইডি দেওয়া হয়নি!");
       return;
@@ -14297,6 +14406,13 @@ window.sendAdminPinViaEmail = function() {
   var brevoApiKey = ['xkeysib', 'a604e25f7cba3ce2132dd56ca9cd8de57fae5f5751a77a8be05e1c7a462b1542', 'rVvjCkCSNQbwhRQK'].join('-');
   var stMsg = document.getElementById('adminPinStatusMsg');
   if (stMsg) { stMsg.style.color = '#0284c7'; stMsg.innerText = "⏳ Brevo দিয়ে ইমেইলে পিন পাঠানো হচ্ছে..."; }
+
+  var sub = isDriver 
+    ? '🚖 আপনার Ride Sathi GO ড্রাইভার সিক্রেট লগইন পিন - ' + pin
+    : '🔑 আপনার Ride Sathi সিক্রেট লগইন পিন - ' + pin;
+
+  var roleSubText = isDriver ? 'ড্রাইভার পোর্টাল পিন সহায়তা' : 'কাস্টমার পিন রিকভারি সহায়তা';
+  var accountText = isDriver ? 'আপনার ড্রাইভার অ্যাকাউন্টের ৪-সংখ্যার সিক্রেট লগইন পিন আপডেট করা হয়েছে:' : 'আপনার অ্যাকাউন্টের ৪-সংখ্যার সিক্রেট লগইন পিন আপডেট করা হয়েছে:';
 
   fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
@@ -14308,18 +14424,18 @@ window.sendAdminPinViaEmail = function() {
     body: JSON.stringify({
       sender: { name: 'Ride Sathi GO Support', email: 'support.ridesathi@gmail.com' },
       to: [{ email: email, name: name }],
-      subject: '🔑 আপনার Ride Sathi সিক্রেট লগইন পিন - ' + pin,
+      subject: sub,
       htmlContent: "<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;border:2px solid #0284c7;border-radius:16px;background:#ffffff;'>" +
         "<div style='text-align:center;margin-bottom:16px;'>" +
           "<h2 style='color:#0f172a;margin:0;'>🚖 RIDE SATHI GO</h2>" +
-          "<p style='color:#64748b;font-size:13px;margin:4px 0 0;'>অ্যাডমিন পিন রিকভারি সহায়তা</p>" +
+          "<p style='color:#64748b;font-size:13px;margin:4px 0 0;'>" + roleSubText + "</p>" +
         "</div>" +
         "<p style='font-size:15px;color:#1e293b;'>নমস্কার <b>" + name + "</b>,</p>" +
-        "<p style='font-size:14px;color:#475569;line-height:1.5;'>অ্যাডমিন প্যানেল থেকে আপনার অ্যাকাউন্টের ৪-সংখ্যার সিক্রেট লগইন পিন আপডেট করা হয়েছে:</p>" +
+        "<p style='font-size:14px;color:#475569;line-height:1.5;'>অ্যাডমিন প্যানেল থেকে " + accountText + "</p>" +
         "<div style='text-align:center;margin:20px 0;'>" +
           "<span style='display:inline-block;background:#e0f2fe;border:2px dashed #0284c7;color:#0369a1;font-size:32px;font-weight:900;letter-spacing:8px;padding:12px 24px;border-radius:12px;'>" + pin + "</span>" +
         "</div>" +
-        "<p style='font-size:12.5px;color:#64748b;line-height:1.4;'>⚠️ এই ৪-সংখ্যার পিন দিয়ে আপনি কাস্টমার প্যানেলে লগইন করতে পারবেন। সুরক্ষার স্বার্থে এই পিন কাউকে শেয়ার করবেন না।</p>" +
+        "<p style='font-size:12.5px;color:#64748b;line-height:1.4;'>⚠️ এই ৪-সংখ্যার পিন দিয়ে আপনি লগইন করতে পারবেন। সুরক্ষার স্বার্থে এই পিন কাউকে শেয়ার করবেন না।</p>" +
         "<div style='margin-top:20px;padding-top:12px;border-top:1px solid #e2e8f0;text-align:center;color:#94a3b8;font-size:11px;'>" +
           "হেল্পলাইন: +91 8768447312 • support.ridesathi@gmail.com" +
         "</div>" +
@@ -14327,8 +14443,8 @@ window.sendAdminPinViaEmail = function() {
     })
   }).then(function(res) {
     if (res.ok) {
-      if (stMsg) { stMsg.style.color = '#16a34a'; stMsg.innerText = "✅ Brevo দিয়ে কাস্টমারের ইমেইলে (" + email + ") পিন সফলভাবে পাঠানো হয়েছে!"; }
-      alert("✅ কাস্টমারের ইমেইলে (" + email + ") পিন সফলভাবে পাঠানো হয়েছে!");
+      if (stMsg) { stMsg.style.color = '#16a34a'; stMsg.innerText = "✅ Brevo দিয়ে ইমেইলে (" + email + ") পিন সফলভাবে পাঠানো হয়েছে!"; }
+      alert("✅ ইমেইলে (" + email + ") পিন সফলভাবে পাঠানো হয়েছে!");
     } else {
       res.json().then(function(errData) {
         alert("⚠️ ইমেইল পাঠাতে সমস্যা: " + (errData.message || res.statusText));
@@ -14345,13 +14461,17 @@ window.sendAdminPinViaSms = function() {
   var phone = (document.getElementById('adminPinTargetPhone') || {}).value || '';
   var name = (document.getElementById('adminPinTargetName') || {}).value || 'Customer';
   var pin = (document.getElementById('adminNewPinInput') || {}).value || '';
+  var type = (document.getElementById('adminPinTargetType') || {}).value || 'customer';
+  var isDriver = (type === 'driver');
   pin = pin.trim();
   if (!pin || pin.length !== 4) {
     alert("⚠️ আগে ৪-সংখ্যার পিন লিখুন অথবা 'Auto Generate' করুন!");
     return;
   }
   var cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
-  var msg = "Namaskar " + name + ", Ride Sathi-te apnar notun 4-digit secret login PIN: " + pin + ". Eita diye login korun. - Team Ride Sathi";
+  var msg = isDriver
+    ? "Namaskar " + name + ", Ride Sathi GO Driver App-e apnar 4-digit secret login PIN: " + pin + ". Eita diye login korun. - Team Ride Sathi GO"
+    : "Namaskar " + name + ", Ride Sathi-te apnar notun 4-digit secret login PIN: " + pin + ". Eita diye login korun. - Team Ride Sathi";
   window.location.href = "sms:+91" + cleanP + "?body=" + encodeURIComponent(msg);
 };
 

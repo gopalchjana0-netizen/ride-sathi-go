@@ -4229,6 +4229,22 @@ window.proceedCustomerBookingSession = function(name, phone, msgEl) {
   });
 
   window.switchCustomerScreen('booking');
+  try {
+    var cleanP = String(phone || '').replace(/[^0-9]/g, '').slice(-10);
+    var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.firebaseDb || null));
+    if (dRef && cleanP) {
+      dRef.ref('users/' + cleanP).update({
+        name: name,
+        phone: cleanP,
+        lastLoginAt: Date.now(),
+        status: 'ACTIVE'
+      }).catch(function(){});
+    }
+    if (typeof window.initRealtimeUserProfileSync === 'function') {
+      window.initRealtimeUserProfileSync(cleanP);
+    }
+  } catch(e) {}
+
   if (typeof window.updateCustomerGreeting === 'function') {
     window.updateCustomerGreeting(name, phone);
   } else {
