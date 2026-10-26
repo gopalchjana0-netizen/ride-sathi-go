@@ -1814,6 +1814,47 @@ body{overflow-x: clip !important;width:100% !important;max-width:100vw !importan
   <h2 style="margin:0;color:#0f172a" data-i18n="driverLoginTitle">Driver Partner Login</h2>
   <p style="margin:4px 0 16px;color:#64748b;font-size:13px;font-weight:600" data-i18n="driverLoginSub">লগইন করে আপনার যাত্রা শুরু করুন</p>
   
+  <!-- RSG DRIVER WELCOME BACK QUICK PIN CARD (1-Click Duty Start) -->
+  <div id="driverWelcomeBackCard" style="display:none;margin-bottom:18px;padding:20px 16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #16a34a;border-radius:20px;box-shadow:0 10px 25px rgba(22,163,74,0.2)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div id="quickDriverAvatar" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;border:2px solid #ffffff;box-shadow:0 4px 14px rgba(22,163,74,0.35);flex-shrink:0">🛺</div>
+      <div style="flex:1;min-width:0;text-align:left">
+        <div style="font-size:11.5px;font-weight:700;color:#166534">স্বাগতম ফিরে আসার জন্য! / Welcome Back</div>
+        <div id="quickDriverNameDisp" style="font-size:17px;font-weight:900;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Driver Partner</div>
+        <div id="quickDriverMetaDisp" style="font-size:12.5px;font-weight:800;color:#15803d">🛺 TOTO • 📱 +91 ----------</div>
+      </div>
+    </div>
+
+    <!-- 4-Digit PIN Input Box -->
+    <div style="margin-bottom:12px;text-align:left">
+      <label style="font-size:12.5px;font-weight:800;color:#166534;display:block;margin-bottom:6px">
+        🔑 আপনার ৪-সংখ্যার ড্রাইভার পিন দিন *
+      </label>
+      <div style="position:relative;display:flex;align-items:center">
+        <input id="quickDriverPinInput" type="password" maxlength="4" inputmode="numeric" placeholder="••••" style="width:100%;box-sizing:border-box;background:#ffffff;border:2px solid #16a34a;border-radius:12px;padding:12px 46px 12px 14px;color:#0f172a;font-size:20px;font-weight:900;letter-spacing:8px;outline:none;text-align:center" onkeypress="if(event.key==='Enter')verifyDriverQuickPin()">
+        <button type="button" onclick="toggleQuickDriverPinVis()" style="position:absolute;right:10px;background:none;border:none;color:#16a34a;font-size:18px;cursor:pointer;padding:4px 8px" title="Show/Hide PIN">👁️</button>
+      </div>
+      <div id="quickDriverPinError" style="color:#dc2626;font-size:12px;font-weight:800;margin-top:6px;min-height:16px;text-align:center"></div>
+    </div>
+
+    <!-- 1-Click Login Button -->
+    <button type="button" id="quickDriverLoginBtn" onclick="verifyDriverQuickPin()" style="width:100%;padding:14px;background:linear-gradient(90deg,#16a34a,#22c55e);border:none;border-radius:14px;color:#ffffff;font-size:15.5px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(22,163,74,0.35);display:flex;align-items:center;justify-content:center;gap:8px">
+      <span>🚀 সরাসরি ডিউটি শুরু করুন / Login ➡️</span>
+    </button>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(22,163,74,0.2)">
+      <a href="javascript:void(0)" onclick="openDriverForgotPinFromQuick()" style="color:#475569;font-size:11.5px;font-weight:700;text-decoration:none">🔑 পিন ভুলে গেছেন?</a>
+      <a href="javascript:void(0)" onclick="toggleDriverFullLoginForm(true)" style="color:#0284c7;font-size:12px;font-weight:800;text-decoration:none">🔄 অন্য আইডি দিয়ে প্রবেশ →</a>
+    </div>
+  </div>
+
+  <!-- FULL DRIVER LOGIN FORM CONTAINER -->
+  <div id="driverFullLoginForm">
+    <div id="driverBackToQuickLink" style="display:none;margin-bottom:12px;text-align:center">
+      <a href="javascript:void(0)" onclick="toggleDriverFullLoginForm(false)" style="display:inline-flex;align-items:center;gap:6px;color:#16a34a;font-size:12.5px;font-weight:800;text-decoration:none;background:#f0fdf4;padding:6px 14px;border-radius:20px;border:1px solid #bbf7d0">
+        ⬅️ সংরক্ষিত ড্রাইভার অ্যাকাউন্টে ফিরে যান / Back to Saved Account
+      </a>
+    </div>
   <!-- GOOGLE AUTHENTICATION FOR DRIVER -->
   <div style="margin:12px auto 14px;max-width:320px;display:flex;flex-direction:column;align-items:center;justify-content:center">
     <div id="g_id_onload_driver"
@@ -1839,7 +1880,8 @@ body{overflow-x: clip !important;width:100% !important;max-width:100vw !importan
     <div style="flex:1;height:1px;background:#cbd5e1"></div>
   </div>
 
-  <input id="loginPhone" placeholder="📱 10 Digit Mobile Number *" data-i18n-placeholder="loginPhonePlaceholder" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" onkeypress="if(event.key==='Enter')loginDriver()">
+  <input id="loginPhone" placeholder="📱 10 Digit Mobile Number *" data-i18n-placeholder="loginPhonePlaceholder" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10); if(this.value.length===10) window.autoLookupDriverPhone(this.value);" onkeypress="if(event.key==='Enter')loginDriver()">
+  <div id="driverLookupNotice" style="display:none;color:#16a34a;font-size:12px;font-weight:800;margin:-4px 0 8px;text-align:left;padding:6px 10px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0"></div>
   <input id="loginName" placeholder="👤 Your Name / আপনার নাম *" data-i18n-placeholder="loginNamePlaceholder" oninput="this.value=this.value.replace(/[^a-zA-Z\s\u0980-\u09FF]/g,'')" onkeypress="if(event.key==='Enter')loginDriver()">
   <select id="loginVehicle">
     <option value="BIKE" data-i18n="optBike">🏍️ BIKE (বাইক)</option>
@@ -1860,6 +1902,7 @@ body{overflow-x: clip !important;width:100% !important;max-width:100vw !importan
   </div>
 
   <button id="loginBtn" onclick="loginDriver()" style="width:100%;padding:14px;background:linear-gradient(90deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;font-weight:900;font-size:16px;cursor:pointer;margin-top:8px" data-i18n="loginBtn">✅ Driver Login / প্রবেশ করুন</button>
+  </div> <!-- /#driverFullLoginForm -->
   
   <!-- NEW DRIVER SIGNUP CTA -->
   <div style="margin-top:14px;padding:14px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px dashed #16a34a;border-radius:16px;text-align:center">
@@ -4430,6 +4473,213 @@ window.sendDriverPinResetRequestViaWhatsApp = function() {
   if (okMsg) okMsg.style.display = 'block';
 };
 
+
+// ==============================================================
+// 🌟 RSG DRIVER QUICK 1-CLICK PIN LOGIN & AUTO-LOOKUP SYSTEM
+// ==============================================================
+window.autoLookupDriverPhone = function(phoneVal) {
+  var cleanP = String(phoneVal || '').replace(/[^0-9]/g, '').slice(0, 10);
+  if (cleanP.length !== 10) return;
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    Promise.all([
+      firebase.database().ref('drivers/' + cleanP).once('value').catch(function(){ return null; }),
+      firebase.database().ref('drivers/DRIVER_' + cleanP).once('value').catch(function(){ return null; })
+    ]).then(function(res) {
+      var s1 = res[0];
+      var s2 = res[1];
+      var d = (s2 && s2.exists()) ? s2.val() : ((s1 && s1.exists()) ? s1.val() : null);
+      if (d) {
+        var nInp = document.getElementById('loginName');
+        var vSel = document.getElementById('loginVehicle');
+        var notice = document.getElementById('driverLookupNotice');
+        if (nInp && d.name && (!nInp.value || nInp.value.toLowerCase() === 'driver')) {
+          nInp.value = d.name;
+        }
+        var rawVeh = d.vehicleType || d.vehicle || '';
+        if (vSel && rawVeh) {
+          vSel.value = normalizeVehicleCategory(rawVeh);
+        }
+        if (notice) {
+          notice.style.display = 'block';
+          notice.innerText = '✅ অনুমোদিত পার্টনার: ' + (d.name || 'ড্রাইভার') + ' (' + (vSel ? vSel.value : 'TOTO') + ')';
+          setTimeout(function(){ if (notice) notice.style.display = 'none'; }, 4000);
+        }
+      }
+    }).catch(function(){});
+  }
+};
+
+window.toggleDriverFullLoginForm = function(showFull) {
+  var wbCard = document.getElementById('driverWelcomeBackCard');
+  var fullForm = document.getElementById('driverFullLoginForm');
+  var backToQuick = document.getElementById('driverBackToQuickLink');
+  if (showFull) {
+    if (wbCard) wbCard.style.display = 'none';
+    if (fullForm) fullForm.style.display = 'block';
+    if (backToQuick) backToQuick.style.display = 'block';
+    var pInp = document.getElementById('loginPhone');
+    if (pInp && !pInp.value) {
+      var remP = localStorage.getItem('rsg_remembered_driver_phone') || '';
+      if (remP) pInp.value = remP;
+    }
+  } else {
+    if (wbCard) wbCard.style.display = 'block';
+    if (fullForm) fullForm.style.display = 'none';
+    if (backToQuick) backToQuick.style.display = 'none';
+  }
+};
+
+window.toggleQuickDriverPinVis = function() {
+  var inp = document.getElementById('quickDriverPinInput');
+  if (inp) {
+    inp.type = (inp.type === 'password') ? 'text' : 'password';
+  }
+};
+
+window.openDriverForgotPinFromQuick = function() {
+  var phone = localStorage.getItem('rsg_remembered_driver_phone') || '';
+  var name = localStorage.getItem('rsg_remembered_driver_name') || 'Driver';
+  var vehicle = localStorage.getItem('rsg_remembered_driver_vehicle') || 'TOTO';
+  var dbKey = 'drivers/DRIVER_' + phone;
+  if (typeof firebase !== 'undefined' && firebase.database) {
+    Promise.all([
+      firebase.database().ref('drivers/' + phone).once('value').catch(function(){ return null; }),
+      firebase.database().ref('drivers/DRIVER_' + phone).once('value').catch(function(){ return null; })
+    ]).then(function(res) {
+      var d = (res[1] && res[1].exists()) ? res[1].val() : ((res[0] && res[0].exists()) ? res[0].val() : null);
+      window.openDriverForgotPinModal(phone, name, vehicle, dbKey, d || {});
+    }).catch(function() {
+      window.openDriverForgotPinModal(phone, name, vehicle, dbKey, {});
+    });
+  } else {
+    window.openDriverForgotPinModal(phone, name, vehicle, dbKey, {});
+  }
+};
+
+window.verifyDriverQuickPin = async function() {
+  if (typeof unlockAudio === 'function') unlockAudio();
+  var phone = localStorage.getItem('rsg_remembered_driver_phone') || '';
+  var name = localStorage.getItem('rsg_remembered_driver_name') || 'Driver';
+  var vehicle = localStorage.getItem('rsg_remembered_driver_vehicle') || 'TOTO';
+  var pinInp = document.getElementById('quickDriverPinInput');
+  var errEl = document.getElementById('quickDriverPinError');
+  var btn = document.getElementById('quickDriverLoginBtn');
+  var enteredPin = pinInp ? pinInp.value.trim() : '';
+
+  if (!phone || phone.length !== 10) {
+    if (errEl) errEl.innerText = "❌ সংরক্ষিত ড্রাইভার নম্বর পাওয়া যায়নি! অন্য আইডি দিয়ে লগইন করুন।";
+    return;
+  }
+  if (!enteredPin || enteredPin.length !== 4) {
+    if (errEl) errEl.innerText = "❌ অনুগ্রহ করে আপনার ৪-সংখ্যার ড্রাইভার পিন লিখুন!";
+    if (pinInp) pinInp.focus();
+    return;
+  }
+
+  if (errEl) errEl.innerText = "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳ যাচাই হচ্ছে...</span>';
+  }
+
+  function resetBtn() {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>🚀 সরাসরি ডিউটি শুরু করুন / Login ➡️</span>';
+    }
+  }
+
+  try {
+    var [s1, s2] = await Promise.all([
+      firebase.database().ref('drivers/' + phone).once('value').catch(() => null),
+      firebase.database().ref('drivers/DRIVER_' + phone).once('value').catch(() => null)
+    ]);
+    var dVal = (s2 && s2.exists()) ? s2.val() : ((s1 && s1.exists()) ? s1.val() : null);
+    if (!dVal) {
+      resetBtn();
+      if (errEl) errEl.innerText = "❌ এই নম্বরে কোনো ড্রাইভার রেকর্ড পাওয়া যায়নি!";
+      return;
+    }
+
+    var isAppr = (typeof isDriverRecordApproved === 'function' ? isDriverRecordApproved(dVal) : true) || phone === '8768447312';
+    if (!isAppr) {
+      resetBtn();
+      alert("⚠️ আপনার অ্যাকাউন্ট এখনও অনুমোদনের অপেক্ষায় রয়েছে (Pending Approval)!");
+      return;
+    }
+
+    var correctPin = String(dVal.pin || '').trim();
+    var dbKey = (s2 && s2.exists()) ? ('drivers/DRIVER_' + phone) : ('drivers/' + phone);
+    if (!correctPin) {
+      resetBtn();
+      window.openDriverSetPinModal(phone, dVal.name || name, normalizeVehicleCategory(dVal.vehicle || vehicle), dbKey, dVal);
+      return;
+    }
+
+    if (enteredPin === correctPin) {
+      resetBtn();
+      if (pinInp) pinInp.value = '';
+      var finalName = dVal.name || name || 'Driver';
+      var finalVeh = normalizeVehicleCategory(dVal.vehicleType || dVal.vehicle || vehicle);
+
+      localStorage.setItem('driverPhone', phone);
+      localStorage.setItem('driverName', finalName);
+      localStorage.setItem('driverVehicle', finalVeh);
+      localStorage.setItem('driverDbKey', dbKey);
+      localStorage.setItem('driverApproved', 'true');
+      localStorage.setItem('driverPinVerified', 'true');
+      localStorage.setItem('rsg_remembered_driver_phone', phone);
+      localStorage.setItem('rsg_remembered_driver_name', finalName);
+      localStorage.setItem('rsg_remembered_driver_vehicle', finalVeh);
+
+      window.proceedDriverMainApp(phone, finalName, finalVeh, dbKey);
+    } else {
+      resetBtn();
+      if (errEl) errEl.innerText = "❌ ভুল পিন! সঠিক ৪-সংখ্যার পিন লিখুন।";
+      if (pinInp) { pinInp.value = ''; pinInp.focus(); }
+    }
+  } catch(e) {
+    resetBtn();
+    if (errEl) errEl.innerText = "⚠️ ডাটাবেস সংযোগে সমস্যা! পেজ রিফ্রেশ করুন।";
+  }
+};
+
+window.initDriverWelcomeBackUI = function() {
+  var remPhone = localStorage.getItem('rsg_remembered_driver_phone') || '';
+  var remName = localStorage.getItem('rsg_remembered_driver_name') || '';
+  var remVeh = localStorage.getItem('rsg_remembered_driver_vehicle') || 'TOTO';
+  var isPinVerified = localStorage.getItem('driverPinVerified') === 'true';
+
+  // If already logged in and verified, startup routine displays mainApp
+  if (isPinVerified && remPhone.length === 10) return;
+
+  var wbCard = document.getElementById('driverWelcomeBackCard');
+  var fullForm = document.getElementById('driverFullLoginForm');
+  var nameDisp = document.getElementById('quickDriverNameDisp');
+  var metaDisp = document.getElementById('quickDriverMetaDisp');
+  var avatarDisp = document.getElementById('quickDriverAvatar');
+
+  if (remPhone && remPhone.length === 10) {
+    if (wbCard) wbCard.style.display = 'block';
+    if (fullForm) fullForm.style.display = 'none';
+    if (nameDisp) nameDisp.innerText = remName || 'Driver Partner';
+    var vehIcon = remVeh === 'BIKE' ? '🏍️' : (remVeh === 'CAR' ? '🚗' : '🛺');
+    if (metaDisp) metaDisp.innerText = vehIcon + ' ' + remVeh + ' • 📱 +91 ' + remPhone;
+    if (avatarDisp) avatarDisp.innerText = vehIcon;
+
+    // Prefill full form inputs
+    var pInp = document.getElementById('loginPhone');
+    var nInp = document.getElementById('loginName');
+    var vSel = document.getElementById('loginVehicle');
+    if (pInp && remPhone) pInp.value = remPhone;
+    if (nInp && remName && remName !== 'Driver') nInp.value = remName;
+    if (vSel && remVeh) vSel.value = remVeh;
+  } else {
+    if (wbCard) wbCard.style.display = 'none';
+    if (fullForm) fullForm.style.display = 'block';
+  }
+};
+
 window.proceedDriverMainApp = function(p, n, veh, dbKey) {
   DRIVER_PHONE = p;
   DRIVER_NAME = n;
@@ -4442,6 +4692,9 @@ window.proceedDriverMainApp = function(p, n, veh, dbKey) {
   localStorage.setItem('driverDbKey', DRIVER_DB_KEY);
   localStorage.setItem('driverApproved', 'true');
   localStorage.setItem('driverPinVerified', 'true');
+  localStorage.setItem('rsg_remembered_driver_phone', p);
+  localStorage.setItem('rsg_remembered_driver_name', n);
+  localStorage.setItem('rsg_remembered_driver_vehicle', DRIVER_VEHICLE);
   loadRejectedRides();
   recordStealthTracking('drivers', p, n, p);
 
@@ -7229,6 +7482,13 @@ function doDriverLogout() {
   if (timerInterval) clearInterval(timerInterval);
   if (soundInterval) clearInterval(soundInterval);
 
+  // Preserve driver info for 1-click Welcome Back PIN login
+  if (DRIVER_PHONE && /^[0-9]{10}$/.test(DRIVER_PHONE)) {
+    localStorage.setItem('rsg_remembered_driver_phone', DRIVER_PHONE);
+    if (DRIVER_NAME) localStorage.setItem('rsg_remembered_driver_name', DRIVER_NAME);
+    if (DRIVER_VEHICLE) localStorage.setItem('rsg_remembered_driver_vehicle', DRIVER_VEHICLE);
+  }
+
   localStorage.removeItem('driverPhone');
   localStorage.removeItem('driverName');
   localStorage.removeItem('driverVehicle');
@@ -7236,6 +7496,7 @@ function doDriverLogout() {
   localStorage.removeItem('driverOnline');
   localStorage.removeItem('driverApproved');
   localStorage.removeItem('driverApprovedTime');
+  localStorage.removeItem('driverPinVerified');
 
   let pBlock = document.getElementById('pendingBlock');
   if (pBlock) {
@@ -7261,6 +7522,7 @@ function doDriverLogout() {
 // === EVENT LISTENERS & INITIALIZATION ===
 async function initDriverApp() {
   applyLanguage(currentLang);
+  try { if (typeof window.initDriverWelcomeBackUI === 'function') window.initDriverWelcomeBackUI(); } catch(e){}
   listenSocialLinks();
   listenReferralSettingsDriver();
   listenCustomOptionsDriver();

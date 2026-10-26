@@ -1694,6 +1694,8 @@ if ('serviceWorker' in navigator) {
       document.body.appendChild(el);
     } else {
       document.addEventListener('DOMContentLoaded', () => {
+  try { if (typeof window.initCustomerWelcomeBackUI === 'function') window.initCustomerWelcomeBackUI(); } catch(e){}
+
         if (!document.getElementById('rsgHeadsUpBanner') && document.body) {
           document.body.appendChild(el);
         }
@@ -4204,6 +4206,212 @@ window.continueToBooking = function() {
   }
 };
 
+
+// ==============================================================
+// 🌟 RSG CUSTOMER QUICK 1-CLICK PIN LOGIN & AUTO-LOOKUP SYSTEM
+// ==============================================================
+window.autoLookupCustomerPhone = function(phoneVal) {
+  var cleanP = String(phoneVal || '').replace(/[^0-9]/g, '').slice(0, 10);
+  if (cleanP.length !== 10) return;
+  var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.firebaseDb || null));
+  if (dRef) {
+    dRef.ref('users/' + cleanP).once('value').then(function(snap) {
+      var u = snap.val();
+      if (u) {
+        var nInp = document.getElementById('custName');
+        var eInp = document.getElementById('custEmail');
+        if (nInp && u.name && (!nInp.value || nInp.value.toLowerCase() === 'customer')) {
+          nInp.value = u.name;
+        }
+        if (eInp && u.email && !eInp.value) {
+          eInp.value = u.email;
+        }
+        var msg = document.getElementById('welcomeMsg');
+        if (msg) {
+          msg.style.color = '#10b981';
+          msg.innerText = '✅ ' + (u.name || 'রেজিস্টার্ড গ্রাহক') + ' পাওয়া গেছে! এগিয়ে যান-এ ক্লিক করে পিন দিন।';
+          setTimeout(function(){ if (msg) msg.innerText = ''; }, 4000);
+        }
+      }
+    }).catch(function(){});
+  }
+};
+
+window.toggleCustomerFullLoginForm = function(showFull) {
+  var wbCard = document.getElementById('customerWelcomeBackCard');
+  var fullForm = document.getElementById('customerFullLoginForm');
+  var backToQuick = document.getElementById('customerBackToQuickLink');
+  if (showFull) {
+    if (wbCard) wbCard.style.display = 'none';
+    if (fullForm) fullForm.style.display = 'block';
+    if (backToQuick) backToQuick.style.display = 'block';
+    var pInp = document.getElementById('custPhone');
+    if (pInp && !pInp.value) {
+      var remP = localStorage.getItem('rsg_remembered_cust_phone') || '';
+      if (remP) pInp.value = remP;
+    }
+  } else {
+    if (wbCard) wbCard.style.display = 'block';
+    if (fullForm) fullForm.style.display = 'none';
+    if (backToQuick) backToQuick.style.display = 'none';
+  }
+};
+
+window.toggleQuickCustPinVis = function() {
+  var inp = document.getElementById('quickCustPinInput');
+  if (inp) {
+    inp.type = (inp.type === 'password') ? 'text' : 'password';
+  }
+};
+
+window.openCustomerForgotPinFromQuick = function() {
+  var phone = localStorage.getItem('rsg_remembered_cust_phone') || '';
+  var name = localStorage.getItem('rsg_remembered_cust_name') || 'Customer';
+  var cachedUser = null;
+  try { cachedUser = JSON.parse(localStorage.getItem('cached_user_' + phone) || 'null'); } catch(e){}
+  if (typeof window.openCustomerForgotPinModal === 'function') {
+    window.openCustomerForgotPinModal(name, phone, cachedUser || {});
+  }
+};
+
+window.verifyCustomerQuickPin = function() {
+  var phone = localStorage.getItem('rsg_remembered_cust_phone') || '';
+  var name = localStorage.getItem('rsg_remembered_cust_name') || 'Customer';
+  var email = localStorage.getItem('rsg_remembered_cust_email') || '';
+  var pinInp = document.getElementById('quickCustPinInput');
+  var errEl = document.getElementById('quickCustPinError');
+  var btn = document.getElementById('quickCustLoginBtn');
+  var enteredPin = pinInp ? pinInp.value.trim() : '';
+
+  if (!phone || phone.length !== 10) {
+    if (errEl) errEl.innerText = "❌ সংরক্ষিত নম্বর পাওয়া যায়নি! অন্য নম্বর দিয়ে লগইন করুন।";
+    return;
+  }
+  if (!enteredPin || enteredPin.length !== 4) {
+    if (errEl) errEl.innerText = "❌ অনুগ্রহ করে আপনার ৪-সংখ্যার পিন লিখুন!";
+    if (pinInp) pinInp.focus();
+    return;
+  }
+
+  if (errEl) errEl.innerText = "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳ যাচাই করা হচ্ছে...</span>';
+  }
+
+  function resetBtn() {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>🚀 সরাসরি প্রবেশ করুন / Login ➡️</span>';
+    }
+  }
+
+  function proceedWithVerifiedUser(uData) {
+    resetBtn();
+    if (pinInp) pinInp.value = '';
+    var finalName = (uData && uData.name) || name || 'Customer';
+    var finalEmail = (uData && uData.email) || email || '';
+    try {
+      localStorage.setItem('customerPinVerified', 'true');
+      localStorage.setItem('customerVerifiedPhone', phone);
+      localStorage.setItem('customerPhone', phone);
+      localStorage.setItem('userPhone', phone);
+      localStorage.setItem('cust_phone', phone);
+      localStorage.setItem('customerName', finalName);
+      localStorage.setItem('custName', finalName);
+      localStorage.setItem('userName', finalName);
+      if (finalEmail) localStorage.setItem('customerEmail', finalEmail);
+      localStorage.setItem('cached_pin_' + phone, enteredPin);
+      if (uData) localStorage.setItem('cached_user_' + phone, JSON.stringify(uData));
+
+      var existingSt = document.getElementById('rsg-instant-auth-style');
+      if (!existingSt) {
+        var st = document.createElement('style');
+        st.id = 'rsg-instant-auth-style';
+        st.textContent = '#welcomeScreen { display: none !important; } #bookingScreen { display: block !important; } #logoutTopBtn { display: inline-flex !important; }';
+        document.head.appendChild(st);
+      }
+    } catch(e){}
+
+    var msgEl = document.getElementById('welcomeMsg');
+    window.proceedCustomerBookingSession(finalName, phone, msgEl);
+  }
+
+  // 1. Check local cached PIN first
+  var cachedPin = localStorage.getItem('cached_pin_' + phone);
+  var cachedUser = null;
+  try { cachedUser = JSON.parse(localStorage.getItem('cached_user_' + phone) || 'null'); } catch(e){}
+
+  if (cachedPin && cachedPin === enteredPin) {
+    proceedWithVerifiedUser(cachedUser);
+    return;
+  }
+
+  // 2. Query Firebase Realtime Database
+  var dRef = (typeof getClientDb === 'function') ? getClientDb() : ((typeof firebase !== 'undefined' && firebase.database) ? firebase.database() : (window.firebaseDb || null));
+  if (dRef) {
+    dRef.ref('users/' + phone).once('value').then(function(snap) {
+      var u = snap.val();
+      var correctPin = u ? String(u.pin || '').trim() : '';
+      if (!correctPin) {
+        resetBtn();
+        window.openCustomerEnterPinModal(u ? (u.name || name) : name, phone, u);
+        return;
+      }
+      if (enteredPin === correctPin) {
+        proceedWithVerifiedUser(u);
+      } else {
+        resetBtn();
+        if (errEl) errEl.innerText = "❌ ভুল পিন! সঠিক ৪-সংখ্যার পিন লিখুন।";
+        if (pinInp) { pinInp.value = ''; pinInp.focus(); }
+      }
+    }).catch(function(err) {
+      resetBtn();
+      if (errEl) errEl.innerText = "⚠️ নেটওয়ার্ক সমস্যা! অনুগ্রহ করে পুনরায় চেষ্টা করুন।";
+    });
+  } else {
+    resetBtn();
+    if (errEl) errEl.innerText = "⚠️ ডাটাবেস সংযোগে সমস্যা! পেজ রিফ্রেশ করুন।";
+  }
+};
+
+window.initCustomerWelcomeBackUI = function() {
+  var remPhone = localStorage.getItem('rsg_remembered_cust_phone') || '';
+  var remName = localStorage.getItem('rsg_remembered_cust_name') || '';
+  var isPinVerified = localStorage.getItem('customerPinVerified') === 'true';
+
+  // If currently verified with session, no need to show login card
+  if (isPinVerified && remPhone.length === 10) return;
+
+  var wbCard = document.getElementById('customerWelcomeBackCard');
+  var fullForm = document.getElementById('customerFullLoginForm');
+  var nameDisp = document.getElementById('quickCustNameDisp');
+  var phoneDisp = document.getElementById('quickCustPhoneDisp');
+  var avatarDisp = document.getElementById('quickCustAvatar');
+
+  if (remPhone && remPhone.length === 10) {
+    if (wbCard) wbCard.style.display = 'block';
+    if (fullForm) fullForm.style.display = 'none';
+    if (nameDisp) nameDisp.innerText = remName || 'Customer';
+    if (phoneDisp) phoneDisp.innerText = '📱 +91 ' + remPhone;
+    if (avatarDisp) {
+      var initial = (remName || 'C').trim().charAt(0).toUpperCase();
+      avatarDisp.innerText = initial || '👤';
+    }
+    // Also prefill full form inputs
+    var nInp = document.getElementById('custName');
+    var pInp = document.getElementById('custPhone');
+    var eInp = document.getElementById('custEmail');
+    if (nInp && remName && remName !== 'Customer') nInp.value = remName;
+    if (pInp && remPhone) pInp.value = remPhone;
+    var remEmail = localStorage.getItem('rsg_remembered_cust_email') || '';
+    if (eInp && remEmail) eInp.value = remEmail;
+  } else {
+    if (wbCard) wbCard.style.display = 'none';
+    if (fullForm) fullForm.style.display = 'block';
+  }
+};
+
 window.proceedCustomerBookingSession = function(name, phone, msgEl) {
   if (msgEl) msgEl.innerText = "";
   try {
@@ -4217,6 +4425,10 @@ window.proceedCustomerBookingSession = function(name, phone, msgEl) {
     localStorage.setItem('customerPinVerified', 'true');
     localStorage.setItem('customerVerifiedPhone', phone);
     localStorage.setItem('customerCurrentStep', 'booking');
+    localStorage.setItem('rsg_remembered_cust_phone', phone);
+    if (name) localStorage.setItem('rsg_remembered_cust_name', name);
+    var curE = (document.getElementById('custEmail') ? document.getElementById('custEmail').value.trim() : '') || localStorage.getItem('customerEmail') || '';
+    if (curE) localStorage.setItem('rsg_remembered_cust_email', curE);
   } catch(e) {}
 
   window.syncUserToGoogleSheet({
@@ -4264,6 +4476,17 @@ window.proceedCustomerBookingSession = function(name, phone, msgEl) {
 window.logoutCustomer = function() {
   if (!confirm("🚪 আপনি কি সত্যিই লগআউট করতে চান? / Are you sure you want to logout?")) return;
   try {
+    // Preserve customer info for 1-click Welcome Back PIN login
+    var curP = localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || (document.getElementById('custPhone') ? document.getElementById('custPhone').value : '');
+    var curN = localStorage.getItem('customerName') || localStorage.getItem('custName') || localStorage.getItem('userName') || (document.getElementById('custName') ? document.getElementById('custName').value : '');
+    var curE = localStorage.getItem('customerEmail') || (document.getElementById('custEmail') ? document.getElementById('custEmail').value : '');
+    var cleanP = String(curP || '').replace(/[^0-9]/g, '').slice(-10);
+    if (cleanP.length === 10) {
+      localStorage.setItem('rsg_remembered_cust_phone', cleanP);
+      if (curN) localStorage.setItem('rsg_remembered_cust_name', curN);
+      if (curE) localStorage.setItem('rsg_remembered_cust_email', curE);
+    }
+
     localStorage.removeItem('customerName');
     localStorage.removeItem('customerPhone');
     localStorage.removeItem('userPhone');
@@ -4287,13 +4510,12 @@ window.logoutCustomer = function() {
     if (st) st.remove();
   } catch(e) {}
 
-  var cName = document.getElementById('custName');
-  var cPhone = document.getElementById('custPhone');
   var msg = document.getElementById('welcomeMsg');
-  if (cName) cName.value = '';
-  if (cPhone) cPhone.value = '';
   if (msg) msg.innerText = '';
 
+  if (typeof window.initCustomerWelcomeBackUI === 'function') {
+    window.initCustomerWelcomeBackUI();
+  }
   window.switchCustomerScreen('welcome');
 };
 
@@ -5121,6 +5343,47 @@ window.closeLiveChatModal = function() {
       </p>
     </div>
 
+    <!-- RSG WELCOME BACK QUICK PIN CARD (For Returning Customers) -->
+    <div id="customerWelcomeBackCard" style="display:none;margin-bottom:18px;padding:20px 16px;background:linear-gradient(145deg,rgba(30,41,59,0.92),rgba(15,23,42,0.98));border:1.5px solid #f59e0b;border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div id="quickCustAvatar" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;border:2px solid #fff;box-shadow:0 4px 14px rgba(245,158,11,0.35);flex-shrink:0">👤</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11.5px;font-weight:700;color:#94a3b8;letter-spacing:0.3px">স্বাগতম ফিরে আসার জন্য! / Welcome Back</div>
+          <div id="quickCustNameDisp" style="font-size:16.5px;font-weight:900;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Customer</div>
+          <div id="quickCustPhoneDisp" style="font-size:12.5px;font-weight:800;color:#fde047;letter-spacing:0.5px">📱 +91 ----------</div>
+        </div>
+      </div>
+
+      <!-- 4-Digit PIN Input Box -->
+      <div style="margin-bottom:12px">
+        <label style="font-size:12.5px;font-weight:800;color:#fde047;display:block;margin-bottom:6px">
+          🔑 আপনার ৪-সংখ্যার সিকিউরিটি পিন দিন *
+        </label>
+        <div style="position:relative;display:flex;align-items:center">
+          <input id="quickCustPinInput" type="password" maxlength="4" inputmode="numeric" placeholder="••••" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.85);border:1.5px solid #f59e0b;border-radius:12px;padding:12px 46px 12px 14px;color:#fff;font-size:20px;font-weight:900;letter-spacing:8px;outline:none;text-align:center" onkeypress="if(event.key==='Enter')verifyCustomerQuickPin()">
+          <button type="button" onclick="toggleQuickCustPinVis()" style="position:absolute;right:10px;background:none;border:none;color:#f59e0b;font-size:18px;cursor:pointer;padding:4px 8px" title="Show/Hide PIN">👁️</button>
+        </div>
+        <div id="quickCustPinError" style="color:#f87171;font-size:12px;font-weight:800;margin-top:6px;min-height:16px;text-align:center"></div>
+      </div>
+
+      <!-- 1-Click Login Button -->
+      <button type="button" id="quickCustLoginBtn" onclick="verifyCustomerQuickPin()" style="width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:14px;color:#0f172a;font-size:15.5px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.4);display:flex;align-items:center;justify-content:center;gap:8px">
+        <span>🚀 সরাসরি প্রবেশ করুন / Login ➡️</span>
+      </button>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.12)">
+        <a href="javascript:void(0)" onclick="openCustomerForgotPinFromQuick()" style="color:#cbd5e1;font-size:11.5px;font-weight:700;text-decoration:none">🔑 পিন মনে নেই?</a>
+        <a href="javascript:void(0)" onclick="toggleCustomerFullLoginForm(true)" style="color:#60a5fa;font-size:12px;font-weight:800;text-decoration:none">🔄 অন্য নম্বর ব্যবহার করুন →</a>
+      </div>
+    </div>
+
+    <!-- FULL LOGIN FORM CONTAINER -->
+    <div id="customerFullLoginForm">
+      <div id="customerBackToQuickLink" style="display:none;margin-bottom:12px;text-align:center">
+        <a href="javascript:void(0)" onclick="toggleCustomerFullLoginForm(false)" style="display:inline-flex;align-items:center;gap:6px;color:#f59e0b;font-size:12.5px;font-weight:800;text-decoration:none;background:rgba(245,158,11,0.1);padding:6px 14px;border-radius:20px;border:1px solid rgba(245,158,11,0.3)">
+          ⬅️ সংরক্ষিত অ্যাকাউন্টে ফিরে যান / Back to Saved Account
+        </a>
+      </div>
     <!-- Official Google Authentication -->
     <div style="margin:14px auto 16px;max-width:320px;display:flex;flex-direction:column;align-items:center;justify-content:center">
       <div id="g_id_onload"
@@ -5161,7 +5424,7 @@ window.closeLiveChatModal = function() {
       </label>
       <div style="position:relative;display:flex;align-items:center">
         <span style="position:absolute;left:14px;color:#f59e0b;font-weight:900;font-size:14px">+91</span>
-        <input id="custPhone" type="tel" data-i18n-placeholder="phonePlaceholder" placeholder="১০ সংখ্যার মোবাইল নম্বর লিখুন..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px 12px 48px;color:#fff;font-size:15px;font-weight:700;letter-spacing:1px;outline:none;transition:border 0.2s">
+        <input id="custPhone" type="tel" data-i18n-placeholder="phonePlaceholder" placeholder="১০ সংখ্যার মোবাইল নম্বর লিখুন..." maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10); if(this.value.length===10) window.autoLookupCustomerPhone(this.value);" style="width:100%;box-sizing:border-box;background:rgba(15,23,42,0.7);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:12px 14px 12px 48px;color:#fff;font-size:15px;font-weight:700;letter-spacing:1px;outline:none;transition:border 0.2s">
       </div>
     </div>
 
@@ -5190,6 +5453,7 @@ window.closeLiveChatModal = function() {
       <span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>
     </button>
     <p id="welcomeMsg" style="color:#f87171;text-align:center;font-weight:800;margin-top:12px;font-size:13px;line-height:1.5"></p>
+    </div> <!-- /#customerFullLoginForm -->
   </div>
 
   <!-- ============================================== -->
@@ -12878,11 +13142,10 @@ try {
     setTimeout(() => {
       if (typeof window.loadBookingHistory === 'function') window.loadBookingHistory();
     }, 500);
-  } else if (savedName || savedPhone) {
-    const nInp = document.getElementById('custName');
-    const pInp = document.getElementById('custPhone');
-    if (nInp && savedName && savedName !== 'Customer') nInp.value = savedName;
-    if (pInp && savedPhone) pInp.value = savedPhone;
+  } else {
+    if (typeof window.initCustomerWelcomeBackUI === 'function') {
+      window.initCustomerWelcomeBackUI();
+    }
   }
 })();
 
