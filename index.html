@@ -3052,28 +3052,67 @@ window.handleGoogleCredentialResponse = function(response) {
     localStorage.setItem('userName', name);
     if (email) localStorage.setItem('customerEmail', email);
 
-    // Auto-fill into Name and Email inputs on welcomeScreen (Customer can freely edit/change)
+    // Auto-fill into Name and Email inputs on welcomeScreen
     var cName = document.getElementById('custName');
     if (cName) {
       cName.value = name;
       try { cName.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
-      try { cName.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
     }
     var cEmail = document.getElementById('custEmail');
     if (cEmail && email) {
       cEmail.value = email;
       try { cEmail.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
-      try { cEmail.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
     }
 
     var pInput = document.getElementById('custPhone');
     var msgEl = document.getElementById('welcomeMsg');
-    if (msgEl) {
-      msgEl.style.color = '#10b981';
-      msgEl.innerText = "✅ গুগল অ্যাকাউন্ট যুক্ত হয়েছে (" + email + ")! এখন আপনার ১০ সংখ্যার মোবাইল নম্বর দিন ও এগিয়ে যান এ ক্লিক করুন।";
-    }
-    if (pInput && !pInput.value) {
-      pInput.focus();
+
+    // Smart Cross-Device Detection: Check if this Google email is already registered in RTDB
+    if (typeof firebase !== 'undefined' && firebase.database && email) {
+      if (msgEl) {
+        msgEl.style.color = '#38bdf8';
+        msgEl.innerText = "🔍 আপনার প্রোফাইল খোঁজা হচ্ছে...";
+      }
+      firebase.database().ref('users').once('value').then(function(snap) {
+        var usersObj = snap.val() || {};
+        var matchedPhone = null;
+        var matchedUser = null;
+        Object.keys(usersObj).forEach(function(k) {
+          var u = usersObj[k];
+          if (u && u.email && u.email.trim().toLowerCase() === email) {
+            matchedPhone = k;
+            matchedUser = u;
+          }
+        });
+        if (matchedPhone && matchedUser) {
+          if (pInput) pInput.value = matchedPhone;
+          if (matchedUser.name && cName) cName.value = matchedUser.name;
+          if (matchedUser.pin) {
+            localStorage.setItem('cached_pin_' + matchedPhone, String(matchedUser.pin).trim());
+            localStorage.setItem('cached_user_' + matchedPhone, JSON.stringify(matchedUser));
+            if (msgEl) msgEl.innerText = "";
+            window.openCustomerEnterPinModal(matchedUser.name || name, matchedPhone, matchedUser);
+            return;
+          }
+        }
+        if (msgEl) {
+          msgEl.style.color = '#10b981';
+          msgEl.innerText = "✅ গুগল অ্যাকাউন্ট যুক্ত হয়েছে (" + email + ")! আপনার ১০ সংখ্যার মোবাইল নম্বর দিন ও এগিয়ে যান এ ক্লিক করুন।";
+        }
+        if (pInput && !pInput.value) pInput.focus();
+      }).catch(function() {
+        if (msgEl) {
+          msgEl.style.color = '#10b981';
+          msgEl.innerText = "✅ গুগল অ্যাকাউন্ট যুক্ত হয়েছে (" + email + ")! আপনার ১০ সংখ্যার মোবাইল নম্বর দিন ও এগিয়ে যান এ ক্লিক করুন।";
+        }
+        if (pInput && !pInput.value) pInput.focus();
+      });
+    } else {
+      if (msgEl) {
+        msgEl.style.color = '#10b981';
+        msgEl.innerText = "✅ গুগল অ্যাকাউন্ট যুক্ত হয়েছে (" + email + ")! আপনার ১০ সংখ্যার মোবাইল নম্বর দিন ও এগিয়ে যান এ ক্লিক করুন।";
+      }
+      if (pInput && !pInput.value) pInput.focus();
     }
   } catch(e) {
     console.error("handleGoogleCredentialResponse error:", e);
@@ -3865,8 +3904,49 @@ window.continueToBooking = function() {
     }
   }
 
-  // 1. Mobile Number Check (Must be 10 digits)
+  // 1. Mobile & Email Check (Supports login from any phone with mobile or email)
   if (!phone || phone.length !== 10) {
+    if (email && email.includes('@') && email.includes('.') && typeof firebase !== 'undefined' && firebase.database) {
+      if (continueBtn) {
+        continueBtn.disabled = true;
+        continueBtn.innerHTML = '<span>🔍 অ্যাকাউন্ট খোঁজা হচ্ছে...</span>';
+      }
+      firebase.database().ref('users').once('value').then(function(snap) {
+        var usersObj = snap.val() || {};
+        var matchedPhone = null;
+        var matchedUser = null;
+        Object.keys(usersObj).forEach(function(k) {
+          var u = usersObj[k];
+          if (u && u.email && u.email.trim().toLowerCase() === email) {
+            matchedPhone = k;
+            matchedUser = u;
+          }
+        });
+        if (matchedPhone && matchedUser) {
+          phone = matchedPhone;
+          if (phoneEl) phoneEl.value = matchedPhone;
+          if (matchedUser.name && nameEl) nameEl.value = matchedUser.name;
+          if (matchedUser.pin) {
+            localStorage.setItem('cached_pin_' + matchedPhone, String(matchedUser.pin).trim());
+            localStorage.setItem('cached_user_' + matchedPhone, JSON.stringify(matchedUser));
+            resetContinueBtn();
+            window.openCustomerEnterPinModal(matchedUser.name || name || 'Customer', matchedPhone, matchedUser);
+            return;
+          }
+        }
+        resetContinueBtn();
+        var errP = "📱 অনুগ্রহ করে আপনার ১০-সংখ্যার সঠিক মোবাইল নম্বর দিন!\n\n📱 Please enter your 10-digit mobile number!";
+        if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "📱 ১০ সংখ্যার মোবাইল নম্বর লিখুন / Enter 10-digit Mobile"; }
+        alert(errP);
+        if (phoneEl) phoneEl.focus();
+      }).catch(function() {
+        resetContinueBtn();
+        alert("📱 অনুগ্রহ করে আপনার ১০-সংখ্যার সঠিক মোবাইল নম্বর দিন!");
+        if (phoneEl) phoneEl.focus();
+      });
+      return;
+    }
+
     var errP = "📱 অনুগ্রহ করে আপনার ১০-সংখ্যার সঠিক মোবাইল নম্বর দিন!\n\n📱 Please enter your 10-digit mobile number!";
     if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "📱 ১০ সংখ্যার মোবাইল নম্বর লিখুন / Enter 10-digit Mobile"; }
     alert(errP);
