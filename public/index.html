@@ -2064,20 +2064,27 @@ window.setAppLanguage = window.setLanguage;
 
 // === STRICT CUSTOMER ACCESS CONTROL (Protects all features until login) ===
 window.isCustomerLoggedIn = function() {
-  var p = (localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || '').replace(/[^0-9]/g, '');
+  var p = (localStorage.getItem('customerPhone') || localStorage.getItem('userPhone') || localStorage.getItem('cust_phone') || localStorage.getItem('current_user_mobile') || '').replace(/[^0-9]/g, '');
   if (p.length > 10 && p.indexOf('91') === 0) p = p.slice(2);
   else if (p.length > 10 && p.indexOf('0') === 0) p = p.slice(1);
   p = p.slice(0, 10);
-  var n = (localStorage.getItem('customerName') || localStorage.getItem('custName') || '').trim();
+  var n = (localStorage.getItem('customerName') || localStorage.getItem('custName') || localStorage.getItem('userName') || '').trim();
   var pinOk = localStorage.getItem('customerPinVerified') === 'true';
 
-  // If customer is currently active inside bookingScreen or confirmScreen with valid name & 10-digit phone, allow full access
+  // If customer is currently active inside bookingScreen or confirmScreen, allow full access
   var bScreen = document.getElementById('bookingScreen');
   var cScreen = document.getElementById('confirmScreen');
   var isInnerActive = (bScreen && bScreen.style.display !== 'none' && !bScreen.classList.contains('hidden')) ||
                       (cScreen && cScreen.style.display !== 'none' && !cScreen.classList.contains('hidden'));
-  if (isInnerActive && p.length === 10 && n.length >= 2) {
-    if (!pinOk) localStorage.setItem('customerPinVerified', 'true');
+  if (isInnerActive) {
+    if (!pinOk) {
+      try { localStorage.setItem('customerPinVerified', 'true'); } catch(e){}
+    }
+    return true;
+  }
+
+  var step = localStorage.getItem('customerCurrentStep');
+  if (step === 'booking' || step === 'confirm') {
     return true;
   }
 
@@ -3085,7 +3092,7 @@ window.openCustomerEnterPinModal = function(name, phone, userData) {
   window.activePinAttempt = {
     name: name,
     phone: phone,
-    userData: userData || {},
+    userData: userData,
     attempts: 0
   };
 
@@ -3093,18 +3100,21 @@ window.openCustomerEnterPinModal = function(name, phone, userData) {
   var dPhone = document.getElementById('custEnterPinPhone');
   var inp = document.getElementById('custInputPin');
   var err = document.getElementById('custEnterPinError');
+  var modal = document.getElementById('customerEnterPinModal');
 
   if (dName) dName.innerText = name;
   if (dPhone) dPhone.innerText = "📱 +91 " + phone;
-  if (inp) {
-    inp.value = '';
-    inp.type = 'password';
-  }
+  if (inp) { inp.value = ''; inp.type = 'password'; }
   if (err) err.innerText = '';
 
-  var modal = document.getElementById('customerEnterPinModal');
-  if (modal) modal.style.display = 'flex';
-  setTimeout(function(){ if(inp) inp.focus(); }, 150);
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.style.setProperty('z-index', '999999999', 'important');
+    modal.style.setProperty('visibility', 'visible', 'important');
+    modal.style.setProperty('opacity', '1', 'important');
+  }
+  setTimeout(function(){ if (inp) inp.focus(); }, 150);
 };
 
 window.closeCustomerEnterPinModal = function() {
@@ -3164,13 +3174,24 @@ window.openCustomerSetPinModal = function(name, phone, userData, localAuth) {
 
   var dName = document.getElementById('custSetPinName');
   var dPhone = document.getElementById('custSetPinPhone');
+  var phoneGroup = document.getElementById('custSetPinPhoneGroup');
+  var phoneInp = document.getElementById('custSetPinPhoneInput');
   var pinInp = document.getElementById('custNewPinInput');
   var aInp = document.getElementById('custSecAInput');
   var emailInp = document.getElementById('custOptionalEmailInput');
   var err = document.getElementById('custSetPinError');
 
-  if (dName) dName.innerText = name;
-  if (dPhone) dPhone.innerText = "+91 " + phone;
+  if (dName) dName.innerText = name || 'Customer';
+  if (phone && phone.length === 10) {
+    if (dPhone) { dPhone.style.display = 'inline'; dPhone.innerText = "+91 " + phone; }
+    if (phoneGroup) phoneGroup.style.display = 'none';
+    if (phoneInp) phoneInp.value = phone;
+  } else {
+    if (dPhone) { dPhone.style.display = 'none'; }
+    if (phoneGroup) phoneGroup.style.display = 'block';
+    if (phoneInp) { phoneInp.value = ''; setTimeout(function(){ phoneInp.focus(); }, 200); }
+  }
+
   if (pinInp) { pinInp.value = ''; pinInp.type = 'password'; }
   if (aInp) aInp.value = '';
   if (emailInp) {
@@ -3180,25 +3201,42 @@ window.openCustomerSetPinModal = function(name, phone, userData, localAuth) {
   if (err) err.innerText = '';
 
   var modal = document.getElementById('customerSetPinModal');
-  if (modal) modal.style.display = 'flex';
-  setTimeout(function(){ if(pinInp) pinInp.focus(); }, 150);
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.style.setProperty('z-index', '999999999', 'important');
+    modal.style.setProperty('visibility', 'visible', 'important');
+    modal.style.setProperty('opacity', '1', 'important');
+  }
+  setTimeout(function(){ if (phone && phone.length === 10 && pinInp) pinInp.focus(); }, 150);
 };
 
 window.closeCustomerSetPinModal = function() {
   var modal = document.getElementById('customerSetPinModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.setProperty('display', 'none', 'important');
+  }
 };
 
 window.saveCustomerNewPinAndProceed = function() {
   var state = window.activeSetPinState;
-  if (!state || !state.phone) return;
+  if (!state) return;
 
+  var phoneInp = document.getElementById('custSetPinPhoneInput');
+  var phone = state.phone || (phoneInp ? phoneInp.value.replace(/[^0-9]/g, '').slice(0, 10) : '');
   var pinInp = document.getElementById('custNewPinInput');
   var qSel = document.getElementById('custSecQSelect');
   var aInp = document.getElementById('custSecAInput');
   var emailInp = document.getElementById('custOptionalEmailInput');
   var err = document.getElementById('custSetPinError');
   var btn = document.getElementById('custSavePinBtn');
+
+  if (!phone || phone.length !== 10) {
+    if (err) err.innerText = "❌ দয়া করে আপনার ১০-সংখ্যার সঠিক মোবাইল নম্বর দিন!";
+    if (phoneInp) phoneInp.focus();
+    return;
+  }
 
   var newPin = pinInp ? pinInp.value.trim() : '';
   var secQ = qSel ? qSel.value : 'আপনার জন্ম সাল কত?';
@@ -3217,6 +3255,8 @@ window.saveCustomerNewPinAndProceed = function() {
     return;
   }
 
+  state.phone = phone;
+
   if (btn) {
     btn.disabled = true;
     btn.innerText = "⏳ পিন সুরক্ষিতভাবে সেভ হচ্ছে...";
@@ -3227,7 +3267,7 @@ window.saveCustomerNewPinAndProceed = function() {
 
   var userPayload = {
     name: state.name,
-    phone: state.phone,
+    phone: phone,
     pin: newPin,
     security_q: secQ,
     security_a: secA.toLowerCase(),
@@ -3240,7 +3280,10 @@ window.saveCustomerNewPinAndProceed = function() {
     window.closeCustomerSetPinModal();
     try {
       localStorage.setItem('customerPinVerified', 'true');
-      localStorage.setItem('customerVerifiedPhone', state.phone);
+      localStorage.setItem('customerVerifiedPhone', phone);
+      localStorage.setItem('customerPhone', phone);
+      localStorage.setItem('userPhone', phone);
+      localStorage.setItem('cust_phone', phone);
     } catch(e){}
 
     if (btn) {
@@ -3250,11 +3293,11 @@ window.saveCustomerNewPinAndProceed = function() {
 
     alert("🎉 অভিনন্দন " + state.name + "!\nআপনার রাইড সাথী অ্যাকাউন্ট সফলভাবে ৪-সংখ্যার পিন দিয়ে সুরক্ষিত হয়েছে। এখন থেকে এই পিন ছাড়া অন্য কেউ আপনার অ্যাকাউন্টে ঢুকতে পারবে না।");
     var msgEl = document.getElementById('welcomeMsg');
-    window.proceedCustomerBookingSession(state.name, state.phone, msgEl);
+    window.proceedCustomerBookingSession(state.name, phone, msgEl);
   }
 
   if (dRef) {
-    dRef.ref('users/' + state.phone).update(userPayload).then(onPinSavedSuccess).catch(function(e) {
+    dRef.ref('users/' + phone).update(userPayload).then(onPinSavedSuccess).catch(function(e) {
       console.warn("RTDB update failed, proceeding locally:", e);
       onPinSavedSuccess();
     });
@@ -3574,9 +3617,18 @@ window.verifyEmailOtpAndAllowReset = function() {
 window.activeRegOtpState = null;
 
 window.openCustomerEmailOtpModal = function(name, phone, email, userData) {
+  if (!name || name === 'Customer') {
+    var cNameInp = document.getElementById('custName');
+    if (cNameInp && cNameInp.value.trim().length >= 2) {
+      name = cNameInp.value.trim();
+    } else if (email) {
+      name = email.split('@')[0].replace(/[^a-zA-Z\s\u0980-\u09FF]/g, '') || 'Customer';
+    }
+  }
+
   window.activeRegOtpState = {
     name: name,
-    phone: phone,
+    phone: phone || '',
     email: email,
     userData: userData || {},
     generatedOtp: String(Math.floor(100000 + Math.random() * 900000)),
@@ -3595,18 +3647,35 @@ window.openCustomerEmailOtpModal = function(name, phone, email, userData) {
     disp.innerText = email + " (" + masked + ")";
   }
   if (inp) { inp.value = ''; }
-  if (err) { err.innerText = ''; }
+  if (err) {
+    err.style.color = '#10b981';
+    err.innerText = '📨 আপনার ইমেইলে ৬-সংখ্যার ওটিপি কোড পাঠানো হয়েছে! ইনবক্স চেক করুন।';
+  }
 
-  // Send the OTP via Brevo API
-  window.dispatchRegistrationEmailOtp(name, email, window.activeRegOtpState.generatedOtp);
-
-  if (modal) modal.style.display = 'flex';
+  // Open modal FIRST so it is guaranteed to show instantly
+  if (modal) {
+    modal.classList.add('show');
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.style.setProperty('z-index', '999999999', 'important');
+    modal.style.setProperty('visibility', 'visible', 'important');
+    modal.style.setProperty('opacity', '1', 'important');
+  }
   setTimeout(function(){ if (inp) inp.focus(); }, 200);
+
+  // Send the OTP via Brevo API in safe try/catch
+  try {
+    window.dispatchRegistrationEmailOtp(name, email, window.activeRegOtpState.generatedOtp);
+  } catch(e) {
+    console.warn("OTP dispatch error:", e);
+  }
 };
 
 window.closeCustomerEmailOtpModal = function() {
   var modal = document.getElementById('customerEmailOtpModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.setProperty('display', 'none', 'important');
+  }
 };
 
 window.dispatchRegistrationEmailOtp = function(custName, email, otpCode) {
@@ -3735,20 +3804,30 @@ window.continueToBooking = function() {
     email = (localStorage.getItem('customerEmail') || '').trim().toLowerCase();
   }
 
-  if (!rawName || rawName.length < 2) {
-    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ দয়া করে আপনার নাম লিখুন / Please enter name"; }
-    if (nameEl) nameEl.focus();
+  var hasValidEmail = Boolean(email && email.includes('@') && email.includes('.'));
+  var hasValidPhone = Boolean(phone && phone.length === 10);
+
+  // If user entered neither valid email nor valid phone
+  if (!hasValidEmail && !hasValidPhone) {
+    if (msgEl) {
+      msgEl.style.color = '#ef4444';
+      msgEl.innerText = "❌ অনুগ্রহ করে আপনার ইমেইল আইডি অথবা ১০ সংখ্যার মোবাইল নম্বর দিন / Enter Email or 10-digit Mobile";
+    }
+    if (emailEl && !emailEl.value) emailEl.focus();
+    else if (phoneEl) phoneEl.focus();
     return;
   }
-  if (/[0-9]/.test(rawName)) {
-    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ নামে কোনো সংখ্যা দেওয়া যাবে না (শুধুমাত্র অক্ষর দিন) / Only letters allowed in name"; }
-    if (nameEl) nameEl.focus();
-    return;
-  }
-  if (!phone || phone.length !== 10) {
-    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ ১০ সংখ্যার সঠিক মোবাইল নম্বর দিন / 10-Digit phone required"; }
-    if (phoneEl) phoneEl.focus();
-    return;
+
+  // Auto-resolve Name if email is given
+  if (!name || name.length < 2) {
+    if (hasValidEmail) {
+      name = email.split('@')[0].replace(/[^a-zA-Z\s\u0980-\u09FF]/g, '') || 'Customer';
+      if (nameEl) nameEl.value = name;
+    } else {
+      if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "❌ দয়া করে আপনার নাম লিখুন / Please enter name"; }
+      if (nameEl) nameEl.focus();
+      return;
+    }
   }
 
   // Cloudflare Turnstile Human Verification Check
@@ -3766,11 +3845,11 @@ window.continueToBooking = function() {
   var continueBtn = document.getElementById('continueBtn');
   if (continueBtn) {
     continueBtn.disabled = true;
-    continueBtn.innerHTML = '<span>⏳ অ্যাকাউন্ট ভেরিফাই হচ্ছে...</span>';
+    continueBtn.innerHTML = '<span>⏳ ওটিপি পাঠানো হচ্ছে...</span>';
   }
 
-  // Smart Account Protection: Verify User in RTDB
-  if (typeof firebase !== 'undefined' && firebase.database) {
+  // If valid 10-digit phone is provided, check RTDB for existing user / driver
+  if (hasValidPhone && typeof firebase !== 'undefined' && firebase.database) {
     firebase.database().ref('users/' + phone).once('value').then(function(snap) {
       var userData = snap.val();
       var localAuth = null;
@@ -3788,7 +3867,8 @@ window.continueToBooking = function() {
         var drv3 = checkRes[2] && checkRes[2].exists();
         var ctrl = checkRes[3] && checkRes[3].exists() ? checkRes[3].val() : {};
         var isDriverRegistered = drv1 || drv2 || drv3;
-        var isDualRoleAllowed = Boolean(ctrl && ctrl.allow_dual_role);
+        var isOwnerAdmin = (phone === '8768447312' || phone === '918768447312');
+        var isDualRoleAllowed = Boolean(isOwnerAdmin || (ctrl && ctrl.allow_dual_role));
 
         if (isDriverRegistered && !isDualRoleAllowed) {
           if (msgEl) {
@@ -3797,7 +3877,7 @@ window.continueToBooking = function() {
           }
           if (continueBtn) {
             continueBtn.disabled = false;
-            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
           }
           return;
         }
@@ -3811,7 +3891,7 @@ window.continueToBooking = function() {
             }
             if (continueBtn) {
               continueBtn.disabled = false;
-              continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান ➡️</span>';
+              continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
             }
             return;
           }
@@ -3828,27 +3908,22 @@ window.continueToBooking = function() {
         }
 
         // Case 3: New Customer Registration -> Verify Email via Brevo 6-Digit OTP First
-        if (!email || !email.includes('@') || !email.includes('.')) {
-          if (msgEl) {
-            msgEl.style.color = '#ef4444';
-            msgEl.innerText = "❌ নতুন অ্যাকাউন্ট তৈরির জন্য সঠিক ইমেইল দিন (ইমেইলে ওটিপি পাঠানো হবে) / Valid email required";
-          }
-          if (emailEl) emailEl.focus();
+        if (hasValidEmail) {
           if (continueBtn) {
             continueBtn.disabled = false;
             continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
           }
+          window.openCustomerEmailOtpModal(name, phone, email, userData);
+          return;
+        } else {
+          // If no email provided, proceed to PIN setup modal
+          if (continueBtn) {
+            continueBtn.disabled = false;
+            continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
+          }
+          window.openCustomerSetPinModal(name, phone, userData, localAuth);
           return;
         }
-
-        if (continueBtn) {
-          continueBtn.disabled = false;
-          continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
-        }
-
-        // Open Brevo OTP verification modal
-        window.openCustomerEmailOtpModal(name, phone, email, userData);
-        return;
 
       }).catch(function(err) {
         console.warn("Dual role check warning:", err);
@@ -3856,7 +3931,7 @@ window.continueToBooking = function() {
           continueBtn.disabled = false;
           continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
         }
-        if (email && email.includes('@')) {
+        if (hasValidEmail) {
           window.openCustomerEmailOtpModal(name, phone, email, {});
         } else {
           window.openCustomerSetPinModal(name, phone, {}, { email: email });
@@ -3868,7 +3943,7 @@ window.continueToBooking = function() {
         continueBtn.disabled = false;
         continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
       }
-      if (email && email.includes('@')) {
+      if (hasValidEmail) {
         window.openCustomerEmailOtpModal(name, phone, email, {});
       } else {
         window.openCustomerSetPinModal(name, phone, {}, { email: email });
@@ -3877,15 +3952,15 @@ window.continueToBooking = function() {
     return;
   }
 
-  // Fallback if Firebase not ready
+  // Case 4: Email provided without phone number (or Firebase offline)
   if (continueBtn) {
     continueBtn.disabled = false;
     continueBtn.innerHTML = '<span data-i18n="continueBtn">✅ এগিয়ে যান / Continue ➡️</span>';
   }
-  if (email && email.includes('@')) {
-    window.openCustomerEmailOtpModal(name, phone, email, {});
-  } else {
-    window.openCustomerSetPinModal(name, phone, {}, { email: email });
+  if (hasValidEmail) {
+    window.openCustomerEmailOtpModal(name, phone || '', email, {});
+  } else if (hasValidPhone) {
+    window.openCustomerSetPinModal(name, phone, {}, {});
   }
 };
 
@@ -7388,6 +7463,17 @@ window.submitElectricBillRequest = function() {
       <span>📱 <b id="custSetPinPhone">+91 XXXXXXXXXX</b></span>
     </div>
 
+    <!-- 10-Digit Mobile Input (if customer started with Email only) -->
+    <div id="custSetPinPhoneGroup" style="margin-bottom:12px;display:none">
+      <label style="font-size:12.5px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
+        📱 আপনার ১০ সংখ্যার মোবাইল নম্বর *
+      </label>
+      <div style="position:relative;display:flex;align-items:center">
+        <span style="position:absolute;left:12px;color:#16a34a;font-weight:900;font-size:13px">+91</span>
+        <input type="tel" id="custSetPinPhoneInput" maxlength="10" placeholder="১০ সংখ্যার মোবাইল নম্বর লিখুন..." inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)" style="width:100%;box-sizing:border-box;padding:10px 10px 10px 45px;border-radius:10px;border:1.5px solid #cbd5e1;font-size:14px;font-weight:700">
+      </div>
+    </div>
+
     <!-- 1. 4-Digit PIN -->
     <div style="margin-bottom:12px">
       <label style="font-size:12.5px;font-weight:800;color:#334155;display:block;margin-bottom:4px">
@@ -8640,6 +8726,9 @@ const TRANSLATIONS = {
     step1Badge: "Step 1: Welcome",
     welcomeTitle: "Welcome!",
     welcomeSub: "Enter your name and mobile number to start booking",
+    emailLabel: "📧 Email ID *",
+    emailPlaceholder: "Enter your email (e.g. name@gmail.com)...",
+    orDirectMobile: "Or continue directly with Mobile Number",
     nameLabel: "👤 Customer Name *",
     namePlaceholder: "Enter your full name...",
     phoneLabel: "📱 10-Digit Mobile Phone *",
