@@ -1,5 +1,5 @@
 // RideSathiGo Service Worker - v2.7.8 (Superfast Instant Open & Dynamic i18n)
-const CACHE_NAME = 'rsg-cache-v2.7.8';
+const CACHE_NAME = 'rsg-cache-v3.0.0';
 const CORE_STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -96,28 +96,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. HTML Pages (Navigation): Superfast Instant Open (Cache-First + Background Revalidate)
+  // 3. HTML Pages (Navigation): Network-First (ALWAYS fetch newest release live, cache only for offline)
   if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      caches.match(req).then((cached) => {
-        // Background fetch to update cache seamlessly
-        const fetchPromise = fetch(req).then((networkRes) => {
-          if (networkRes && networkRes.status === 200) {
-            const resClone = networkRes.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(()=>{});
-          }
-          return networkRes;
-        }).catch(() => null);
-
-        // INSTANT RESPONSE: If page is in cache, deliver immediately in ~5ms!
-        if (cached) {
-          return cached;
+      fetch(req).then((networkRes) => {
+        if (networkRes && networkRes.status === 200) {
+          const resClone = networkRes.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone)).catch(()=>{});
         }
-
-        // If not in cache yet (brand-new visitor), wait for network
-        return fetchPromise.then((networkRes) => {
-          if (networkRes) return networkRes;
-          // Offline fallback
+        return networkRes;
+      }).catch(() => {
+        return caches.match(req).then((cached) => {
+          if (cached) return cached;
           const fallbackPath = url.pathname.includes('driver') ? '/driver.html' : '/index.html';
           return caches.match(fallbackPath).then((fallback) => fallback || new Response('Offline', { status: 503 }));
         });

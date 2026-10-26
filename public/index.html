@@ -3800,23 +3800,21 @@ window.continueToBooking = function() {
     email = (localStorage.getItem('customerEmail') || '').trim().toLowerCase();
   }
 
-  // 1. Validate Mobile Number (Required 10 Digits)
+  // 1. Mobile Number Check (Must be 10 digits)
   if (!phone || phone.length !== 10) {
-    if (msgEl) {
-      msgEl.style.color = '#ef4444';
-      msgEl.innerText = "📱 অনুগ্রহ করে আপনার ১০-সংখ্যার সঠিক মোবাইল নম্বর দিন / Enter 10-digit Mobile Number";
-    }
+    var errP = "📱 অনুগ্রহ করে আপনার ১০-সংখ্যার সঠিক মোবাইল নম্বর দিন!\n\n📱 Please enter your 10-digit mobile number!";
+    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "📱 ১০ সংখ্যার মোবাইল নম্বর লিখুন / Enter 10-digit Mobile"; }
+    alert(errP);
     if (phoneEl) phoneEl.focus();
     return;
   }
 
-  // 2. Validate Email (Required for Brevo OTP & Account Security)
+  // 2. Email Address Check (Required for 6-Digit Email OTP)
   var hasValidEmail = Boolean(email && email.includes('@') && email.includes('.'));
   if (!hasValidEmail) {
-    if (msgEl) {
-      msgEl.style.color = '#ef4444';
-      msgEl.innerText = "📧 অনুগ্রহ করে আপনার সঠিক ইমেইল আইডি দিন / Enter valid Email Address";
-    }
+    var errE = "📧 অনুগ্রহ করে আপনার সঠিক ইমেইল আইডি লিখুন (যেমন: name@gmail.com)!\n\n📧 Please enter a valid email address!";
+    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.innerText = "📧 সঠিক ইমেইল আইডি দিন / Enter valid Email"; }
+    alert(errE);
     if (emailEl) emailEl.focus();
     return;
   }
@@ -3827,24 +3825,12 @@ window.continueToBooking = function() {
     if (nameEl) nameEl.value = name;
   }
 
-  // 4. Cloudflare Turnstile Human Verification Check
-  if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
-    var tToken = window.turnstile.getResponse();
-    if (!tToken && !window.rsgTurnstileCustomerVerified && document.getElementById('rsg-turnstile-customer')) {
-      if (msgEl) {
-        msgEl.style.color = '#ef4444';
-        msgEl.innerText = "⚠️ অনুগ্রহ করে 'Cloudflare Verification' চেকবক্সে ক্লিক করুন!";
-      }
-      return;
-    }
-  }
-
   if (msgEl) msgEl.innerText = "";
 
   var continueBtn = document.getElementById('continueBtn');
   if (continueBtn) {
     continueBtn.disabled = true;
-    continueBtn.innerHTML = '<span>⏳ ওটিপি যাচাই হচ্ছে...</span>';
+    continueBtn.innerHTML = '<span>⏳ ওটিপি পাঠানো হচ্ছে...</span>';
   }
 
   function resetContinueBtn() {
@@ -3854,7 +3840,20 @@ window.continueToBooking = function() {
     }
   }
 
-  // Check RTDB for existing customer or dual-role driver
+  // 4. Cloudflare Turnstile Human Verification (Graceful check)
+  if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
+    var tToken = window.turnstile.getResponse();
+    if (!tToken && !window.rsgTurnstileCustomerVerified && document.getElementById('rsg-turnstile-customer')) {
+      if (msgEl) {
+        msgEl.style.color = '#ef4444';
+        msgEl.innerText = "⚠️ অনুগ্রহ করে 'Cloudflare Verification' চেকবক্সে ক্লিক করুন!";
+      }
+      resetContinueBtn();
+      return;
+    }
+  }
+
+  // Check Firebase RTDB for existing customer or dual-role driver
   if (typeof firebase !== 'undefined' && firebase.database) {
     var rootDb = firebase.database();
     rootDb.ref('users/' + phone).once('value').then(function(snap) {
@@ -3862,7 +3861,7 @@ window.continueToBooking = function() {
       var localAuth = null;
       try { localAuth = JSON.parse(localStorage.getItem('rideSathiAuthUser') || '{}'); } catch(e){}
 
-      // Check Dual-Role Restriction: Driver trying to register as customer
+      // Check Dual-Role Restriction
       Promise.all([
         rootDb.ref('drivers/' + phone).once('value').catch(function(){ return null; }),
         rootDb.ref('drivers/DRIVER_' + phone).once('value').catch(function(){ return null; }),
@@ -3878,43 +3877,28 @@ window.continueToBooking = function() {
         var isDualRoleAllowed = Boolean(isOwnerAdmin || (ctrl && ctrl.allow_dual_role));
 
         if (isDriverRegistered && !isDualRoleAllowed) {
-          if (msgEl) {
-            msgEl.style.color = '#ef4444';
-            msgEl.innerHTML = "🚫 <b>ড্রাইভার অ্যাকাউন্টে কাস্টমার বুকিং নিষিদ্ধ!</b><br>এই মোবাইল নম্বরটি ইতিমধ্যে ড্রাইভার পার্টনার হিসেবে নিবন্ধিত। একই নম্বরে কাস্টমার অ্যাকাউন্ট ব্যবহার করতে <b>অ্যাডমিনের বিশেষ অনুমতি (Dual Role Permission)</b> প্রয়োজন। হেল্পলাইনে যোগাযোগ করুন।";
-          }
+          alert("🚫 ড্রাইভার অ্যাকাউন্টে কাস্টমার বুকিং নিষিদ্ধ!\n\nএই মোবাইল নম্বরটি ইতিমধ্যে ড্রাইভার পার্টনার হিসেবে নিবন্ধিত। একই নম্বরে কাস্টমার অ্যাকাউন্ট ব্যবহার করতে অ্যাডমিনের বিশেষ অনুমতি প্রয়োজন। হেল্পলাইনে যোগাযোগ করুন।");
           resetContinueBtn();
           return;
         }
 
-        // Case 1: Phone is locked to a Google Account
-        if (userData && userData.auth_type === 'google' && userData.email) {
-          if (!localAuth || !localAuth.email || localAuth.email.toLowerCase() !== userData.email.toLowerCase()) {
-            if (msgEl) {
-              msgEl.style.color = '#ef4444';
-              msgEl.innerHTML = "🔒 <b>এই মোবাইল নম্বরটি গুগল অ্যাকাউন্ট দিয়ে সুরক্ষিত!</b><br>অন্য কেউ এই নম্বর দিয়ে লগইন করতে পারবে না। অনুগ্রহ করে উপরের <b>'Continue with Google'</b> বাটনে ক্লিক করে লগইন করুন।";
-            }
-            resetContinueBtn();
-            return;
-          }
-        }
-
-        // Case 2: Returning Customer with 4-Digit PIN -> Enter PIN Modal
+        // Case 1: Returning Customer with 4-Digit PIN -> Enter PIN Modal
         if (userData && userData.pin) {
           resetContinueBtn();
           window.openCustomerEnterPinModal(name, phone, userData);
           return;
         }
 
-        // Case 3: New Customer Registration or PIN unset -> Verify Email via Brevo 6-Digit OTP First
+        // Case 2: New Customer Registration or PIN unset -> Verify Email via Brevo 6-Digit OTP First
         resetContinueBtn();
         window.openCustomerEmailOtpModal(name, phone, email, userData || {});
       }).catch(function(err) {
-        console.warn("Dual role check error, proceeding to email OTP:", err);
+        console.warn("Dual role check warning, proceeding to OTP:", err);
         resetContinueBtn();
         window.openCustomerEmailOtpModal(name, phone, email, userData || {});
       });
     }).catch(function(err) {
-      console.warn("RTDB user fetch error, proceeding to email OTP:", err);
+      console.warn("RTDB user fetch warning, proceeding to OTP:", err);
       resetContinueBtn();
       window.openCustomerEmailOtpModal(name, phone, email, {});
     });
@@ -4000,7 +3984,7 @@ window.logoutCustomer = function() {
 
 // ROCK-SOLID SOS EMERGENCY TRIGGER
 window.triggerSOS = function() {
-  if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('SOS')) return;
+  if (!window.isCustomerLoggedIn()) { if (typeof window.requireCustomerLogin === 'function') window.requireCustomerLogin('SOS'); return; }
   if (typeof window.requireCustomerLogin === 'function' && !window.requireCustomerLogin('SOS')) return;
   var phone = localStorage.getItem('userPhone') || localStorage.getItem('customerPhone') || localStorage.getItem('cust_phone') || document.getElementById('custPhone')?.value || 'Customer';
   var name = localStorage.getItem('userName') || localStorage.getItem('customerName') || document.getElementById('custName')?.value || 'Customer';
@@ -4203,6 +4187,51 @@ window.selectPay = function(mode) {
 };
 
 // DOMContentLoaded INITIALIZATION
+
+// === GLOBAL CAPTURE-PHASE LOGIN GATE (Strictly locks ALL features except Language & Help on Login Page) ===
+document.addEventListener('click', function(e) {
+  var wScreen = document.getElementById('welcomeScreen');
+  var isLoginScreenVisible = wScreen && !wScreen.classList.contains('hidden') && wScreen.style.display !== 'none';
+  if (!isLoginScreenVisible) return;
+
+  // 1. Allow interactions inside welcomeScreen (Inputs, Google Login, Turnstile, Continue Button)
+  if (e.target.closest('#welcomeScreen')) return;
+
+  // 2. Allow interactions inside all Authentication / Verification Modals
+  if (e.target.closest('#customerEmailOtpModal') ||
+      e.target.closest('#customerSetPinModal') ||
+      e.target.closest('#customerEnterPinModal') ||
+      e.target.closest('#customerForgotPinModal')) {
+    return;
+  }
+
+  // 3. Allow Language Switching (বাং, हिंदी, ENG)
+  if (e.target.closest('.lang-segment') || e.target.closest('.lang-opt') || e.target.id?.startsWith('langBtn_')) {
+    return;
+  }
+
+  // 4. Allow Helpline Link (📞 হেল্প / Phone Call)
+  if (e.target.closest('a[href^="tel:"]') || (e.target.innerText && e.target.innerText.includes('হেল্প'))) {
+    return;
+  }
+
+  // 🛑 STRICTLY BLOCK ALL OTHER CLICKS (Hamburger Menu, SOS, Chat, Voice, Bell, Bottom Tabs, Booking Cards, etc.)
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+
+  var msg = "⚠️ অনুগ্রহ করে প্রথমে লগইন করুন!\nলগইন করার পর আপনি সকল ফিচার ব্যবহার করতে পারবেন।\n\n⚠️ Please login first!\nAfter logging in, you will have full access to all features.";
+  alert(msg);
+
+  var phoneInp = document.getElementById('custPhone');
+  var nameInp = document.getElementById('custName');
+  if (nameInp && !nameInp.value) {
+    nameInp.focus();
+  } else if (phoneInp) {
+    phoneInp.focus();
+  }
+}, true); // useCapture = true ensures this fires BEFORE any element's onclick or listener!
+
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof window.initTouristRentalMasterListener === 'function') {
     window.initTouristRentalMasterListener();
@@ -4306,6 +4335,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 })();
 
+</script>
+<script>
+// Force update Service Worker to v3.0.0
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for (var reg of registrations) {
+      reg.update();
+    }
+  });
+}
 </script>
 </head>
 <body>
