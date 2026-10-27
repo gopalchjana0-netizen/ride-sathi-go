@@ -2135,7 +2135,7 @@ function doPost(e) {
               <th style="padding:10px">Phone</th>
               <th style="padding:10px">Live Lat/Lng</th>
               <th style="padding:10px">Last Updated Time</th>
-              <th style="padding:10px">Battery %</th>
+              <th style="padding:10px">Device / ডিভাইস মডেল</th>
               <th style="padding:10px">Actions</th>
             </tr>
           </thead>
@@ -2161,7 +2161,7 @@ function doPost(e) {
               <th style="padding:10px">Phone</th>
               <th style="padding:10px">Live Lat/Lng</th>
               <th style="padding:10px">Last Updated Time</th>
-              <th style="padding:10px">Battery %</th>
+              <th style="padding:10px">Device / ডিভাইস মডেল</th>
               <th style="padding:10px">Actions</th>
             </tr>
           </thead>
@@ -7997,16 +7997,19 @@ let _driversDebounceTimer = null;
 function syncTrackingDriversFromAll(data) {
   if (!data) return;
   Object.entries(data).forEach(([k, v]) => {
-    if (v && (v.isOnline || v.online) && (v.lat || v.latitude || v.currentLat)) {
+    if (!v) return;
+    const p = cleanPhone(v.phone || v.mobile || k);
+    if (!p || p.length !== 10) return;
+    if ((v.isOnline || v.online) && (v.lat || v.latitude || v.currentLat)) {
       if (typeof handleTrackingLocation === 'function') {
-        handleTrackingLocation('driver_' + k, {
+        handleTrackingLocation(p, {
           role: 'driver',
-          name: v.name || v.driverName || 'Driver ' + (v.phone || k).slice(-4),
-          phone: v.phone || v.mobile || k,
+          name: v.name || v.driverName,
+          phone: p,
           lat: v.lat || v.latitude || v.currentLat,
           lng: v.lng || v.longitude || v.currentLng,
-          battery: v.battery || 90,
-          updatedAt: v.lastUpdated || v.lastSeen || Date.now()
+          deviceModel: v.deviceModel || v.device || '',
+          updatedAt: v.lastUpdate || v.lastUpdated || v.lastSeen || Date.now()
         });
       }
     }
@@ -10751,27 +10754,136 @@ function panTrackingMap(lat, lng, name) {
   });
 }
 
-function updateTrackingMarker(id, role, lat, lng, name, phone, battery, lastUpdatedStr) {
+
+// ==============================================================
+// 🌟 100% REAL DEVICE MODEL DETECTOR & RELATIVE TIME FORMATTER
+// ==============================================================
+function detectDeviceModel(ua) {
+  ua = String(ua || (typeof navigator !== 'undefined' ? navigator.userAgent : '') || '').trim();
+  if (!ua) return '📱 Mobile Device';
+
+  // If already clean model string (from client)
+  if (ua.startsWith('📱') || ua.startsWith('💻') || ua.startsWith('🍎') || ua.startsWith('🍏') || ua.startsWith('🐧')) {
+    return ua;
+  }
+
+  // 1. Apple iOS
+  if (/iPhone/i.test(ua)) {
+    var iphMatch = ua.match(/iPhones*OSs*([0-9_]+)/i);
+    var iphVer = iphMatch ? (' iOS ' + iphMatch[1].replace(/_/g, '.')) : ' iOS';
+    return '🍎 Apple iPhone (' + iphVer.trim() + ')';
+  }
+  if (/iPad/i.test(ua)) return '🍎 Apple iPad (iPadOS)';
+
+  // 2. Windows PC
+  if (/Windows NT 10.0|Windows NT 11.0/i.test(ua)) return '💻 Windows 10/11 PC';
+  if (/Windows NT/i.test(ua)) return '💻 Windows PC';
+
+  // 3. Apple Mac
+  if (/Macintosh|Mac OS X/i.test(ua) && !/iPhone|iPad/i.test(ua)) return '🍏 Apple Mac (macOS)';
+
+  // 4. Android Detailed Device Parsing
+  if (/Android/i.test(ua)) {
+    var androidMatch = ua.match(/Android\s+([0-9\.]+)?(?:;\s*([^;)]+))?/i);
+    var androidVer = (androidMatch && androidMatch[1]) ? ('Android ' + androidMatch[1]) : 'Android';
+    var rawModel = (androidMatch && androidMatch[2]) ? androidMatch[2].trim() : '';
+    rawModel = rawModel.replace(/Build\/[^\s;]+|\bwv\b/gi, '').trim();
+
+    // Samsung
+    if (/SM-[A-Z0-9]+|GT-[A-Z0-9]+|SAMSUNG/i.test(ua) || /samsung/i.test(rawModel)) {
+      var sMatch = ua.match(/SM-[A-Z0-9]+/i);
+      var sModel = rawModel || (sMatch ? sMatch[0] : '');
+      return '📱 Samsung ' + (sModel ? sModel : 'Galaxy');
+    }
+    // Xiaomi / Redmi / Poco
+    if (/Redmi|POCO|Xiaomi|MI\s|^2[1-4][0-9]{2}|^M2[0-9]{3}/i.test(rawModel) || /Redmi|POCO|Xiaomi/i.test(ua)) {
+      var xMatch = ua.match(/(Redmi[^\s;]+|POCO[^\s;]+|Xiaomi[^\s;]+)/i);
+      var xModel = rawModel || (xMatch ? xMatch[0] : '');
+      return '📱 Redmi/Xiaomi ' + (xModel ? '(' + xModel + ')' : '');
+    }
+    // Vivo
+    if (/Vivo|V2[0-9]{3}|V1[0-9]{3}/i.test(ua) || /vivo/i.test(rawModel)) {
+      var vMatch = ua.match(/V2[0-9]{3}/i);
+      var vModel = rawModel || (vMatch ? vMatch[0] : '');
+      return '📱 Vivo ' + (vModel ? vModel : 'Phone');
+    }
+    // Oppo
+    if (/OPPO|CPH[0-9]{4}/i.test(ua) || /oppo/i.test(rawModel)) {
+      var oMatch = ua.match(/CPH[0-9]{4}/i);
+      var oModel = rawModel || (oMatch ? oMatch[0] : '');
+      return '📱 Oppo ' + (oModel ? oModel : 'Phone');
+    }
+    // Realme
+    if (/Realme|RMX[0-9]{4}/i.test(ua) || /realme/i.test(rawModel)) {
+      var rMatch = ua.match(/RMX[0-9]{4}/i);
+      var rModel = rawModel || (rMatch ? rMatch[0] : '');
+      return '📱 Realme ' + (rModel ? rModel : 'Phone');
+    }
+    // OnePlus
+    if (/OnePlus|GM19|HD19|IN20|KB20|NE22/i.test(ua)) {
+      return '📱 OnePlus ' + (rawModel || 'Phone');
+    }
+    // Google Pixel
+    if (/Pixel/i.test(ua)) {
+      var pMatch = ua.match(/Pixel\s*[0-9a-zA-Z\s]+/i);
+      return '📱 Google ' + (pMatch ? pMatch[0] : 'Pixel');
+    }
+    // Motorola
+    if (/Moto|Motorola/i.test(ua)) {
+      return '📱 Motorola ' + (rawModel || 'Phone');
+    }
+
+    if (rawModel && rawModel.length > 2 && rawModel !== 'K') {
+      return '📱 ' + rawModel + ' (' + androidVer + ')';
+    }
+    return '📱 ' + androidVer + ' Mobile';
+  }
+
+  // 5. Linux / Other
+  if (/Linux/i.test(ua)) return '🐧 Linux OS';
+
+  return '🌐 Web Browser';
+}
+
+function formatTrackingTime(ts) {
+  if (!ts) return { badge: '⚪ অফলাইন', full: 'Unknown' };
+  var diff = Date.now() - ts;
+  var full = new Date(ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date(ts).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  if (diff < 60000) return { badge: '🟢 এইমাত্র (Live)', full: full, isLive: true };
+  var mins = Math.floor(diff / 60000);
+  if (mins < 60) return { badge: '🟢 ' + mins + ' মি. আগে', full: full, isLive: mins <= 15 };
+  var hours = Math.floor(mins / 60);
+  if (hours < 24) return { badge: '🟡 ' + hours + ' ঘন্টা আগে', full: full, isLive: false };
+  var days = Math.floor(hours / 24);
+  if (days <= 7) return { badge: '⚪ ' + days + ' দিন আগে', full: full, isLive: false };
+  return { badge: '⚪ ' + new Date(ts).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), full: full, isLive: false };
+}
+
+function updateTrackingMarker(phone, role, lat, lng, name, deviceModel, timeInfo) {
   if (!trackingMap) return;
   const isDriver = (role === 'driver');
   const color = isDriver ? '#16a34a' : '#2563eb';
   const radius = isDriver ? 9 : 8;
-  const roleLabel = isDriver ? '🚖 DRIVER' : '👤 CUSTOMER';
+  const roleLabel = isDriver ? '🚖 DRIVER PARTNER' : '👤 CUSTOMER';
+  const mapsUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng;
 
   const popupHtml = `
-    <div style="font-family:system-ui;min-width:160px">
-      <b style="color:${color};font-size:13px">${roleLabel}</b><br>
-      <b style="font-size:14px;color:#0f172a">${name}</b><br>
-      <span style="font-size:11px;color:#475569">📱 ${phone}</span><br>
-      <span style="font-size:11px;color:#059669">🔋 Battery: ${battery}%</span><br>
-      <small style="color:#64748b">🕒 ${lastUpdatedStr}</small><br>
-      <a href="tel:${phone}" style="display:inline-block;margin-top:6px;padding:4px 8px;background:${color};color:#fff;border-radius:6px;text-decoration:none;font-size:11px;font-weight:bold">📞 Call User</a>
+    <div style="font-family:system-ui;min-width:180px;padding:4px">
+      <div style="font-size:11px;font-weight:900;color:${color};text-transform:uppercase">${roleLabel}</div>
+      <div style="font-size:14px;font-weight:900;color:#0f172a;margin:2px 0">${name}</div>
+      <div style="font-size:12px;color:#475569;font-family:monospace;font-weight:700">📱 ${phone}</div>
+      <div style="margin:6px 0;padding:4px 8px;background:#f1f5f9;border-radius:6px;font-size:11px;font-weight:800;color:#0369a1">${deviceModel}</div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:8px">🕒 ${timeInfo.badge} <br><small>(${timeInfo.full})</small></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="padding:4px 8px;background:#0284c7;color:#fff;border-radius:6px;text-decoration:none;font-size:11px;font-weight:bold;display:inline-flex;align-items:center;gap:3px">🗺️ Google Map</a>
+        <a href="tel:${phone}" style="padding:4px 8px;background:${color};color:#fff;border-radius:6px;text-decoration:none;font-size:11px;font-weight:bold">📞 Call</a>
+      </div>
     </div>
   `;
 
-  if (trackingMarkers[id]) {
-    trackingMarkers[id].setLatLng([lat, lng]);
-    trackingMarkers[id].setPopupContent(popupHtml);
+  if (trackingMarkers[phone]) {
+    trackingMarkers[phone].setLatLng([lat, lng]);
+    trackingMarkers[phone].setPopupContent(popupHtml);
   } else {
     const marker = L.circleMarker([lat, lng], {
       radius: radius,
@@ -10782,7 +10894,7 @@ function updateTrackingMarker(id, role, lat, lng, name, phone, battery, lastUpda
       fillOpacity: 0.95
     }).addTo(trackingMap);
     marker.bindPopup(popupHtml);
-    trackingMarkers[id] = marker;
+    trackingMarkers[phone] = marker;
   }
 }
 
@@ -10793,35 +10905,54 @@ function handleTrackingLocation(id, data) {
   const lng = parseFloat(data.lng ?? data.longitude ?? data.currentLng ?? (data.location && data.location.lng));
   if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return;
 
+  const rawPhone = String(data.phone || data.mobile || data.userPhone || data.driverPhone || data.uid || id || '');
+  const cleanP = cleanPhone(rawPhone);
+  if (!cleanP || cleanP.length !== 10) return; // Strict deduplication: Every user keyed by 10-digit number!
+
   const role = String(data.role || data.type || data.userType || '').toLowerCase();
-  const isDriver = role.includes('driver') || id.startsWith('driver') || data.isDriver;
+  const isDriver = role.includes('driver') || String(id).toLowerCase().includes('driver') || data.isDriver;
   const roleKey = isDriver ? 'driver' : 'customer';
 
-  const name = data.name || data.userName || data.driverName || (isDriver ? 'Driver Partner' : 'Customer');
-  const phone = data.phone || data.mobile || data.userPhone || data.driverPhone || 'N/A';
-  const battery = Math.round(Number(data.battery || data.batteryLevel || data.batteryPct || 85));
-  const t = getTimestamp(data.updatedAt || data.lastUpdated || data.timestamp || data.time || data.loginAt);
-  const timeStr = t ? new Date(t).toLocaleTimeString('en-IN') : 'Just now';
-
-  const entry = {
-    id: id,
-    role: roleKey,
-    name: name,
-    phone: phone,
-    lat: lat,
-    lng: lng,
-    battery: battery > 1 ? battery : Math.round(battery * 100),
-    time: t,
-    timeStr: timeStr
-  };
-
+  // 100% Real Name Resolution
+  let finalName = '';
   if (isDriver) {
-    trackingDriversCache[id] = entry;
+    if (typeof allDriversData === 'object' && allDriversData) {
+      let dObj = allDriversData[cleanP] || allDriversData['DRIVER_' + cleanP];
+      if (dObj && dObj.name) finalName = dObj.name;
+    }
   } else {
-    trackingCustomersCache[id] = entry;
+    if (typeof allUsersMap === 'object' && allUsersMap && allUsersMap[cleanP]) {
+      finalName = allUsersMap[cleanP].name;
+    }
+  }
+  if (!finalName || finalName.toLowerCase() === 'customer' || finalName.toLowerCase() === 'driver') {
+    finalName = (typeof cleanPersonName === 'function' ? cleanPersonName(data.name || data.userName || data.driverName) : '') || data.name || (isDriver ? 'Driver Partner' : 'Customer');
   }
 
-  updateTrackingMarker(id, roleKey, lat, lng, name, phone, entry.battery, timeStr);
+  const rawDev = data.deviceModel || data.device || data.userAgent || data.platform || '';
+  const parsedDevice = detectDeviceModel(rawDev);
+  const t = getTimestamp(data.updatedAt || data.lastUpdate || data.lastUpdated || data.timestamp || data.time || data.loginAt) || Date.now();
+  const timeInfo = formatTrackingTime(t);
+
+  const entry = {
+    phone: cleanP,
+    role: roleKey,
+    name: finalName,
+    lat: lat,
+    lng: lng,
+    device: parsedDevice,
+    time: t,
+    timeInfo: timeInfo
+  };
+
+  const targetCache = isDriver ? trackingDriversCache : trackingCustomersCache;
+  const existing = targetCache[cleanP];
+
+  // Zero Duplication: Only keep the freshest coordinates for this exact 10-digit phone number!
+  if (!existing || t >= (existing.time || 0)) {
+    targetCache[cleanP] = entry;
+    updateTrackingMarker(cleanP, roleKey, lat, lng, finalName, parsedDevice, timeInfo);
+  }
 }
 
 function loadUserTracking() {
@@ -10896,7 +11027,7 @@ function renderTrackingTables() {
 
   let custList = Object.values(trackingCustomersCache);
   if (query) {
-    custList = custList.filter(c => `${c.name} ${c.phone} ${c.lat} ${c.lng}`.toLowerCase().includes(query));
+    custList = custList.filter(c => `${c.name} ${c.phone} ${c.device} ${c.lat} ${c.lng}`.toLowerCase().includes(query));
   }
   custList.sort((a, b) => (b.time || 0) - (a.time || 0));
 
@@ -10905,22 +11036,35 @@ function renderTrackingTables() {
 
   if (custTbody) {
     if (custList.length === 0) {
-      custTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#64748b">কোনো সক্রিয় কাস্টমার পাওয়া যায়নি / No active customers online right now.</td></tr>';
+      custTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#64748b;font-weight:600">কোনো সক্রিয় কাস্টমার পাওয়া যায়নি / No active customers online right now.</td></tr>';
     } else {
       custTbody.innerHTML = custList.map((c, i) => {
+        const mapsUrl = 'https://www.google.com/maps?q=' + c.lat + ',' + c.lng;
         return `<tr style="border-bottom:1px solid #f1f5f9;background:${i % 2 === 0 ? '#fff' : '#eff6ff'}">
           <td style="padding:10px;font-weight:bold;color:#64748b">${i + 1}</td>
-          <td style="padding:10px;font-weight:bold;color:#0f172a">👤 ${c.name}</td>
-          <td style="padding:10px;font-family:monospace">${c.phone}</td>
-          <td style="padding:10px;font-size:11px;font-family:monospace;color:#2563eb">${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}</td>
-          <td style="padding:10px;white-space:nowrap;font-size:11px">${c.timeStr}</td>
-          <td style="padding:10px">
-            <span class="badge" style="background:#dcfce7;color:#15803d">🔋 ${c.battery}%</span>
+          <td style="padding:10px;font-weight:800;color:#0f172a">👤 ${c.name}</td>
+          <td style="padding:10px;font-family:monospace;font-weight:700;color:#1e3a8a">${c.phone}</td>
+          <td style="padding:10px;font-size:11.5px;font-family:monospace;color:#2563eb;font-weight:600">${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}</td>
+          <td style="padding:10px;white-space:nowrap;font-size:11.5px">
+            <div style="font-weight:800">${c.timeInfo.badge}</div>
+            <div style="font-size:10px;color:#64748b;margin-top:2px">${c.timeInfo.full}</div>
           </td>
           <td style="padding:10px">
-            <div style="display:flex;gap:6px">
-              <a href="tel:${c.phone}" class="btn approve" style="padding:4px 8px;font-size:11px;text-decoration:none;display:inline-block">📞 Call</a>
-              <button class="btn blue" onclick="panTrackingMap(${c.lat}, ${c.lng}, '${c.name.replace(/'/g, "\\'")}')" style="padding:4px 8px;font-size:11px">📍 View</button>
+            <span class="badge" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:4px 8px;font-size:11.5px;font-weight:800;border-radius:8px;white-space:nowrap;display:inline-block">
+              ${c.device}
+            </span>
+          </td>
+          <td style="padding:10px">
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="btn blue" style="padding:5px 10px;font-size:11.5px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#0284c7;color:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(2,132,199,0.3)" title="গুগল ম্যাপে সরাসরি সঠিক অবস্থান দেখুন">
+                🗺️ Google Map
+              </a>
+              <button class="btn" onclick="panTrackingMap(${c.lat}, ${c.lng}, '${c.name.replace(/'/g, "\\'")}')" style="padding:5px 8px;font-size:11.5px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer" title="প্যানেল ম্যাপে দেখুন">
+                📍 পিন
+              </button>
+              <a href="tel:${c.phone}" class="btn approve" style="padding:5px 8px;font-size:11.5px;text-decoration:none;display:inline-block;border-radius:8px">
+                📞 Call
+              </a>
             </div>
           </td>
         </tr>`;
@@ -10935,7 +11079,7 @@ function renderTrackingTables() {
 
   let drvList = Object.values(trackingDriversCache);
   if (query) {
-    drvList = drvList.filter(d => `${d.name} ${d.phone} ${d.lat} ${d.lng}`.toLowerCase().includes(query));
+    drvList = drvList.filter(d => `${d.name} ${d.phone} ${d.device} ${d.lat} ${d.lng}`.toLowerCase().includes(query));
   }
   drvList.sort((a, b) => (b.time || 0) - (a.time || 0));
 
@@ -10944,22 +11088,35 @@ function renderTrackingTables() {
 
   if (drvTbody) {
     if (drvList.length === 0) {
-      drvTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#64748b">কোনো সক্রিয় ড্রাইভার পাওয়া যায়নি / No active drivers online right now.</td></tr>';
+      drvTbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:#64748b;font-weight:600">কোনো সক্রিয় ড্রাইভার পাওয়া যায়নি / No active drivers online right now.</td></tr>';
     } else {
       drvTbody.innerHTML = drvList.map((d, i) => {
+        const mapsUrl = 'https://www.google.com/maps?q=' + d.lat + ',' + d.lng;
         return `<tr style="border-bottom:1px solid #f1f5f9;background:${i % 2 === 0 ? '#fff' : '#f0fdf4'}">
           <td style="padding:10px;font-weight:bold;color:#64748b">${i + 1}</td>
-          <td style="padding:10px;font-weight:bold;color:#0f172a">🚖 ${d.name}</td>
-          <td style="padding:10px;font-family:monospace">${d.phone}</td>
-          <td style="padding:10px;font-size:11px;font-family:monospace;color:#16a34a">${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}</td>
-          <td style="padding:10px;white-space:nowrap;font-size:11px">${d.timeStr}</td>
-          <td style="padding:10px">
-            <span class="badge" style="background:#dcfce7;color:#15803d">🔋 ${d.battery}%</span>
+          <td style="padding:10px;font-weight:800;color:#0f172a">🚖 ${d.name}</td>
+          <td style="padding:10px;font-family:monospace;font-weight:700;color:#14532d">${d.phone}</td>
+          <td style="padding:10px;font-size:11.5px;font-family:monospace;color:#16a34a;font-weight:600">${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}</td>
+          <td style="padding:10px;white-space:nowrap;font-size:11.5px">
+            <div style="font-weight:800">${d.timeInfo.badge}</div>
+            <div style="font-size:10px;color:#64748b;margin-top:2px">${d.timeInfo.full}</div>
           </td>
           <td style="padding:10px">
-            <div style="display:flex;gap:6px">
-              <a href="tel:${d.phone}" class="btn orange" style="padding:4px 8px;font-size:11px;text-decoration:none;display:inline-block">📞 Call</a>
-              <button class="btn blue" onclick="panTrackingMap(${d.lat}, ${d.lng}, '${d.name.replace(/'/g, "\\'")}')" style="padding:4px 8px;font-size:11px">📍 View</button>
+            <span class="badge" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:4px 8px;font-size:11.5px;font-weight:800;border-radius:8px;white-space:nowrap;display:inline-block">
+              ${d.device}
+            </span>
+          </td>
+          <td style="padding:10px">
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="btn blue" style="padding:5px 10px;font-size:11.5px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#0284c7;color:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(2,132,199,0.3)" title="গুগল ম্যাপে সরাসরি সঠিক অবস্থান দেখুন">
+                🗺️ Google Map
+              </a>
+              <button class="btn" onclick="panTrackingMap(${d.lat}, ${d.lng}, '${d.name.replace(/'/g, "\\'")}')" style="padding:5px 8px;font-size:11.5px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer" title="প্যানেল ম্যাপে দেখুন">
+                📍 পিন
+              </button>
+              <a href="tel:${d.phone}" class="btn orange" style="padding:5px 8px;font-size:11.5px;text-decoration:none;display:inline-block;border-radius:8px">
+                📞 Call
+              </a>
             </div>
           </td>
         </tr>`;

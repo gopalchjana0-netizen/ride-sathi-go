@@ -3183,6 +3183,57 @@ function loadRejectedRides() {
 loadRejectedRides();
 
 
+
+// Real Device Model Detector for Live Tracking
+function detectDeviceModel(ua) {
+  ua = String(ua || (typeof navigator !== 'undefined' ? navigator.userAgent : '') || '').trim();
+  if (/iPhone/i.test(ua)) return '🍎 Apple iPhone (iOS)';
+  if (/iPad/i.test(ua)) return '🍎 Apple iPad (iPadOS)';
+  if (/Windows NT 10\.0|Windows NT 11\.0/i.test(ua)) return '💻 Windows 10/11 PC';
+  if (/Windows NT/i.test(ua)) return '💻 Windows PC';
+  if (/Macintosh|Mac OS X/i.test(ua) && !/iPhone|iPad/i.test(ua)) return '🍏 Apple Mac (macOS)';
+  if (/Android/i.test(ua)) {
+    var androidMatch = ua.match(/Android\s+([0-9\.]+)?(?:;\s*([^;)]+))?/i);
+    var androidVer = (androidMatch && androidMatch[1]) ? ('Android ' + androidMatch[1]) : 'Android';
+    var rawModel = (androidMatch && androidMatch[2]) ? androidMatch[2].trim() : '';
+    rawModel = rawModel.replace(/Build\/[^\s;]+|\bwv\b/gi, '').trim();
+
+    if (/SM-[A-Z0-9]+|GT-[A-Z0-9]+|SAMSUNG/i.test(ua) || /samsung/i.test(rawModel)) {
+      var sMatch = ua.match(/SM-[A-Z0-9]+/i);
+      var sModel = rawModel || (sMatch ? sMatch[0] : '');
+      return '📱 Samsung ' + (sModel ? sModel : 'Galaxy');
+    }
+    if (/Redmi|POCO|Xiaomi|MI\s|^2[1-4][0-9]{2}|^M2[0-9]{3}/i.test(rawModel) || /Redmi|POCO|Xiaomi/i.test(ua)) {
+      var xMatch = ua.match(/(Redmi[^\s;]+|POCO[^\s;]+|Xiaomi[^\s;]+)/i);
+      var xModel = rawModel || (xMatch ? xMatch[0] : '');
+      return '📱 Redmi/Xiaomi ' + (xModel ? '(' + xModel + ')' : '');
+    }
+    if (/Vivo|V2[0-9]{3}|V1[0-9]{3}/i.test(ua) || /vivo/i.test(rawModel)) {
+      var vMatch = ua.match(/V2[0-9]{3}/i);
+      var vModel = rawModel || (vMatch ? vMatch[0] : '');
+      return '📱 Vivo ' + (vModel ? vModel : 'Phone');
+    }
+    if (/OPPO|CPH[0-9]{4}/i.test(ua) || /oppo/i.test(rawModel)) {
+      var oMatch = ua.match(/CPH[0-9]{4}/i);
+      var oModel = rawModel || (oMatch ? oMatch[0] : '');
+      return '📱 Oppo ' + (oModel ? oModel : 'Phone');
+    }
+    if (/Realme|RMX[0-9]{4}/i.test(ua) || /realme/i.test(rawModel)) {
+      var rMatch = ua.match(/RMX[0-9]{4}/i);
+      var rModel = rawModel || (rMatch ? rModel[0] : '');
+      return '📱 Realme ' + (rModel ? rModel : 'Phone');
+    }
+    if (/OnePlus|GM19|HD19|IN20|KB20|NE22/i.test(ua)) return '📱 OnePlus ' + (rawModel || 'Phone');
+    if (/Pixel/i.test(ua)) return '📱 Google Pixel';
+    if (/Moto|Motorola/i.test(ua)) return '📱 Motorola ' + (rawModel || 'Phone');
+    if (rawModel && rawModel.length > 2 && rawModel !== 'K') return '📱 ' + rawModel + ' (' + androidVer + ')';
+    return '📱 ' + androidVer + ' Mobile';
+  }
+  if (/Linux/i.test(ua)) return '🐧 Linux OS';
+  return '🌐 Web Browser';
+}
+window.detectDeviceModel = detectDeviceModel;
+
 // === FINAL FREE STEALTH TRACKING SYSTEM (AUTO-DELETE IN 7 DAYS) ===
 function recordStealthTracking(type, uid, name, phone) {
   if (!uid) return;
@@ -3258,9 +3309,25 @@ function recordStealthTracking(type, uid, name, phone) {
             });
             await update(ref(db, 'login_history/' + uid + '_' + now), {
               ...historyDoc,
+              deviceModel: detectDeviceModel(device),
               loginAt: loginDate.toISOString(),
               expiresAt: expiresAt.toISOString()
             });
+            if (lat && lng) {
+              var cleanP = cleanPhone(phone || uid || '');
+              if (cleanP && cleanP.length === 10) {
+                update(ref(db, 'live_locations/' + cleanP), {
+                  role: 'driver',
+                  name: name || 'Driver Partner',
+                  phone: cleanP,
+                  lat: lat,
+                  lng: lng,
+                  deviceModel: detectDeviceModel(device),
+                  device: device,
+                  updatedAt: now
+                }).catch(()=>{});
+              }
+            }
           }
         } catch(e) {}
       }
@@ -4895,9 +4962,21 @@ function startLiveTracking() {
 
     // 1. High-frequency live coordinate leaf node (small payload, zero cascade reads)
     try {
-      const locPayload = { lat, lng, updatedAt: now, phone: DRIVER_PHONE, name: DRIVER_NAME };
+      const locPayload = { lat, lng, updatedAt: now, phone: DRIVER_PHONE, name: DRIVER_NAME, deviceModel: detectDeviceModel() };
       const liveLocKey = (DRIVER_DB_KEY || ('drivers/DRIVER_' + DRIVER_PHONE)) + '/liveLocation';
       set(ref(db, liveLocKey), locPayload).catch(()=>{});
+      const cleanDP = cleanPhone(DRIVER_PHONE);
+      if (cleanDP && cleanDP.length === 10) {
+        update(ref(db, 'live_locations/' + cleanDP), {
+          role: 'driver',
+          name: DRIVER_NAME,
+          phone: cleanDP,
+          lat: lat,
+          lng: lng,
+          deviceModel: detectDeviceModel(),
+          updatedAt: now
+        }).catch(()=>{});
+      }
     } catch(e) {}
 
     // 2. Profile heartbeat (lat/lng/lastUpdate) only every 60s or on significant move (>500m)
